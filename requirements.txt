@@ -1,5 +1,7 @@
-pandas
 streamlit
-streamlit-folium
+pandas
 folium
-requests
+streamlit-folium
+st-gsheets-connection
+geopy
+shapely
