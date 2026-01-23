@@ -6,7 +6,7 @@ import numpy as np
 from streamlit_gsheets import GSheetsConnection
 
 # 1. Page Configuration
-st.set_page_config(page_title="LA Incentive Portal", layout="wide")
+st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 if "authenticated" not in st.session_state:
@@ -16,7 +16,7 @@ if "selected_tract" not in st.session_state:
 
 # --- 2. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
-    st.title("🔐 LA Incentive Portal Login")
+    st.title("🔐 Louisiana Opportunity Zones 2.0 Recommendation Portal")
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         with st.form("login_form"):
@@ -87,12 +87,11 @@ def get_map_center(current_df, geojson_data):
     return {"lat": np.mean(lats), "lon": np.mean(lons)} if lats else {"lat": 31.0, "lon": -91.8}
 
 # --- 6. MAIN DASHBOARD ---
-st.title(f"📍 {st.session_state['a_val']} Incentive Portal")
+st.title(f"📍 OZ 2.0 Recommendation Portal: {st.session_state['a_val']}")
 
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
-    # Filter Controls
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
@@ -117,7 +116,6 @@ with col_map:
         mapbox_style="carto-positron", zoom=zoom_lvl, center=center_coords,
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
-    # INCREASED HEIGHT: Updated to 700 to match typical right-pane height
     fig.update_layout(height=700, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
     
     selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
@@ -125,7 +123,6 @@ with col_map:
         st.session_state["selected_tract"] = selected_points["selection"]["points"][0]["location"]
 
 with col_metrics:
-    # Context Data
     if st.session_state["selected_tract"] and st.session_state["selected_tract"] in master_df['GEOID'].values:
         disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
         lbl, is_s = f"Tract {st.session_state['selected_tract'][-4:]}", True
@@ -136,7 +133,6 @@ with col_metrics:
         if col not in master_df.columns: return 0.0
         return float(disp[col]) if is_s else float(disp[col].mean())
 
-    # DECREASED FONT SIZE: Using markdown for a smaller profile header
     st.markdown(f"#### 📈 {lbl} Profile")
     
     g1, g2, g3 = st.columns(3)
@@ -150,12 +146,17 @@ with col_metrics:
     g6.metric("HS Grad", f"{get_val('hs_plus_pct_25plus'):.1f}%")
     g7.metric("BA Grad", f"{get_val('ba_plus_pct_25plus'):.1f}%")
     
-    # NEW: PLACEHOLDER METRIC CARD
+    # CALCULATED PRIORITY METRICS
     st.divider()
     st.markdown("#### 🎯 Strategic Priority")
+    # Opportunity Index = 10 - (poverty/10 + unemp/2) normalized loosely
+    opp_idx = max(0, min(10, 10 - (get_val('poverty_rate')/15 + get_val('unemp_rate')/5)))
+    # Workforce Ready = weighted education attainment
+    wf_ready = (get_val('hs_plus_pct_25plus') * 0.4 + get_val('ba_plus_pct_25plus') * 0.6)
+    
     p1, p2 = st.columns(2)
-    p1.metric("Opportunity Index", "7.4 / 10", delta="Moderate")
-    p2.metric("Workforce Ready", "High", delta="62nd Pct")
+    p1.metric("Opportunity Index", f"{opp_idx:.1f} / 10")
+    p2.metric("Workforce Readiness", f"{wf_ready:.1f}%")
 
     # Submission Form
     st.divider()
