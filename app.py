@@ -46,7 +46,6 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    # Expanded Data Sanitizer
     cols_to_fix = [
         'poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 
         'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus'
@@ -87,21 +86,13 @@ def get_map_center(current_df, geojson_data):
                     lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
     return {"lat": np.mean(lats), "lon": np.mean(lons)} if lats else {"lat": 31.0, "lon": -91.8}
 
-# --- 6. SIDEBAR ---
-st.sidebar.title("Navigation")
-st.sidebar.info(f"👤 **{st.session_state['username']}**\n📍 Scope: {st.session_state['a_val']}")
-if st.sidebar.button("Log Out"):
-    st.session_state["authenticated"] = False
-    st.session_state["selected_tract"] = None
-    st.rerun()
-
-# --- 7. MAIN DASHBOARD ---
+# --- 6. MAIN DASHBOARD ---
 st.title(f"📍 {st.session_state['a_val']} Incentive Portal")
 
-col_map, col_metrics = st.columns([0.6, 0.4])
+# Use a standard wide layout for the top section
+col_map, col_metrics = st.columns([0.5, 0.5])
 
 with col_map:
-    # Filtering UI
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
@@ -133,14 +124,7 @@ with col_map:
         st.session_state["selected_tract"] = selected_points["selection"]["points"][0]["location"]
 
 with col_metrics:
-    # 7.1 Portal Stats
-    st.subheader("📊 Portal Statistics")
-    m1, m2 = st.columns(2)
-    m1.metric("Local Tracts", len(master_df))
-    m2.metric("Eligible (OZ 2.0)", len(master_df[master_df['Is_Eligible'] == 1]))
-    
-    # 7.2 Economic Snapshot (Enhanced)
-    st.subheader("📈 Economic & Workforce Snapshot")
+    # Set the data context
     if st.session_state["selected_tract"] and st.session_state["selected_tract"] in master_df['GEOID'].values:
         disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
         lbl, is_s = f"Tract {st.session_state['selected_tract'][-4:]}", True
@@ -151,23 +135,23 @@ with col_metrics:
         if col not in master_df.columns: return 0.0
         return float(disp[col]) if is_s else float(disp[col].mean())
 
-    st.write(f"**Viewing: {lbl}**")
+    st.subheader(f"📈 {lbl} Profile")
     
-    # Row 1: General Economics
-    e1, e2, e3 = st.columns(3)
-    e1.metric("Population", f"{get_val('pop_total'):,.0f}")
-    e2.metric("Med. Income", f"${get_val('med_hh_income'):,.0f}")
-    e3.metric("Poverty Rate", f"{get_val('poverty_rate'):.1f}%")
+    # THE 7 INDICATOR GRID
+    # We use a nested set of columns to ensure uniform size
+    g1, g2, g3 = st.columns(3)
+    g1.metric("Population", f"{get_val('pop_total'):,.0f}")
+    g2.metric("Median Income", f"${get_val('med_hh_income'):,.0f}")
+    g3.metric("Poverty Rate", f"{get_val('poverty_rate'):.1f}%")
 
-    # Row 2: Workforce & Education
-    e4, e5, e6 = st.columns(3)
-    e4.metric("Unemployment", f"{get_val('unemp_rate'):.1f}%")
-    e5.metric("Student Pop.", f"{get_val('age_18_24_pct'):.1f}%")
-    e6.metric("College Ed.", f"{get_val('ba_plus_pct_25plus'):.1f}%")
-
-    st.caption(f"Workforce HS+ Education: {get_val('hs_plus_pct_25plus'):.1f}%")
+    st.write("---")
+    g4, g5, g6, g7 = st.columns(4)
+    g4.metric("Unemployment", f"{get_val('unemp_rate'):.1f}%")
+    g5.metric("Student Pop.", f"{get_val('age_18_24_pct'):.1f}%")
+    g6.metric("HS Grad+", f"{get_val('hs_plus_pct_25plus'):.1f}%")
+    g7.metric("College Grad+", f"{get_val('ba_plus_pct_25plus'):.1f}%")
     
-    # 7.3 Submission Form
+    # Submission Form
     st.divider()
     st.subheader("📝 New Recommendation")
     all_geoids = sorted(master_df['GEOID'].unique().tolist())
@@ -176,7 +160,7 @@ with col_metrics:
     with st.form("sub_form", clear_on_submit=True):
         geoid = st.selectbox("Selected GEOID", options=all_geoids, index=def_idx)
         cat = st.selectbox("Category", ["Housing", "Infrastructure", "Commercial", "Other"])
-        notes = st.text_area("Justification", height=100)
+        notes = st.text_area("Justification", height=80)
         if st.form_submit_button("Record Entry"):
             match = master_df.loc[master_df['GEOID'] == geoid, 'Is_Eligible']
             elig_label = "Eligible" if (not match.empty and match.values[0] == 1) else "Ineligible"
@@ -187,7 +171,7 @@ with col_metrics:
             st.session_state["selected_tract"] = None
             st.rerun()
 
-# --- 8. ACTIVITY LOG ---
+# --- 7. ACTIVITY LOG ---
 st.divider()
 st.subheader("📋 Recent Activity")
 try:
