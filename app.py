@@ -38,13 +38,26 @@ if not st.session_state["authenticated"]:
                     st.error("Invalid credentials.")
     st.stop()
 
-# --- 3. DATA LOADING ---
+# --- 3. DATA LOADING & CLEANING ---
 @st.cache_data(ttl=60)
 def load_data():
     master = pd.read_csv("tract_data_final.csv")
     master.columns = [str(c).strip() for c in master.columns]
+    
+    # Standardize GEOID
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
+    
+    # --- DATA SANITIZER: Convert strings to numbers for metrics ---
+    cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income']
+    for col in cols_to_fix:
+        if col in master.columns:
+            # Remove $, %, and commas, then convert to numeric
+            master[col] = pd.to_numeric(
+                master[col].astype(str).replace(r'[\$,%]', '', regex=True), 
+                errors='coerce'
+            ).fillna(0)
+    
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
     return master, geojson
@@ -69,42 +82,42 @@ if st.sidebar.button("Log Out"):
 # --- 6. TOP METRICS & ECONOMIC INDICATORS ---
 st.title(f"📍 {st.session_state['a_val']} Analysis Portal")
 
-# Split screen: Left for Portal Metrics, Right for Tract Economics
 left_col, right_col = st.columns(2)
 
 with left_col:
     st.subheader("Portal Statistics")
     m1, m2, m3 = st.columns(3)
     m1.metric("Tracts", len(master_df))
-    m2.metric("OZ 2.0 Eligible", len(master_df[master_df['Is_Eligible'] == 1]))
+    m2.metric("Eligible (OZ 2.0)", len(master_df[master_df['Is_Eligible'] == 1]))
     try:
         all_recs = conn.read(worksheet="Sheet1", ttl=0)
         m3.metric("Total Recs", len(all_recs))
     except:
+        all_recs = pd.DataFrame()
         m3.metric("Total Recs", 0)
 
 with right_col:
-    st.subheader("Selected Tract Economics")
-    # If a tract is clicked, show its data. Otherwise, show averages for the current scope.
-    if st.session_state["selected_tract"]:
-        tract_data = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
-        label_prefix = f"Tract {st.session_state['selected_tract'][-4:]}"
+    st.subheader("Economic Snapshot")
+    # Determine if we are looking at 1 tract or an average of the area
+    if st.session_state["selected_tract"] and st.session_state["selected_tract"] in master_df['GEOID'].values:
+        display_data = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
+        label = f"Tract {st.session_state['selected_tract'][-4:]}"
+        is_single = True
     else:
-        tract_data = master_df # Use full set for averages
-        label_prefix = "Area Avg"
+        display_data = master_df
+        label = "Area Avg"
+        is_single = False
 
     e1, e2, e3 = st.columns(3)
-    
-    # Handling data whether it's a single row or a dataframe average
-    def get_val(col):
-        if isinstance(tract_data, pd.Series):
-            return tract_data[col]
-        return tract_data[col].mean()
 
-    # Formatting these as percentages or currency based on common CSV headers
-    e1.metric(f"{label_prefix} Poverty", f"{get_val('poverty_rate'):.1f}%")
-    e2.metric(f"{label_prefix} Unemp.", f"{get_val('unemp_rate'):.1f}%")
-    e3.metric(f"{label_prefix} Income", f"${get_val('med_hh_income'):,.0f}")
+    def get_val(col):
+        if is_single:
+            return float(display_data[col])
+        return float(display_data[col].mean())
+
+    e1.metric(f"{label} Poverty", f"{get_val('poverty_rate'):.1f}%")
+    e2.metric(f"{label} Unemp.", f"{get_val('unemp_rate'):.1f}%")
+    e3.metric(f"{label} Income", f"${get_val('med_hh_income'):,.0f}")
 
 # --- 7. MAP & FILTERS ---
 st.divider()
@@ -114,22 +127,17 @@ with st.expander("Map Filters & Search", expanded=False):
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
         sel_parish = st.selectbox("Isolate Specific Parish", options=p_list)
     with f2:
-        only_elig = st.toggle("Highlight Only Eligible (Green)")
+        only_elig = st.toggle("Highlight Only Eligible Tracks (Green)")
 
 map_df = master_df.copy()
-dynamic_zoom = 6.0
-map_center = {"lat": 31.0, "lon": -91.8}
-
+# Dynamic Centering Logic
 if sel_parish != "All Authorized Parishes":
     map_df = map_df[map_df['Parish'] == sel_parish]
-    if not map_df.empty:
-        map_center = {"lat": map_df['lat'].mean(), "lon": map_df['lon'].mean()}
-        dynamic_zoom = 9.5
+    zoom_lvl, center_coords = 9.5, {"lat": map_df['lat'].mean(), "lon": map_df['lon'].mean()}
 elif st.session_state["role"].lower() != "admin":
-    # Default zoom for regional users
-    if not map_df.empty:
-        map_center = {"lat": map_df['lat'].mean(), "lon": map_df['lon'].mean()}
-        dynamic_zoom = 7.5
+    zoom_lvl, center_coords = 7.5, {"lat": map_df['lat'].mean(), "lon": map_df['lon'].mean()}
+else:
+    zoom_lvl, center_coords = 6.0, {"lat": 31.0, "lon": -91.8}
 
 if only_elig:
     map_df = map_df[map_df['Is_Eligible'] == 1]
@@ -137,7 +145,7 @@ if only_elig:
 fig = px.choropleth_mapbox(
     map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
     color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
-    mapbox_style="carto-positron", zoom=dynamic_zoom, center=map_center,
+    mapbox_style="carto-positron", zoom=zoom_lvl, center=center_coords,
     opacity=0.6, hover_data=["GEOID", "Parish", "med_hh_income"]
 )
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
@@ -182,8 +190,8 @@ with st.form("sub_form", clear_on_submit=True):
 
 # --- 9. ACTIVITY LOG ---
 st.divider()
-try:
+if not all_recs.empty:
     user_view = all_recs if st.session_state["role"].lower() == "admin" else all_recs[all_recs['User'] == st.session_state['username']]
     st.dataframe(user_view, use_container_width=True, hide_index=True)
-except:
+else:
     st.write("No activity recorded yet.")
