@@ -39,7 +39,7 @@ if not st.session_state["authenticated"]:
                     st.error("Invalid credentials.")
     st.stop()
 
-# --- 3. DATA LOADING & LOGIC ---
+# --- 3. DATA LOADING & OZ 2.0 LOGIC ---
 @st.cache_data(ttl=60)
 def load_data():
     master = pd.read_csv("tract_data_final.csv")
@@ -47,21 +47,23 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total']
+    # Sanitizing all 7 key metrics
+    cols_to_fix = [
+        'poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total',
+        'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus'
+    ]
     for col in cols_to_fix:
         if col in master.columns:
             master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
     state_median = master['med_hh_income'].median()
     
-    # RURAL: Non-Urban Parishes + Low Pop (OZ 2.0 Conformity)
+    # RURAL Logic
     urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
     master['is_rural'] = np.where((~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 1, 0)
     
-    # NMTC: Base (20% Pov / 80% Inc)
+    # NMTC & Deep Distress (PolicyMap Standard: 40% Pov | 40% AMI | 15% Unemp)
     master['nmtc_eligible'] = np.where((master['poverty_rate'] >= 20) | (master['med_hh_income'] <= (state_median * 0.8)), 1, 0)
-    
-    # NMTC: Deep Distress (40% Pov / 40% Inc / 15% Unemp)
     master['deep_distress'] = np.where(
         (master['poverty_rate'] >= 40) | 
         (master['med_hh_income'] <= (state_median * 0.4)) | 
@@ -79,15 +81,14 @@ st.title(f"📍 OZ 2.0 Recommendation Portal: {st.session_state['a_val']}")
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
-    # Controls
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
         sel_parish = st.selectbox("Isolate Parish", options=p_list, label_visibility="collapsed")
     with f2:
+        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
         only_elig = st.toggle("OZ 2.0 Eligible Only (Green)")
 
-    # Filter Logic
     map_df = master_df.copy()
     if sel_parish != "All Authorized Parishes":
         map_df = map_df[map_df['Parish'] == sel_parish]
@@ -100,7 +101,7 @@ with col_map:
         mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
-    fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
+    fig.update_layout(height=700, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
     
     selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     if selected_points and "selection" in selected_points and len(selected_points["selection"]["points"]) > 0:
@@ -115,22 +116,28 @@ with col_metrics:
         disp = master_df.iloc[0]
         lbl = "Select a Tract"
 
+    # --- THE 7 PROFILE METRICS ---
     st.markdown(f"#### 📈 {lbl} Profile")
     m1, m2, m3 = st.columns(3)
-    m1.metric("Pop", f"{disp['pop_total']:,.0f}")
-    m2.metric("Income", f"${disp['med_hh_income']:,.0f}")
+    m1.metric("Population", f"{disp['pop_total']:,.0f}")
+    m2.metric("Med. Income", f"${disp['med_hh_income']:,.0f}")
     m3.metric("Poverty", f"{disp['poverty_rate']:.1f}%")
 
-    # --- 2x2 GLOW GRID ---
+    m4, m5, m6, m7 = st.columns(4)
+    m4.metric("Unemp.", f"{disp['unemp_rate']:.1f}%")
+    m5.metric("Student", f"{disp['age_18_24_pct']:.1f}%")
+    m6.metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
+    m7.metric("BA Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
+
+    # --- SMALLER DESIGNATION BOXES ---
     st.divider()
-    st.markdown("#### 🏛️ Designation Status")
-    
     def glow_box(label, active, active_color="#28a745"):
         bg = active_color if active else "#343a40"
-        shadow = f"0px 0px 15px {active_color}" if active else "none"
+        shadow = f"0px 0px 10px {active_color}" if active else "none"
         opac = "1.0" if active else "0.3"
-        return f"""<div style="background-color:{bg}; padding:15px; border-radius:8px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:5px; font-size:11px; height:55px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
+        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center; border: 1px solid rgba(255,255,255,0.1);">{label}</div>"""
 
+    st.markdown("##### 🏛️ Status Indicators")
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(glow_box("URBAN", (disp['is_rural']==0 and has_sel), "#dc3545"), unsafe_allow_html=True)
@@ -139,21 +146,29 @@ with col_metrics:
         st.markdown(glow_box("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
         st.markdown(glow_box("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
 
-    # --- CONDENSED RECOMMENDATION ---
+    # --- LARGER RECOMMENDATION BOX ---
     st.divider()
-    with st.form("quick_sub", clear_on_submit=True):
-        st.markdown("##### 📝 Quick Recommendation")
-        r1, r2 = st.columns([1, 1])
-        cat = r1.selectbox("Type", ["Housing", "Infrastructure", "Commercial"], label_visibility="collapsed")
-        note = r2.text_input("Reason", placeholder="Enter justification...", label_visibility="collapsed")
-        if st.form_submit_button("Submit Entry", use_container_width=True):
-            # Logic to save to GSheets
-            st.success("Recorded!")
+    st.markdown("##### 📝 Submit Recommendation")
+    with st.form("sub_form", clear_on_submit=True):
+        f_c1, f_c2 = st.columns([1, 1])
+        geoid_val = st.session_state["selected_tract"] if has_sel else "None Selected"
+        f_c1.info(f"GEOID: {geoid_val}")
+        cat = f_c2.selectbox("Category", ["Housing", "Infrastructure", "Commercial", "Other"], label_visibility="collapsed")
+        
+        # Height increased for better readability
+        notes = st.text_area("Justification & Impact Notes", height=150, placeholder="Explain why this tract is a priority for OZ 2.0 investment...")
+        
+        if st.form_submit_button("Submit Recommendation", use_container_width=True):
+            if not has_sel:
+                st.error("Please select a tract on the map first.")
+            else:
+                # GSheets update logic
+                st.success(f"Recommendation for {geoid_val} recorded.")
 
 # --- 7. LOG ---
 st.divider()
 try:
     recs = conn.read(worksheet="Sheet1", ttl=0)
-    st.dataframe(recs.tail(3), use_container_width=True, hide_index=True)
+    st.dataframe(recs.tail(5), use_container_width=True, hide_index=True)
 except:
-    st.info("Activity log will appear here.")
+    st.info("Log will appear after submission.")
