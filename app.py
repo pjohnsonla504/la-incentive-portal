@@ -89,8 +89,8 @@ def get_map_center(current_df, geojson_data):
 # --- 6. MAIN DASHBOARD ---
 st.title(f"📍 {st.session_state['a_val']} Incentive Portal")
 
-# Use a standard wide layout for the top section
-col_map, col_metrics = st.columns([0.5, 0.5])
+# MODIFIED: Column ratio adjusted to 0.6 / 0.4 to increase map size by 10%
+col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
     f1, f2 = st.columns(2)
@@ -98,6 +98,7 @@ with col_map:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
         sel_parish = st.selectbox("Isolate Parish", options=p_list)
     with f2:
+        # User Instruction: Tracks highlighted green are only those eligible for Opportunity Zone 2.0
         only_elig = st.toggle("Show Eligible Only (Green)")
 
     map_df = master_df.copy()
@@ -115,7 +116,7 @@ with col_map:
         map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
         mapbox_style="carto-positron", zoom=zoom_lvl, center=center_coords,
-        opacity=0.6, hover_data=["GEOID", "Parish"]
+        opacity=0.6, hover_data=["GEOID", "Parish", "med_hh_income"]
     )
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
     
@@ -124,7 +125,7 @@ with col_map:
         st.session_state["selected_tract"] = selected_points["selection"]["points"][0]["location"]
 
 with col_metrics:
-    # Set the data context
+    # Context Data
     if st.session_state["selected_tract"] and st.session_state["selected_tract"] in master_df['GEOID'].values:
         disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
         lbl, is_s = f"Tract {st.session_state['selected_tract'][-4:]}", True
@@ -137,8 +138,7 @@ with col_metrics:
 
     st.subheader(f"📈 {lbl} Profile")
     
-    # THE 7 INDICATOR GRID
-    # We use a nested set of columns to ensure uniform size
+    # 7-Indicator Grid
     g1, g2, g3 = st.columns(3)
     g1.metric("Population", f"{get_val('pop_total'):,.0f}")
     g2.metric("Median Income", f"${get_val('med_hh_income'):,.0f}")
