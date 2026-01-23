@@ -46,7 +46,11 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income']
+    # Expanded Data Sanitizer
+    cols_to_fix = [
+        'poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 
+        'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus'
+    ]
     for col in cols_to_fix:
         if col in master.columns:
             master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
@@ -91,14 +95,13 @@ if st.sidebar.button("Log Out"):
     st.session_state["selected_tract"] = None
     st.rerun()
 
-# --- 7. MAIN DASHBOARD LAYOUT ---
+# --- 7. MAIN DASHBOARD ---
 st.title(f"📍 {st.session_state['a_val']} Incentive Portal")
 
-# Create Main Columns (Left: Map, Right: Metrics)
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
-    # Filtering UI inside the map column for proximity
+    # Filtering UI
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
@@ -136,8 +139,8 @@ with col_metrics:
     m1.metric("Local Tracts", len(master_df))
     m2.metric("Eligible (OZ 2.0)", len(master_df[master_df['Is_Eligible'] == 1]))
     
-    # 7.2 Economic Snapshot
-    st.subheader("📈 Economic Snapshot")
+    # 7.2 Economic Snapshot (Enhanced)
+    st.subheader("📈 Economic & Workforce Snapshot")
     if st.session_state["selected_tract"] and st.session_state["selected_tract"] in master_df['GEOID'].values:
         disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
         lbl, is_s = f"Tract {st.session_state['selected_tract'][-4:]}", True
@@ -149,12 +152,22 @@ with col_metrics:
         return float(disp[col]) if is_s else float(disp[col].mean())
 
     st.write(f"**Viewing: {lbl}**")
-    e1, e2, e3 = st.columns(3)
-    e1.metric("Poverty", f"{get_val('poverty_rate'):.1f}%")
-    e2.metric("Unemployment", f"{get_val('unemp_rate'):.1f}%")
-    e3.metric("Med. Income", f"${get_val('med_hh_income'):,.0f}")
     
-    # 7.3 Quick Submission Form (Integrated into metrics column)
+    # Row 1: General Economics
+    e1, e2, e3 = st.columns(3)
+    e1.metric("Population", f"{get_val('pop_total'):,.0f}")
+    e2.metric("Med. Income", f"${get_val('med_hh_income'):,.0f}")
+    e3.metric("Poverty Rate", f"{get_val('poverty_rate'):.1f}%")
+
+    # Row 2: Workforce & Education
+    e4, e5, e6 = st.columns(3)
+    e4.metric("Unemployment", f"{get_val('unemp_rate'):.1f}%")
+    e5.metric("Student Pop.", f"{get_val('age_18_24_pct'):.1f}%")
+    e6.metric("College Ed.", f"{get_val('ba_plus_pct_25plus'):.1f}%")
+
+    st.caption(f"Workforce HS+ Education: {get_val('hs_plus_pct_25plus'):.1f}%")
+    
+    # 7.3 Submission Form
     st.divider()
     st.subheader("📝 New Recommendation")
     all_geoids = sorted(master_df['GEOID'].unique().tolist())
@@ -174,7 +187,7 @@ with col_metrics:
             st.session_state["selected_tract"] = None
             st.rerun()
 
-# --- 8. ACTIVITY LOG (Full Width at Bottom) ---
+# --- 8. ACTIVITY LOG ---
 st.divider()
 st.subheader("📋 Recent Activity")
 try:
