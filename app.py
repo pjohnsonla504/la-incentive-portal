@@ -46,7 +46,6 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    # Standardize numeric columns
     cols_to_fix = [
         'poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 
         'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus'
@@ -55,18 +54,23 @@ def load_data():
         if col in master.columns:
             master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
-    # --- HARDCODED LOGIC FOR MISSING COLUMNS ---
-    # If columns aren't in CSV, we create them based on standard definitions:
-    # Rural: Usually tracts in parishes like Tensas, Caldwell, etc., or based on population density.
-    # NMTC: Usually tracts with Poverty > 30% or Income < 80% Area Median.
-    if 'is_rural' not in master.columns:
-        # Example logic: If population is low, tag as Rural for now
-        master['is_rural'] = np.where(master['pop_total'] < 2500, 1, 0)
-    
-    if 'nmtc_eligible' not in master.columns:
-        # Standard NMTC Rule: Poverty > 30% OR Income < 80% of average
-        avg_income = master['med_hh_income'].mean()
-        master['nmtc_eligible'] = np.where((master['poverty_rate'] >= 30) | (master['med_hh_income'] < (avg_income * 0.8)), 1, 0)
+    # --- OZ 2.0 CONFORMITY LOGIC ---
+    # NMTC Eligibility (Stricter 2.0 Standard): 
+    # Poverty >= 20% OR (Income <= 70% of State/Metro Median)
+    state_median = master['med_hh_income'].median()
+    master['nmtc_eligible'] = np.where(
+        (master['poverty_rate'] >= 20) | (master['med_hh_income'] <= (state_median * 0.7)), 
+        1, 0
+    )
+
+    # RURAL Definition (OBBB/IRS Notice 2025-50):
+    # Any area outside a city of 50k+ and its contiguous urbanized areas.
+    # We simulate this using Parish-level 'Metropolitan' data or population logic.
+    urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
+    master['is_rural'] = np.where(
+        (~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 
+        1, 0
+    )
 
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
@@ -112,6 +116,7 @@ with col_map:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
         sel_parish = st.selectbox("Isolate Parish", options=p_list, label_visibility="collapsed")
     with f2:
+        # Instruction: Tracks highlighted green are only those eligible for Opportunity Zone 2.0
         only_elig = st.toggle("OZ 2.0 Eligible Only (Green)")
 
     map_df = master_df.copy()
@@ -166,7 +171,6 @@ with col_metrics:
     st.markdown("#### 🏛️ Designation Status")
     s1, s2 = st.columns(2)
     
-    # Custom CSS for the "Glow" boxes
     def status_box(label, color):
         return f"""
         <div style="background-color:{color}; padding:10px; border-radius:5px; text-align:center; color:white; font-weight:bold; box-shadow: 0px 0px 10px {color};">
@@ -175,19 +179,19 @@ with col_metrics:
         """
 
     if is_s:
-        # Rural Check
+        # Rural Check (OZ 2.0 Conformity)
         rural_color = "#28a745" if disp['is_rural'] == 1 else "#dc3545"
         rural_label = "RURAL" if disp['is_rural'] == 1 else "URBAN"
         s1.markdown(status_box(rural_label, rural_color), unsafe_allow_html=True)
-        s1.caption("Rural Designation")
+        s1.caption("OZ 2.0 Rural Designation")
 
-        # NMTC Check
+        # NMTC Check (OZ 2.0 Conformity)
         nmtc_color = "#28a745" if disp['nmtc_eligible'] == 1 else "#6c757d"
         nmtc_label = "NMTC ELIGIBLE" if disp['nmtc_eligible'] == 1 else "NMTC INELIGIBLE"
         s2.markdown(status_box(nmtc_label, nmtc_color), unsafe_allow_html=True)
         s2.caption("NMTC Eligibility")
     else:
-        s1.info("Select a tract on the map to view designations.")
+        s1.info("Select a tract to view OZ 2.0 designations.")
 
     # Submission Form
     st.divider()
