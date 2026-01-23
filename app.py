@@ -25,9 +25,7 @@ if not st.session_state["authenticated"]:
             if st.form_submit_button("Access Portal"):
                 user_db = conn.read(worksheet="Users")
                 user_db.columns = [str(c).strip() for c in user_db.columns]
-                
                 match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
-                
                 if not match.empty:
                     user_data = match.iloc[0]
                     st.session_state["authenticated"] = True
@@ -45,32 +43,42 @@ if not st.session_state["authenticated"]:
 def load_data():
     master = pd.read_csv("tract_data_final.csv")
     master.columns = [str(c).strip() for c in master.columns]
-    
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
-    
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
     return master, geojson
 
 master_df, la_geojson = load_data()
 
-# --- 4. TERRITORY ISOLATION (FIXED FOR ADMIN) ---
-# Logic: Only filter if the user is NOT an Admin and type is not 'All'
+# --- 4. TERRITORY ISOLATION ---
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
-    a_type = st.session_state["a_type"] # REDO_Region or Parish
-    a_val = st.session_state["a_val"]   # e.g., Bayou or Orleans
-    
+    a_type = st.session_state["a_type"]
+    a_val = st.session_state["a_val"]
     if a_type in master_df.columns:
         master_df = master_df[master_df[a_type] == a_val]
     else:
         st.error(f"Error: Column '{a_type}' not found in CSV.")
         st.stop()
-else:
-    # Admin sees everything; no filtering applied to master_df
-    pass
 
-# --- 5. SIDEBAR ---
+# --- 5. DYNAMIC MAP SETTINGS ---
+# Calculate center based on the current (potentially filtered) master_df
+if not master_df.empty and 'lat' in master_df.columns and 'lon' in master_df.columns:
+    map_center = {"lat": master_df['lat'].mean(), "lon": master_df['lon'].mean()}
+    
+    # Determine Zoom Level [cite: 2026-01-22]
+    if st.session_state["role"].lower() == "admin":
+        dynamic_zoom = 6.0
+    elif st.session_state["a_type"] == "REDO_Region":
+        dynamic_zoom = 7.5
+    else: # It's a Parish
+        dynamic_zoom = 9.5
+else:
+    # Fallback to State Center
+    map_center = {"lat": 31.0, "lon": -91.8}
+    dynamic_zoom = 6.0
+
+# --- 6. SIDEBAR ---
 st.sidebar.title("Navigation")
 st.sidebar.info(f"👤 **{st.session_state['username']}**\n📍 Scope: {st.session_state['a_val']}")
 if st.sidebar.button("Log Out"):
@@ -78,7 +86,7 @@ if st.sidebar.button("Log Out"):
     st.session_state["selected_tract"] = None
     st.rerun()
 
-# --- 6. MAP & FILTERS ---
+# --- 7. MAP & FILTERS ---
 st.title(f"📍 {st.session_state['a_val']} Analysis Portal")
 
 with st.expander("Search & Filters", expanded=True):
@@ -92,24 +100,28 @@ with st.expander("Search & Filters", expanded=True):
 map_df = master_df.copy()
 if sel_parish != "All Authorized Parishes":
     map_df = map_df[map_df['Parish'] == sel_parish]
+    # Re-center and zoom even further if a specific parish is selected from the dropdown
+    if not map_df.empty:
+        map_center = {"lat": map_df['lat'].mean(), "lon": map_df['lon'].mean()}
+        dynamic_zoom = 10.0
+
 if only_elig:
     map_df = map_df[map_df['Is_Eligible'] == 1]
 
 fig = px.choropleth_mapbox(
     map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
     color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
-    mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
+    mapbox_style="carto-positron", zoom=dynamic_zoom, center=map_center,
     opacity=0.6, hover_data=["GEOID", "Parish", "REDO_Region"]
 )
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
 
-# Capture map selection
 selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
 
 if selected_points and "selection" in selected_points and len(selected_points["selection"]["points"]) > 0:
     st.session_state["selected_tract"] = selected_points["selection"]["points"][0]["location"]
 
-# --- 7. SUBMISSION FORM ---
+# --- 8. SUBMISSION FORM ---
 st.divider()
 st.subheader("Submit Recommendation")
 
@@ -142,7 +154,7 @@ with st.form("sub_form", clear_on_submit=True):
         st.session_state["selected_tract"] = None
         st.balloons()
 
-# --- 8. ACTIVITY LOG ---
+# --- 9. ACTIVITY LOG ---
 st.divider()
 try:
     all_recs = conn.read(worksheet="Sheet1", ttl=0)
