@@ -89,17 +89,16 @@ def get_map_center(current_df, geojson_data):
 # --- 6. MAIN DASHBOARD ---
 st.title(f"📍 {st.session_state['a_val']} Incentive Portal")
 
-# MODIFIED: Column ratio adjusted to 0.6 / 0.4 to increase map size by 10%
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
+    # Filter Controls
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
-        sel_parish = st.selectbox("Isolate Parish", options=p_list)
+        sel_parish = st.selectbox("Isolate Parish", options=p_list, label_visibility="collapsed")
     with f2:
-        # User Instruction: Tracks highlighted green are only those eligible for Opportunity Zone 2.0
-        only_elig = st.toggle("Show Eligible Only (Green)")
+        only_elig = st.toggle("OZ 2.0 Eligible Only (Green)")
 
     map_df = master_df.copy()
     if sel_parish != "All Authorized Parishes":
@@ -116,9 +115,10 @@ with col_map:
         map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
         mapbox_style="carto-positron", zoom=zoom_lvl, center=center_coords,
-        opacity=0.6, hover_data=["GEOID", "Parish", "med_hh_income"]
+        opacity=0.6, hover_data=["GEOID", "Parish"]
     )
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
+    # INCREASED HEIGHT: Updated to 700 to match typical right-pane height
+    fig.update_layout(height=700, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
     
     selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     if selected_points and "selection" in selected_points and len(selected_points["selection"]["points"]) > 0:
@@ -136,38 +136,51 @@ with col_metrics:
         if col not in master_df.columns: return 0.0
         return float(disp[col]) if is_s else float(disp[col].mean())
 
-    st.subheader(f"📈 {lbl} Profile")
+    # DECREASED FONT SIZE: Using markdown for a smaller profile header
+    st.markdown(f"#### 📈 {lbl} Profile")
     
-    # 7-Indicator Grid
     g1, g2, g3 = st.columns(3)
     g1.metric("Population", f"{get_val('pop_total'):,.0f}")
-    g2.metric("Median Income", f"${get_val('med_hh_income'):,.0f}")
-    g3.metric("Poverty Rate", f"{get_val('poverty_rate'):.1f}%")
+    g2.metric("Med. Income", f"${get_val('med_hh_income'):,.0f}")
+    g3.metric("Poverty", f"{get_val('poverty_rate'):.1f}%")
 
-    st.write("---")
     g4, g5, g6, g7 = st.columns(4)
-    g4.metric("Unemployment", f"{get_val('unemp_rate'):.1f}%")
-    g5.metric("Student Pop.", f"{get_val('age_18_24_pct'):.1f}%")
-    g6.metric("HS Grad+", f"{get_val('hs_plus_pct_25plus'):.1f}%")
-    g7.metric("College Grad+", f"{get_val('ba_plus_pct_25plus'):.1f}%")
+    g4.metric("Unemp.", f"{get_val('unemp_rate'):.1f}%")
+    g5.metric("Student", f"{get_val('age_18_24_pct'):.1f}%")
+    g6.metric("HS Grad", f"{get_val('hs_plus_pct_25plus'):.1f}%")
+    g7.metric("BA Grad", f"{get_val('ba_plus_pct_25plus'):.1f}%")
     
+    # NEW: PLACEHOLDER METRIC CARD
+    st.divider()
+    st.markdown("#### 🎯 Strategic Priority")
+    p1, p2 = st.columns(2)
+    p1.metric("Opportunity Index", "7.4 / 10", delta="Moderate")
+    p2.metric("Workforce Ready", "High", delta="62nd Pct")
+
     # Submission Form
     st.divider()
-    st.subheader("📝 New Recommendation")
+    st.markdown("#### 📝 Record Recommendation")
     all_geoids = sorted(master_df['GEOID'].unique().tolist())
     def_idx = all_geoids.index(st.session_state["selected_tract"]) if st.session_state["selected_tract"] in all_geoids else 0
     
     with st.form("sub_form", clear_on_submit=True):
         geoid = st.selectbox("Selected GEOID", options=all_geoids, index=def_idx)
         cat = st.selectbox("Category", ["Housing", "Infrastructure", "Commercial", "Other"])
-        notes = st.text_area("Justification", height=80)
-        if st.form_submit_button("Record Entry"):
+        notes = st.text_area("Justification", height=60, placeholder="Enter reason for recommendation...")
+        if st.form_submit_button("Submit Recommendation"):
             match = master_df.loc[master_df['GEOID'] == geoid, 'Is_Eligible']
             elig_label = "Eligible" if (not match.empty and match.values[0] == 1) else "Ineligible"
-            new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"), "User": st.session_state["username"], "GEOID": geoid, "Category": cat, "Justification": notes, "Is_Eligible": elig_label}])
+            new_row = pd.DataFrame([{
+                "Date": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"), 
+                "User": st.session_state["username"], 
+                "GEOID": geoid, 
+                "Category": cat, 
+                "Justification": notes, 
+                "Is_Eligible": elig_label
+            }])
             old_data = conn.read(worksheet="Sheet1", ttl=0)
             conn.update(worksheet="Sheet1", data=pd.concat([old_data, new_row], ignore_index=True))
-            st.success("Recommendation Saved!")
+            st.success("Entry Recorded.")
             st.session_state["selected_tract"] = None
             st.rerun()
 
