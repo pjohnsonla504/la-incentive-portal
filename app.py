@@ -1,231 +1,36 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import json
-import numpy as np
-from streamlit_gsheets import GSheetsConnection
-
-# 1. Page Configuration
-st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
-if "selected_tract" not in st.session_state:
-    st.session_state["selected_tract"] = None
-
-# --- 2. AUTHENTICATION ---
-if not st.session_state["authenticated"]:
-    st.title("🔐 Louisiana Opportunity Zones 2.0 Recommendation Portal")
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        with st.form("login_form"):
-            u_input = st.text_input("Username")
-            p_input = st.text_input("Password", type="password")
-            if st.form_submit_button("Access Portal"):
-                user_db = conn.read(worksheet="Users")
-                user_db.columns = [str(c).strip() for c in user_db.columns]
-                match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
-                if not match.empty:
-                    user_data = match.iloc[0]
-                    st.session_state["authenticated"] = True
-                    st.session_state["username"] = u_input
-                    st.session_state["role"] = str(user_data['Role']).strip()
-                    st.session_state["a_type"] = str(user_data['Assigned_Type']).strip()
-                    st.session_state["a_val"] = str(user_data['Assigned_Value']).strip()
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials.")
-    st.stop()
-
-# --- 3. DATA LOADING ---
-@st.cache_data(ttl=60)
+# --- UPDATED NMTC LOGIC SECTION ---
 def load_data():
-    master = pd.read_csv("tract_data_final.csv")
-    master.columns = [str(c).strip() for c in master.columns]
-    if 'GEOID' in master.columns:
-        master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
+    # ... (existing loading code) ...
     
-    cols_to_fix = [
-        'poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 
-        'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus'
-    ]
-    for col in cols_to_fix:
-        if col in master.columns:
-            master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
-    
-    # --- OZ 2.0 CONFORMITY LOGIC ---
-    # NMTC Eligibility (Stricter 2.0 Standard): 
-    # Poverty >= 20% OR (Income <= 70% of State/Metro Median)
     state_median = master['med_hh_income'].median()
+    
+    # Tier 1: Base Eligibility
     master['nmtc_eligible'] = np.where(
-        (master['poverty_rate'] >= 20) | (master['med_hh_income'] <= (state_median * 0.7)), 
-        1, 0
+        (master['poverty_rate'] >= 20) | (master['med_hh_income'] <= (state_median * 0.8)), 1, 0
     )
-
-    # RURAL Definition (OBBB/IRS Notice 2025-50):
-    # Any area outside a city of 50k+ and its contiguous urbanized areas.
-    # We simulate this using Parish-level 'Metropolitan' data or population logic.
-    urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
-    master['is_rural'] = np.where(
-        (~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 
-        1, 0
+    
+    # Tier 2: Severe Distress (The 30% mark)
+    master['severe_distress'] = np.where(
+        (master['poverty_rate'] >= 30) | (master['med_hh_income'] <= (state_median * 0.6)) | (master['unemp_rate'] >= 9.0), 1, 0
     )
-
-    with open("tl_2025_22_tract.json") as f:
-        geojson = json.load(f)
+    
+    # Tier 3: Deep Distress (The 40% mark you requested)
+    master['deep_distress'] = np.where(
+        (master['poverty_rate'] >= 40) | (master['med_hh_income'] <= (state_median * 0.4)) | (master['unemp_rate'] >= 15.0), 1, 0
+    )
+    
     return master, geojson
 
-master_df, la_geojson = load_data()
-
-# --- 4. TERRITORY ISOLATION ---
-if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
-    a_type = st.session_state["a_type"]
-    a_val = st.session_state["a_val"]
-    if a_type in master_df.columns:
-        master_df[a_type] = master_df[a_type].astype(str)
-        master_df = master_df[master_df[a_type] == a_val]
-
-# --- 5. SMART CENTERING UTILITY ---
-def get_map_center(current_df, geojson_data):
-    if 'lat' in current_df.columns and 'lon' in current_df.columns:
-        return {"lat": current_df['lat'].mean(), "lon": current_df['lon'].mean()}
-    
-    visible_geoids = set(current_df['GEOID'].unique())
-    lats, lons = [], []
-    for feature in geojson_data['features']:
-        if feature['properties']['GEOID'] in visible_geoids:
-            geometry = feature['geometry']
-            if geometry['type'] == 'Polygon':
-                coords = np.array(geometry['coordinates'][0])
-                lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
-            elif geometry['type'] == 'MultiPolygon':
-                for poly in geometry['coordinates']:
-                    coords = np.array(poly[0])
-                    lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
-    return {"lat": np.mean(lats), "lon": np.mean(lons)} if lats else {"lat": 31.0, "lon": -91.8}
-
-# --- 6. MAIN DASHBOARD ---
-st.title(f"📍 OZ 2.0 Recommendation Portal: {st.session_state['a_val']}")
-
-col_map, col_metrics = st.columns([0.6, 0.4])
-
-with col_map:
-    f1, f2 = st.columns(2)
-    with f1:
-        p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
-        sel_parish = st.selectbox("Isolate Parish", options=p_list, label_visibility="collapsed")
-    with f2:
-        # Instruction: Tracks highlighted green are only those eligible for Opportunity Zone 2.0
-        only_elig = st.toggle("OZ 2.0 Eligible Only (Green)")
-
-    map_df = master_df.copy()
-    if sel_parish != "All Authorized Parishes":
-        map_df = map_df[map_df['Parish'] == sel_parish]
-        zoom_lvl = 9.5
-    else:
-        zoom_lvl = 7.5 if st.session_state["role"].lower() != "admin" else 6.0
-
-    center_coords = get_map_center(map_df, la_geojson)
-    if only_elig:
-        map_df = map_df[map_df['Is_Eligible'] == 1]
-
-    fig = px.choropleth_mapbox(
-        map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
-        color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
-        mapbox_style="carto-positron", zoom=zoom_lvl, center=center_coords,
-        opacity=0.6, hover_data=["GEOID", "Parish"]
-    )
-    fig.update_layout(height=700, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
-    
-    selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-    if selected_points and "selection" in selected_points and len(selected_points["selection"]["points"]) > 0:
-        st.session_state["selected_tract"] = selected_points["selection"]["points"][0]["location"]
-
+# --- UPDATED DISPLAY BOXES ---
 with col_metrics:
-    if st.session_state["selected_tract"] and st.session_state["selected_tract"] in master_df['GEOID'].values:
-        disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
-        lbl, is_s = f"Tract {st.session_state['selected_tract'][-4:]}", True
-    else:
-        disp, lbl, is_s = master_df, "Area Average", False
-
-    def get_val(col):
-        if col not in master_df.columns: return 0.0
-        return float(disp[col]) if is_s else float(disp[col].mean())
-
-    st.markdown(f"#### 📈 {lbl} Profile")
+    # ... (existing profile metrics) ...
     
-    g1, g2, g3 = st.columns(3)
-    g1.metric("Population", f"{get_val('pop_total'):,.0f}")
-    g2.metric("Med. Income", f"${get_val('med_hh_income'):,.0f}")
-    g3.metric("Poverty", f"{get_val('poverty_rate'):.1f}%")
-
-    g4, g5, g6, g7 = st.columns(4)
-    g4.metric("Unemp.", f"{get_val('unemp_rate'):.1f}%")
-    g5.metric("Student", f"{get_val('age_18_24_pct'):.1f}%")
-    g6.metric("HS Grad", f"{get_val('hs_plus_pct_25plus'):.1f}%")
-    g7.metric("BA Grad", f"{get_val('ba_plus_pct_25plus'):.1f}%")
-    
-    # --- GLOWING STATUS DESIGNATIONS ---
-    st.divider()
-    st.markdown("#### 🏛️ Designation Status")
-    s1, s2 = st.columns(2)
-    
-    def status_box(label, color):
-        return f"""
-        <div style="background-color:{color}; padding:10px; border-radius:5px; text-align:center; color:white; font-weight:bold; box-shadow: 0px 0px 10px {color};">
-            {label}
-        </div>
-        """
-
-    if is_s:
-        # Rural Check (OZ 2.0 Conformity)
-        rural_color = "#28a745" if disp['is_rural'] == 1 else "#dc3545"
-        rural_label = "RURAL" if disp['is_rural'] == 1 else "URBAN"
-        s1.markdown(status_box(rural_label, rural_color), unsafe_allow_html=True)
-        s1.caption("OZ 2.0 Rural Designation")
-
-        # NMTC Check (OZ 2.0 Conformity)
-        nmtc_color = "#28a745" if disp['nmtc_eligible'] == 1 else "#6c757d"
-        nmtc_label = "NMTC ELIGIBLE" if disp['nmtc_eligible'] == 1 else "NMTC INELIGIBLE"
-        s2.markdown(status_box(nmtc_label, nmtc_color), unsafe_allow_html=True)
-        s2.caption("NMTC Eligibility")
-    else:
-        s1.info("Select a tract to view OZ 2.0 designations.")
-
-    # Submission Form
-    st.divider()
-    st.markdown("#### 📝 Record Recommendation")
-    all_geoids = sorted(master_df['GEOID'].unique().tolist())
-    def_idx = all_geoids.index(st.session_state["selected_tract"]) if st.session_state["selected_tract"] in all_geoids else 0
-    
-    with st.form("sub_form", clear_on_submit=True):
-        geoid = st.selectbox("Selected GEOID", options=all_geoids, index=def_idx)
-        cat = st.selectbox("Category", ["Housing", "Infrastructure", "Commercial", "Other"])
-        notes = st.text_area("Justification", height=60, placeholder="Enter reason for recommendation...")
-        if st.form_submit_button("Submit Recommendation"):
-            match = master_df.loc[master_df['GEOID'] == geoid, 'Is_Eligible']
-            elig_label = "Eligible" if (not match.empty and match.values[0] == 1) else "Ineligible"
-            new_row = pd.DataFrame([{
-                "Date": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"), 
-                "User": st.session_state["username"], 
-                "GEOID": geoid, 
-                "Category": cat, 
-                "Justification": notes, 
-                "Is_Eligible": elig_label
-            }])
-            old_data = conn.read(worksheet="Sheet1", ttl=0)
-            conn.update(worksheet="Sheet1", data=pd.concat([old_data, new_row], ignore_index=True))
-            st.success("Entry Recorded.")
-            st.session_state["selected_tract"] = None
-            st.rerun()
-
-# --- 7. ACTIVITY LOG ---
-st.divider()
-st.subheader("📋 Recent Activity")
-try:
-    all_recs = conn.read(worksheet="Sheet1", ttl=0)
-    user_view = all_recs if st.session_state["role"].lower() == "admin" else all_recs[all_recs['User'] == st.session_state['username']]
-    st.dataframe(user_view, use_container_width=True, hide_index=True)
-except:
-    st.write("No activity recorded yet.")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(glow_box("URBAN", is_urban, "#dc3545"), unsafe_allow_html=True)
+        st.markdown(glow_box("RURAL", is_rural, "#28a745"), unsafe_allow_html=True)
+    with c2:
+        # Top box shows general eligibility
+        st.markdown(glow_box("NMTC ELIGIBLE", is_nmtc, "#28a745"), unsafe_allow_html=True)
+        # Bottom box now only glows if it hits that 40% "Deep Distress" threshold
+        st.markdown(glow_box("DEEP DISTRESS (40%+)", is_deep, "#28a745"), unsafe_allow_html=True)
