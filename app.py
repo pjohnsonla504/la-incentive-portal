@@ -57,28 +57,8 @@ if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lo
     a_val = st.session_state["a_val"]
     if a_type in master_df.columns:
         master_df = master_df[master_df[a_type] == a_val]
-    else:
-        st.error(f"Error: Column '{a_type}' not found in CSV.")
-        st.stop()
 
-# --- 5. DYNAMIC MAP SETTINGS ---
-# Calculate center based on the current (potentially filtered) master_df
-if not master_df.empty and 'lat' in master_df.columns and 'lon' in master_df.columns:
-    map_center = {"lat": master_df['lat'].mean(), "lon": master_df['lon'].mean()}
-    
-    # Determine Zoom Level [cite: 2026-01-22]
-    if st.session_state["role"].lower() == "admin":
-        dynamic_zoom = 6.0
-    elif st.session_state["a_type"] == "REDO_Region":
-        dynamic_zoom = 7.5
-    else: # It's a Parish
-        dynamic_zoom = 9.5
-else:
-    # Fallback to State Center
-    map_center = {"lat": 31.0, "lon": -91.8}
-    dynamic_zoom = 6.0
-
-# --- 6. SIDEBAR ---
+# --- 5. SIDEBAR ---
 st.sidebar.title("Navigation")
 st.sidebar.info(f"👤 **{st.session_state['username']}**\n📍 Scope: {st.session_state['a_val']}")
 if st.sidebar.button("Log Out"):
@@ -86,24 +66,70 @@ if st.sidebar.button("Log Out"):
     st.session_state["selected_tract"] = None
     st.rerun()
 
-# --- 7. MAP & FILTERS ---
+# --- 6. TOP METRICS & ECONOMIC INDICATORS ---
 st.title(f"📍 {st.session_state['a_val']} Analysis Portal")
 
-with st.expander("Search & Filters", expanded=True):
+# Split screen: Left for Portal Metrics, Right for Tract Economics
+left_col, right_col = st.columns(2)
+
+with left_col:
+    st.subheader("Portal Statistics")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Tracts", len(master_df))
+    m2.metric("OZ 2.0 Eligible", len(master_df[master_df['Is_Eligible'] == 1]))
+    try:
+        all_recs = conn.read(worksheet="Sheet1", ttl=0)
+        m3.metric("Total Recs", len(all_recs))
+    except:
+        m3.metric("Total Recs", 0)
+
+with right_col:
+    st.subheader("Selected Tract Economics")
+    # If a tract is clicked, show its data. Otherwise, show averages for the current scope.
+    if st.session_state["selected_tract"]:
+        tract_data = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
+        label_prefix = f"Tract {st.session_state['selected_tract'][-4:]}"
+    else:
+        tract_data = master_df # Use full set for averages
+        label_prefix = "Area Avg"
+
+    e1, e2, e3 = st.columns(3)
+    
+    # Handling data whether it's a single row or a dataframe average
+    def get_val(col):
+        if isinstance(tract_data, pd.Series):
+            return tract_data[col]
+        return tract_data[col].mean()
+
+    # Formatting these as percentages or currency based on common CSV headers
+    e1.metric(f"{label_prefix} Poverty", f"{get_val('poverty_rate'):.1f}%")
+    e2.metric(f"{label_prefix} Unemp.", f"{get_val('unemp_rate'):.1f}%")
+    e3.metric(f"{label_prefix} Income", f"${get_val('med_hh_income'):,.0f}")
+
+# --- 7. MAP & FILTERS ---
+st.divider()
+with st.expander("Map Filters & Search", expanded=False):
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
         sel_parish = st.selectbox("Isolate Specific Parish", options=p_list)
     with f2:
-        only_elig = st.toggle("Show Only Eligible Tracks (Green)")
+        only_elig = st.toggle("Highlight Only Eligible (Green)")
 
 map_df = master_df.copy()
+dynamic_zoom = 6.0
+map_center = {"lat": 31.0, "lon": -91.8}
+
 if sel_parish != "All Authorized Parishes":
     map_df = map_df[map_df['Parish'] == sel_parish]
-    # Re-center and zoom even further if a specific parish is selected from the dropdown
     if not map_df.empty:
         map_center = {"lat": map_df['lat'].mean(), "lon": map_df['lon'].mean()}
-        dynamic_zoom = 10.0
+        dynamic_zoom = 9.5
+elif st.session_state["role"].lower() != "admin":
+    # Default zoom for regional users
+    if not map_df.empty:
+        map_center = {"lat": map_df['lat'].mean(), "lon": map_df['lon'].mean()}
+        dynamic_zoom = 7.5
 
 if only_elig:
     map_df = map_df[map_df['Is_Eligible'] == 1]
@@ -112,7 +138,7 @@ fig = px.choropleth_mapbox(
     map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
     color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
     mapbox_style="carto-positron", zoom=dynamic_zoom, center=map_center,
-    opacity=0.6, hover_data=["GEOID", "Parish", "REDO_Region"]
+    opacity=0.6, hover_data=["GEOID", "Parish", "med_hh_income"]
 )
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
 
@@ -157,7 +183,6 @@ with st.form("sub_form", clear_on_submit=True):
 # --- 9. ACTIVITY LOG ---
 st.divider()
 try:
-    all_recs = conn.read(worksheet="Sheet1", ttl=0)
     user_view = all_recs if st.session_state["role"].lower() == "admin" else all_recs[all_recs['User'] == st.session_state['username']]
     st.dataframe(user_view, use_container_width=True, hide_index=True)
 except:
