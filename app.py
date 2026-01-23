@@ -46,6 +46,7 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
+    # Standardize numeric columns
     cols_to_fix = [
         'poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 
         'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus'
@@ -54,6 +55,19 @@ def load_data():
         if col in master.columns:
             master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
+    # --- HARDCODED LOGIC FOR MISSING COLUMNS ---
+    # If columns aren't in CSV, we create them based on standard definitions:
+    # Rural: Usually tracts in parishes like Tensas, Caldwell, etc., or based on population density.
+    # NMTC: Usually tracts with Poverty > 30% or Income < 80% Area Median.
+    if 'is_rural' not in master.columns:
+        # Example logic: If population is low, tag as Rural for now
+        master['is_rural'] = np.where(master['pop_total'] < 2500, 1, 0)
+    
+    if 'nmtc_eligible' not in master.columns:
+        # Standard NMTC Rule: Poverty > 30% OR Income < 80% of average
+        avg_income = master['med_hh_income'].mean()
+        master['nmtc_eligible'] = np.where((master['poverty_rate'] >= 30) | (master['med_hh_income'] < (avg_income * 0.8)), 1, 0)
+
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
     return master, geojson
@@ -65,6 +79,7 @@ if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lo
     a_type = st.session_state["a_type"]
     a_val = st.session_state["a_val"]
     if a_type in master_df.columns:
+        master_df[a_type] = master_df[a_type].astype(str)
         master_df = master_df[master_df[a_type] == a_val]
 
 # --- 5. SMART CENTERING UTILITY ---
@@ -146,17 +161,33 @@ with col_metrics:
     g6.metric("HS Grad", f"{get_val('hs_plus_pct_25plus'):.1f}%")
     g7.metric("BA Grad", f"{get_val('ba_plus_pct_25plus'):.1f}%")
     
-    # CALCULATED PRIORITY METRICS
+    # --- GLOWING STATUS DESIGNATIONS ---
     st.divider()
-    st.markdown("#### 🎯 Strategic Priority")
-    # Opportunity Index = 10 - (poverty/10 + unemp/2) normalized loosely
-    opp_idx = max(0, min(10, 10 - (get_val('poverty_rate')/15 + get_val('unemp_rate')/5)))
-    # Workforce Ready = weighted education attainment
-    wf_ready = (get_val('hs_plus_pct_25plus') * 0.4 + get_val('ba_plus_pct_25plus') * 0.6)
+    st.markdown("#### 🏛️ Designation Status")
+    s1, s2 = st.columns(2)
     
-    p1, p2 = st.columns(2)
-    p1.metric("Opportunity Index", f"{opp_idx:.1f} / 10")
-    p2.metric("Workforce Readiness", f"{wf_ready:.1f}%")
+    # Custom CSS for the "Glow" boxes
+    def status_box(label, color):
+        return f"""
+        <div style="background-color:{color}; padding:10px; border-radius:5px; text-align:center; color:white; font-weight:bold; box-shadow: 0px 0px 10px {color};">
+            {label}
+        </div>
+        """
+
+    if is_s:
+        # Rural Check
+        rural_color = "#28a745" if disp['is_rural'] == 1 else "#dc3545"
+        rural_label = "RURAL" if disp['is_rural'] == 1 else "URBAN"
+        s1.markdown(status_box(rural_label, rural_color), unsafe_allow_html=True)
+        s1.caption("Rural Designation")
+
+        # NMTC Check
+        nmtc_color = "#28a745" if disp['nmtc_eligible'] == 1 else "#6c757d"
+        nmtc_label = "NMTC ELIGIBLE" if disp['nmtc_eligible'] == 1 else "NMTC INELIGIBLE"
+        s2.markdown(status_box(nmtc_label, nmtc_color), unsafe_allow_html=True)
+        s2.caption("NMTC Eligibility")
+    else:
+        s1.info("Select a tract on the map to view designations.")
 
     # Submission Form
     st.divider()
