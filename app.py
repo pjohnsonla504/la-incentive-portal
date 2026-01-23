@@ -12,7 +12,7 @@ st.markdown("Select a Census Tract to provide a justification for inclusion.")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # 3. Load data with error handling
-@st.cache_data(ttl=60) # Refreshes every minute
+@st.cache_data(ttl=60)
 def load_data():
     return conn.read(worksheet="Sheet1") 
 
@@ -26,14 +26,13 @@ try:
         st.error(f"Missing columns in Google Sheet: {', '.join(missing)}")
         st.info("Please ensure Row 1 includes: Date, Tract, Category, Justification, OZ_Status")
         st.stop()
-
 except Exception as e:
     st.error(f"Could not load data: {e}")
     st.stop()
 
 # 4. Highlight Logic (Opportunity Zone 2.0 = Green)
 def highlight_oz(row):
-    # Case-insensitive check for the status
+    # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0 [cite: 2026-01-22]
     status = str(row.get('OZ_Status', '')).strip()
     if status == "Opportunity Zone 2.0":
         return ['background-color: #d4edda'] * len(row)
@@ -41,6 +40,7 @@ def highlight_oz(row):
 
 # 5. Display the Table
 st.subheader("Target Census Tracts")
+st.markdown("Green rows represent tracks eligible for **Opportunity Zone 2.0**.")
 st.dataframe(
     df.style.apply(highlight_oz, axis=1),
     use_container_width=True,
@@ -63,7 +63,7 @@ with st.form("recommendation_form", clear_on_submit=True):
             st.warning("Please enter a justification.")
         else:
             try:
-                # Get fresh data to append to
+                # Fresh read for appending
                 current_data = conn.read(worksheet="Sheet1", ttl=0)
                 
                 new_row = pd.DataFrame([{
@@ -77,7 +77,9 @@ with st.form("recommendation_form", clear_on_submit=True):
                 updated_df = pd.concat([current_data, new_row], ignore_index=True)
                 conn.update(worksheet="Sheet1", data=updated_df)
                 
-                st.success("✅ Success! Your recommendation has been saved.")
+                st.success("✅ Success! Your recommendation has been saved to the sheet.")
                 st.balloons()
             except Exception as e:
                 st.error(f"Submission failed: {e}")
+
+st.sidebar.info("Opportunity Zone 2.0 tracks are highlighted green in the table.")
