@@ -25,7 +25,6 @@ def get_drive_service():
     )
     return build('drive', 'v3', credentials=creds)
 
-# Initialize Session States
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 if "selected_tract" not in st.session_state:
@@ -100,7 +99,6 @@ except:
 
 # --- 4. LAYOUT ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
-
 q_col1, q_col2 = st.columns([0.7, 0.3])
 q_col1.progress(min(1.0, current_usage / quota_limit) if quota_limit > 0 else 0)
 q_col2.write(f"**Recommendations:** {current_usage} / {quota_limit}")
@@ -144,18 +142,11 @@ with col_metrics:
     m_top[1].metric("Income", f"${disp['med_hh_income']:,.0f}")
     m_top[2].metric("Poverty", f"{disp['poverty_rate']:.1f}%")
 
-    m_bot = st.columns(4)
-    m_bot[0].metric("Unemp", f"{disp['unemp_rate']:.1f}%")
-    m_bot[1].metric("Student", f"{disp['age_18_24_pct']:.1f}%")
-    m_bot[2].metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
-    m_bot[3].metric("BA Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
-
-    st.divider()
     def glow_box(label, active, active_color="#28a745"):
         bg = active_color if active else "#343a40"
         shadow = f"0px 0px 10px {active_color}" if active else "none"
         opac = "1.0" if active else "0.3"
-        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
+        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
 
     st.markdown("##### 🏛️ Designation Status")
     c1, c2 = st.columns(2)
@@ -166,41 +157,50 @@ with col_metrics:
         st.markdown(glow_box("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
         st.markdown(glow_box("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
 
-    # --- SUBMISSION FORM ---
     st.divider()
     st.markdown("##### 📝 Record Recommendation")
     if quota_remaining <= 0:
-        st.warning("Quota reached for this region.")
+        st.warning("Quota reached.")
     else:
         with st.form("sub_form", clear_on_submit=True):
-            f_c1, f_c2 = st.columns([1, 1])
-            geoid_val = st.session_state["selected_tract"] if has_sel else "None Selected"
-            f_c1.info(f"GEOID: {geoid_val}")
-            cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"], label_visibility="collapsed")
-            notes = st.text_area("Justification", height=100, placeholder="Enter justification...")
-            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF only)", type=["pdf"])
+            geoid_val = st.session_state["selected_tract"] if has_sel else "None"
+            st.info(f"GEOID: {geoid_val}")
+            cat = st.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
+            notes = st.text_area("Justification", placeholder="Enter notes...")
+            uploaded_pdf = st.file_uploader("Supporting PDF", type=["pdf"])
             
-            if st.form_submit_button("Submit Recommendation", use_container_width=True):
+            if st.form_submit_button("Submit", use_container_width=True):
                 if not has_sel: 
-                    st.error("Please select a tract on the map first.")
+                    st.error("Select a tract.")
                 else:
                     try:
-                        file_link = "No Document"
+                        f_link = "No Document"
                         if uploaded_pdf:
                             service = get_drive_service()
-                            file_metadata = {'name': f"REC_{geoid_val}_{uploaded_pdf.name}", 'parents': [FOLDER_ID]}
+                            meta = {'name': f"REC_{geoid_val}_{uploaded_pdf.name}", 'parents': [FOLDER_ID]}
                             media = MediaIoBaseUpload(io.BytesIO(uploaded_pdf.getvalue()), mimetype='application/pdf')
-                            drive_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                            file_link = f"https://drive.google.com/file/d/{drive_file.get('id')}/view"
+                            dfile = service.files().create(body=meta, media_body=media, fields='id').execute()
+                            f_link = f"https://drive.google.com/file/d/{dfile.get('id')}/view"
 
-                        new_row = pd.DataFrame([{
+                        new_data = pd.DataFrame([{
                             "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
                             "User": st.session_state["username"], 
                             "GEOID": geoid_val, 
                             "Category": cat, 
                             "Justification": notes,
                             "Is_Eligible": int(disp['Is_Eligible']),
-                            "Document": file_link
+                            "Document": f_link
                         }])
-                        
-                        conn.create(spreadsheet=SHEET_URL, worksheet="Sheet
+                        conn.create(spreadsheet=SHEET_URL, worksheet="Sheet1", data=new_data)
+                        st.success("Saved!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+st.divider()
+st.subheader("📋 My Recommendations")
+try:
+    user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
+    st.dataframe(user_recs, use_container_width=True, hide_index=True)
+except:
+    st.info("No records found.")
