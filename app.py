@@ -5,15 +5,11 @@ import json
 import numpy as np
 from streamlit_gsheets import GSheetsConnection
 
-# --- 1. SETUP & CONFIG ---
+# 1. Page Configuration
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
-
-# Master URL for Google Sheets
-SPREADSHEET_ID = "1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM"
-SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit"
-
 conn = st.connection("gsheets", type=GSheetsConnection)
 
+# Initialize Session States
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 if "selected_tract" not in st.session_state:
@@ -21,86 +17,76 @@ if "selected_tract" not in st.session_state:
 
 # --- 2. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
-    st.title("🔐 Louisiana OZ 2.0 Portal")
-    with st.form("login_form"):
-        u = st.text_input("Username")
-        p = st.text_input("Password", type="password")
-        if st.form_submit_button("Access Portal"):
-            try:
-                # Read Users tab directly using the URL
-                user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users", ttl=0)
-                user_db.dropna(how='all', inplace=True)
-                user_db.columns = [str(c).strip() for c in user_db.columns]
-                
-                match = user_db[(user_db['Username'] == u) & (user_db['Password'] == p)]
-                
-                if not match.empty:
-                    user_data = match.iloc[0]
-                    st.session_state.update({
-                        "authenticated": True,
-                        "username": u,
-                        "role": str(user_data['Role']).strip(),
-                        "a_type": str(user_data['Assigned_Type']).strip(),
-                        "a_val": str(user_data['Assigned_Value']).strip()
-                    })
-                    st.rerun()
-                else:
-                    st.error("Invalid Username or Password.")
-            except Exception as e:
-                st.error(f"Login connection error: {e}")
+    st.title("🔐 Louisiana OZ 2.0 Recommendation Portal")
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        with st.form("login_form"):
+            u_input = st.text_input("Username")
+            p_input = st.text_input("Password", type="password")
+            if st.form_submit_button("Access Portal"):
+                try:
+                    # Added ttl=0 to ensure we always get fresh user data
+                    user_db = conn.read(worksheet="Users", ttl=0)
+                    user_db.columns = [str(c).strip() for c in user_db.columns]
+                    match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
+                    
+                    if not match.empty:
+                        user_data = match.iloc[0]
+                        st.session_state["authenticated"] = True
+                        st.session_state["username"] = u_input
+                        st.session_state["role"] = str(user_data['Role']).strip()
+                        st.session_state["a_type"] = str(user_data['Assigned_Type']).strip()
+                        st.session_state["a_val"] = str(user_data['Assigned_Value']).strip()
+                        st.rerun()
+                    else:
+                        st.error("Invalid credentials.")
+                except Exception as e:
+                    st.error(f"Connection Error: {e}")
     st.stop()
 
 # --- 3. DATA LOADING ---
 @st.cache_data(ttl=60)
 def load_data():
-    # Load local CSV
-    df = pd.read_csv("tract_data_final.csv")
-    df.columns = [str(c).strip() for c in df.columns]
+    master = pd.read_csv("tract_data_final.csv")
+    master.columns = [str(c).strip() for c in master.columns]
+    if 'GEOID' in master.columns:
+        master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    # Format GEOIDs
-    if 'GEOID' in df.columns:
-        df['GEOID'] = df['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
+    cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
+    for col in cols_to_fix:
+        if col in master.columns:
+            master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
-    # Numeric cleanup
-    for c in ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total']:
-        if c in df.columns:
-            df[c] = pd.to_numeric(df[c].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
+    state_median = master['med_hh_income'].median()
+    urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
+    master['is_rural'] = np.where((~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 1, 0)
+    master['nmtc_eligible'] = np.where((master['poverty_rate'] >= 20) | (master['med_hh_income'] <= (state_median * 0.8)), 1, 0)
     
-    # Logic for NMTC and Deep Distress
-    sm = df['med_hh_income'].median()
-    urb = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
-    df['is_rural'] = np.where((~df['Parish'].isin(urb)) & (df['pop_total'] < 5000), 1, 0)
-    df['nmtc_eligible'] = np.where((df['poverty_rate'] >= 20) | (df['med_hh_income'] <= (sm * 0.8)), 1, 0)
-    
-    sev = (df['poverty_rate'] >= 30) | (df['med_hh_income'] <= (sm * 0.6)) | (df['unemp_rate'] >= 9.0)
-    df['deep_distress'] = np.where((df['poverty_rate'] >= 40) | (df['med_hh_income'] <= (sm * 0.4)) | (df['unemp_rate'] >= 15.0) | ((df['is_rural'] == 1) & sev), 1, 0)
+    is_severe = (master['poverty_rate'] >= 30) | (master['med_hh_income'] <= (state_median * 0.6)) | (master['unemp_rate'] >= 9.0)
+    master['deep_distress'] = np.where((master['poverty_rate'] >= 40) | (master['med_hh_income'] <= (state_median * 0.4)) | (master['unemp_rate'] >= 15.0) | ((master['is_rural'] == 1) & is_severe), 1, 0)
 
-    # Load local GeoJSON
     with open("tl_2025_22_tract.json") as f:
-        gj = json.load(f)
-    return df, gj
+        geojson = json.load(f)
+    return master, geojson
 
 master_df, la_geojson = load_data()
 
-# User Assignment Filtering
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# Fetch recommendation history and calculate Quotas
+# Quota Logic
 try:
-    recs = conn.read(spreadsheet=SHEET_URL, worksheet="Sheet1", ttl=0)
-    recs.dropna(how='all', inplace=True)
+    existing_recs = conn.read(worksheet="Sheet1", ttl=0)
     eligible_count = len(master_df[master_df['Is_Eligible'] == 1])
     quota_limit = max(1, int(eligible_count * 0.25))
-    current_usage = len(recs[recs['User'] == st.session_state["username"]])
+    current_usage = len(existing_recs[existing_recs['User'] == st.session_state["username"]])
     quota_remaining = quota_limit - current_usage
 except:
-    recs, quota_limit, current_usage, quota_remaining = pd.DataFrame(), 0, 0, 0
+    existing_recs, quota_limit, current_usage, quota_remaining = pd.DataFrame(), 0, 0, 0
 
-# --- 4. DASHBOARD UI ---
+# --- 4. LAYOUT ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 
-# Quota Progress Bar
 q_col1, q_col2 = st.columns([0.7, 0.3])
 q_col1.progress(min(1.0, current_usage / quota_limit) if quota_limit > 0 else 0)
 q_col2.write(f"**Recommendations:** {current_usage} / {quota_limit}")
@@ -119,7 +105,7 @@ with col_map:
     if sel_parish != "All Authorized Parishes":
         map_df = map_df[map_df['Parish'] == sel_parish]
     
-    # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
+    # Per instructions: Green highlights are only for OZ 2.0 eligible tracks
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
@@ -129,7 +115,7 @@ with col_map:
         mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
-    fig.update_layout(height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False)
+    fig.update_layout(height=700, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
     
     selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     if selected_points and "selection" in selected_points and len(selected_points["selection"]["points"]) > 0:
@@ -137,59 +123,78 @@ with col_map:
 
 with col_metrics:
     has_sel = st.session_state["selected_tract"] is not None
-    # Profile display (default to first row if nothing selected)
     disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0] if has_sel else master_df.iloc[0]
-    
-    st.subheader(f"📊 Tract {st.session_state['selected_tract'][-4:] if has_sel else 'Profile'}")
-    
-    m1, m2 = st.columns(2)
-    m1.metric("Median Income", f"${disp['med_hh_income']:,.0f}")
-    m2.metric("Poverty Rate", f"{disp['poverty_rate']:.1f}%")
-    
-    # Badges
-    def badge(label, active):
-        color = "#28a745" if active else "#6c757d"
-        opacity = "1.0" if active else "0.4"
-        return f'<div style="background-color:{color}; color:white; padding:5px; border-radius:5px; text-align:center; font-weight:bold; opacity:{opacity}; margin-bottom:5px;">{label}</div>'
+    lbl = f"Tract {st.session_state['selected_tract'][-4:]}" if has_sel else "Select a Tract"
 
-    st.markdown("---")
+    st.markdown(f"#### 📈 {lbl} Profile")
+    m_top = st.columns(3)
+    m_top[0].metric("Pop", f"{disp['pop_total']:,.0f}")
+    m_top[1].metric("Income", f"${disp['med_hh_income']:,.0f}")
+    m_top[2].metric("Poverty", f"{disp['poverty_rate']:.1f}%")
+
+    m_bot = st.columns(4)
+    m_bot[0].metric("Unemp", f"{disp['unemp_rate']:.1f}%")
+    m_bot[1].metric("Student", f"{disp['age_18_24_pct']:.1f}%")
+    m_bot[2].metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
+    m_bot[3].metric("BA Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
+
+    # Designation Status
+    st.divider()
+    def glow_box(label, active, active_color="#28a745"):
+        bg = active_color if active else "#343a40"
+        shadow = f"0px 0px 10px {active_color}" if active else "none"
+        opac = "1.0" if active else "0.3"
+        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
+
+    st.markdown("##### 🏛️ Designation Status")
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown(badge("RURAL", disp['is_rural'] == 1), unsafe_allow_html=True)
-        st.markdown(badge("OZ 2.0 ELIGIBLE", disp['Is_Eligible'] == 1), unsafe_allow_html=True)
+        st.markdown(glow_box("URBAN", (disp['is_rural']==0 and has_sel), "#dc3545"), unsafe_allow_html=True)
+        st.markdown(glow_box("RURAL", (disp['is_rural']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
     with c2:
-        st.markdown(badge("NMTC ELIGIBLE", disp['nmtc_eligible'] == 1), unsafe_allow_html=True)
-        st.markdown(badge("DEEP DISTRESS", disp['deep_distress'] == 1), unsafe_allow_html=True)
+        st.markdown(glow_box("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
+        st.markdown(glow_box("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
 
-    st.markdown("---")
+    # --- RECORD RECOMMENDATION ---
+    st.divider()
+    st.markdown("##### 📝 Record Recommendation")
     if quota_remaining <= 0 and has_sel:
-        st.warning("Quota reached for your account.")
-    elif has_sel:
-        with st.form("submission"):
-            cat = st.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
-            notes = st.text_area("Justification / Notes")
+        st.warning("Quota reached for this region.")
+    else:
+        with st.form("sub_form", clear_on_submit=True):
+            f_c1, f_c2 = st.columns([1, 1])
+            geoid_val = st.session_state["selected_tract"] if has_sel else "None Selected"
+            f_c1.info(f"GEOID: {geoid_val}")
+            cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"], label_visibility="collapsed")
+            
+            notes = st.text_area("Justification", height=100, placeholder="Enter justification...")
+            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF only)", type=["pdf"])
+            
             if st.form_submit_button("Submit Recommendation", use_container_width=True):
-                try:
+                if not has_sel: 
+                    st.error("Please select a tract.")
+                else:
+                    pdf_name = uploaded_pdf.name if uploaded_pdf else "None"
                     new_row = pd.DataFrame([{
-                        "Date": pd.Timestamp.now().strftime("%Y-%m-%d"),
-                        "GEOID": disp['GEOID'],
-                        "Category": cat,
+                        "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
+                        "User": st.session_state["username"], 
+                        "GEOID": geoid_val, 
+                        "Category": cat, 
                         "Justification": notes,
-                        "Is_Eligible": int(disp['Is_Eligible']),
-                        "User": st.session_state["username"]
+                        "Document": pdf_name
                     }])
-                    conn.create(spreadsheet=SHEET_URL, worksheet="Sheet1", data=new_row)
-                    st.success("Recommendation Saved!")
+                    # Use standard update logic
+                    updated_df = pd.concat([existing_recs, new_row], ignore_index=True)
+                    conn.update(worksheet="Sheet1", data=updated_df)
+                    st.success(f"Entry Recorded. Document: {pdf_name}")
                     st.cache_data.clear()
                     st.rerun()
-                except Exception as e:
-                    st.error(f"Error saving: {e}")
-    else:
-        st.info("Select a tract on the map to begin recommendation.")
 
-# --- 5. HISTORY TABLE ---
-st.markdown("---")
-st.subheader("📋 My Submission History")
-if not recs.empty:
-    user_recs = recs[recs['User'] == st.session_state["username"]]
+# --- RUNNING TRACT LIST ---
+st.divider()
+st.subheader("📋 My Recommended Tracts")
+try:
+    user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
     st.dataframe(user_recs, use_container_width=True, hide_index=True)
+except:
+    st.info("Your recommendations will appear here.")
