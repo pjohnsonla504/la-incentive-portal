@@ -4,18 +4,42 @@ import plotly.express as px
 import json
 import numpy as np
 from streamlit_gsheets import GSheetsConnection
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+from google.oauth2 import service_account
+import io
 
-# 1. Page Configuration
-st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
+# 1. PAGE CONFIG & CONNECTIONS
+st.set_page_config(page_title="LA Incentive Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Initialize Session States
+# --- GOOGLE DRIVE CONFIG ---
+# Replace this with the ID from your Drive Folder URL
+DRIVE_FOLDER_ID = "YOUR_FOLDER_ID_HERE" 
+
+def upload_to_drive(file_obj, filename):
+    try:
+        # Pulls credentials from Streamlit Secrets
+        creds_dict = st.secrets["gcp_service_account"]
+        creds = service_account.Credentials.from_service_account_info(creds_dict)
+        service = build('drive', 'v3', credentials=creds)
+
+        file_metadata = {'name': filename, 'parents': [DRIVE_FOLDER_ID]}
+        file_content = io.BytesIO(file_obj.read())
+        media = MediaIoBaseUpload(file_content, mimetype='application/pdf')
+        
+        file = service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+        return file.get('webViewLink')
+    except Exception as e:
+        st.error(f"Drive Error: {e}")
+        return "Upload Failed"
+
+# --- 2. AUTHENTICATION ---
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 if "selected_tract" not in st.session_state:
     st.session_state["selected_tract"] = None
 
-# --- 2. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
     st.title("🔐 Louisiana OZ 2.0 Recommendation Portal")
     col1, col2, col3 = st.columns([1,2,1])
@@ -39,7 +63,7 @@ if not st.session_state["authenticated"]:
                     st.error("Invalid credentials.")
     st.stop()
 
-# --- 3. DATA LOADING ---
+# --- 3. DATA LOADING & OZ 2.0 LOGIC ---
 @st.cache_data(ttl=60)
 def load_data():
     master = pd.read_csv("tract_data_final.csv")
@@ -47,18 +71,22 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
-    for col in cols_to_fix:
-        if col in master.columns:
-            master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
+    # Metrics Sanitization
+    cols = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
+    for col in cols:
+        master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
     state_median = master['med_hh_income'].median()
     urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
+    
     master['is_rural'] = np.where((~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 1, 0)
     master['nmtc_eligible'] = np.where((master['poverty_rate'] >= 20) | (master['med_hh_income'] <= (state_median * 0.8)), 1, 0)
     
     is_severe = (master['poverty_rate'] >= 30) | (master['med_hh_income'] <= (state_median * 0.6)) | (master['unemp_rate'] >= 9.0)
-    master['deep_distress'] = np.where((master['poverty_rate'] >= 40) | (master['med_hh_income'] <= (state_median * 0.4)) | (master['unemp_rate'] >= 15.0) | ((master['is_rural'] == 1) & is_severe), 1, 0)
+    master['deep_distress'] = np.where(
+        (master['poverty_rate'] >= 40) | (master['med_hh_income'] <= (state_median * 0.4)) | 
+        (master['unemp_rate'] >= 15.0) | ((master['is_rural'] == 1) & is_severe), 1, 0
+    )
 
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
@@ -66,10 +94,11 @@ def load_data():
 
 master_df, la_geojson = load_data()
 
+# Apply User Territory Isolation
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# Quota Logic
+# Quota Logic (25% Rule)
 try:
     existing_recs = conn.read(worksheet="Sheet1", ttl=0)
     eligible_count = len(master_df[master_df['Is_Eligible'] == 1])
@@ -79,16 +108,18 @@ try:
 except:
     quota_limit, current_usage, quota_remaining = 0, 0, 0
 
-# --- 4. LAYOUT ---
+# --- 4. DASHBOARD LAYOUT ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 
+# Progress Tracker
 q_col1, q_col2 = st.columns([0.7, 0.3])
 q_col1.progress(min(1.0, current_usage / quota_limit) if quota_limit > 0 else 0)
-q_col2.write(f"**Recommendations:** {current_usage} / {quota_limit}")
+q_col2.write(f"**Progress:** {current_usage} / {quota_limit} Recommendations")
 
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
+    # Map controls
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
@@ -131,15 +162,13 @@ with col_metrics:
     m_bot[2].metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
     m_bot[3].metric("BA Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
 
-    # Designation Status
+    # Status Indicators
     st.divider()
     def glow_box(label, active, active_color="#28a745"):
-        bg = active_color if active else "#343a40"
-        shadow = f"0px 0px 10px {active_color}" if active else "none"
-        opac = "1.0" if active else "0.3"
+        bg, shadow, opac = (active_color, f"0px 0px 10px {active_color}", "1.0") if active else ("#343a40", "none", "0.3")
         return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
 
-    st.markdown("##### 🏛️ Designation Status")
+    st.markdown("##### 🏛️ Status Indicators")
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(glow_box("URBAN", (disp['is_rural']==0 and has_sel), "#dc3545"), unsafe_allow_html=True)
@@ -148,48 +177,10 @@ with col_metrics:
         st.markdown(glow_box("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
         st.markdown(glow_box("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
 
-    # --- RECORD RECOMMENDATION WITH PDF UPLOAD ---
+    # Recommendation Form
     st.divider()
     st.markdown("##### 📝 Record Recommendation")
     if quota_remaining <= 0:
-        st.warning("Quota reached for this region.")
+        st.warning("Quota reached.")
     else:
-        with st.form("sub_form", clear_on_submit=True):
-            f_c1, f_c2 = st.columns([1, 1])
-            geoid_val = st.session_state["selected_tract"] if has_sel else "None Selected"
-            f_c1.info(f"GEOID: {geoid_val}")
-            cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"], label_visibility="collapsed")
-            
-            notes = st.text_area("Justification", height=100, placeholder="Enter justification...")
-            
-            # PDF Uploader Added Here
-            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF only)", type=["pdf"])
-            
-            if st.form_submit_button("Submit Recommendation", use_container_width=True):
-                if not has_sel: 
-                    st.error("Please select a tract.")
-                else:
-                    pdf_name = uploaded_pdf.name if uploaded_pdf else "None"
-                    # NOTE: Here you would insert code to upload 'uploaded_pdf' to Google Drive/S3
-                    # and get a URL to save in the sheet.
-                    
-                    new_row = pd.DataFrame([{
-                        "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
-                        "User": st.session_state["username"], 
-                        "GEOID": geoid_val, 
-                        "Category": cat, 
-                        "Justification": notes,
-                        "Document": pdf_name
-                    }])
-                    conn.update(worksheet="Sheet1", data=pd.concat([existing_recs, new_row], ignore_index=True))
-                    st.success(f"Entry Recorded. Document: {pdf_name}")
-                    st.rerun()
-
-# --- RUNNING TRACT LIST ---
-st.divider()
-st.subheader("📋 My Recommended Tracts")
-try:
-    user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
-    st.dataframe(user_recs, use_container_width=True, hide_index=True)
-except:
-    st.info("Your recommendations will appear here.")
+        with st.form("sub
