@@ -8,11 +8,11 @@ from streamlit_gsheets import GSheetsConnection
 # 1. Page Configuration
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 
-# Connection setup with error handling for the connection itself
+# Connection setup
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
 except Exception as e:
-    st.error("Wait! The Google Sheets connection isn't configured in Secrets yet.")
+    st.error("Secrets Configuration Missing.")
     st.stop()
 
 # Initialize Session States
@@ -31,7 +31,7 @@ if not st.session_state["authenticated"]:
             p_input = st.text_input("Password", type="password")
             if st.form_submit_button("Access Portal"):
                 try:
-                    # Fetch fresh user data
+                    # FETCH USER DATA - Note the worksheet name check
                     user_db = conn.read(worksheet="Users", ttl=0)
                     user_db.columns = [str(c).strip() for c in user_db.columns]
                     
@@ -48,27 +48,23 @@ if not st.session_state["authenticated"]:
                     else:
                         st.error("Invalid credentials.")
                 except Exception as e:
-                    st.error(f"Authentication Error: Please check if 'Users' tab exists and sharing is set to 'Anyone with link'. Error: {e}")
+                    st.error(f"Error 400 Fix: Is the tab named EXACTLY 'Users'? Error: {e}")
     st.stop()
 
 # --- 3. DATA LOADING ---
 @st.cache_data(ttl=60)
 def load_data():
-    # Load Local Files
     master = pd.read_csv("tract_data_final.csv")
     master.columns = [str(c).strip() for c in master.columns]
     
-    # Standardize GEOID
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    # Clean Numeric Columns
     cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for col in cols_to_fix:
         if col in master.columns:
             master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
-    # Calculate Distressed Status (Logic for the glowing boxes)
     state_median = master['med_hh_income'].median()
     urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
     master['is_rural'] = np.where((~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 1, 0)
@@ -77,50 +73,41 @@ def load_data():
     is_severe = (master['poverty_rate'] >= 30) | (master['med_hh_income'] <= (state_median * 0.6)) | (master['unemp_rate'] >= 9.0)
     master['deep_distress'] = np.where((master['poverty_rate'] >= 40) | (master['med_hh_income'] <= (state_median * 0.4)) | (master['unemp_rate'] >= 15.0) | ((master['is_rural'] == 1) & is_severe), 1, 0)
 
-    # Load GeoJSON
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
     return master, geojson
 
 master_df, la_geojson = load_data()
 
-# Filter by Assignment (unless Admin)
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# Quota Logic
+# --- 4. SHEET1 LOADING (QUOTA) ---
 try:
     existing_recs = conn.read(worksheet="Sheet1", ttl=0)
-    # Filter for eligible tracts in current view to calculate quota
-    eligible_in_view = master_df[master_df['Is_Eligible'] == 1]
-    eligible_count = len(eligible_in_view)
+    eligible_count = len(master_df[master_df['Is_Eligible'] == 1])
     quota_limit = max(1, int(eligible_count * 0.25))
-    
     current_usage = len(existing_recs[existing_recs['User'] == st.session_state["username"]])
     quota_remaining = quota_limit - current_usage
 except Exception:
-    existing_recs, quota_limit, current_usage, quota_remaining = pd.DataFrame(), 0, 0, 0
+    existing_recs, quota_limit, current_usage, quota_remaining = pd.DataFrame(), 1, 0, 1
 
-# --- 4. LAYOUT ---
+# --- 5. LAYOUT ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 
-# Quota Bar
 q_col1, q_col2 = st.columns([0.7, 0.3])
-progress_val = min(1.0, current_usage / quota_limit) if quota_limit > 0 else 0
-q_col1.progress(progress_val)
-q_col2.write(f"**Recommendations Used:** {current_usage} / {quota_limit}")
+q_col1.progress(min(1.0, current_usage / quota_limit))
+q_col2.write(f"**Recommendations:** {current_usage} / {quota_limit}")
 
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
-    # Map Filters
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
         sel_parish = st.selectbox("Isolate Parish", options=p_list, label_visibility="collapsed")
     with f2:
-        # Instruction: Tracks highlighted green are only those eligible for OZ 2.0
-        only_elig = st.toggle("Show Eligible Only (Green Highlight)", value=False)
+        only_elig = st.toggle("OZ 2.0 Eligible Only (Green Highlight)")
 
     map_df = master_df.copy()
     if sel_parish != "All Authorized Parishes":
@@ -129,38 +116,22 @@ with col_map:
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
-    # Map Rendering
     fig = px.choropleth_mapbox(
-        map_df, 
-        geojson=la_geojson, 
-        locations="GEOID", 
-        featureidkey="properties.GEOID",
-        color="Is_Eligible", 
-        # 0 = Grey (Ineligible), 1 = Green (Eligible)
-        color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
-        mapbox_style="carto-positron", 
-        zoom=6, 
-        center={"lat": 31.0, "lon": -91.8},
-        opacity=0.6, 
-        hover_data=["GEOID", "Parish"]
+        map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
+        color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
+        mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
+        opacity=0.6, hover_data=["GEOID", "Parish"]
     )
     fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
     
     selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-    
     if selected_points and "selection" in selected_points and len(selected_points["selection"]["points"]) > 0:
         st.session_state["selected_tract"] = selected_points["selection"]["points"][0]["location"]
 
 with col_metrics:
-    # Metrics Selection Logic
     has_sel = st.session_state["selected_tract"] is not None
-    if has_sel:
-        disp_rows = master_df[master_df['GEOID'] == st.session_state["selected_tract"]]
-        disp = disp_rows.iloc[0] if not disp_rows.empty else master_df.iloc[0]
-        lbl = f"Tract {st.session_state['selected_tract'][-4:]}"
-    else:
-        disp = master_df.iloc[0]
-        lbl = "Select a Tract on Map"
+    disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0] if has_sel else master_df.iloc[0]
+    lbl = f"Tract {st.session_state['selected_tract'][-4:]}" if has_sel else "Select a Tract"
 
     st.markdown(f"#### 📈 {lbl} Profile")
     m_top = st.columns(3)
@@ -174,13 +145,11 @@ with col_metrics:
     m_bot[2].metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
     m_bot[3].metric("BA Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
 
-    # Designation Status UI
+    # Designation boxes
     st.divider()
     def glow_box(label, active, active_color="#28a745"):
         bg = active_color if active else "#343a40"
-        shadow = f"0px 0px 10px {active_color}" if active else "none"
-        opac = "1.0" if active else "0.3"
-        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
+        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
 
     st.markdown("##### 🏛️ Designation Status")
     c1, c2 = st.columns(2)
@@ -191,53 +160,32 @@ with col_metrics:
         st.markdown(glow_box("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
         st.markdown(glow_box("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
 
-    # --- RECORD RECOMMENDATION FORM ---
+    # Submission Form
     st.divider()
     st.markdown("##### 📝 Record Recommendation")
-    
     if quota_remaining <= 0 and has_sel:
-        st.warning("⚠️ Quota reached. You cannot submit more recommendations for this assignment.")
-    elif not disp.get('Is_Eligible', 0) == 1 and has_sel:
-        st.error("🚫 This tract is not eligible for Opportunity Zone 2.0.")
+        st.warning("Quota reached.")
     else:
         with st.form("sub_form", clear_on_submit=True):
             f_c1, f_c2 = st.columns([1, 1])
-            geoid_val = st.session_state["selected_tract"] if has_sel else "None Selected"
+            geoid_val = st.session_state["selected_tract"] if has_sel else "None"
             f_c1.info(f"GEOID: {geoid_val}")
             cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
-            
-            notes = st.text_area("Justification", height=100, placeholder="Describe why this tract should be designated...")
-            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF)", type=["pdf"])
+            notes = st.text_area("Justification")
+            uploaded_pdf = st.file_uploader("Attach PDF", type=["pdf"])
             
             if st.form_submit_button("Submit Recommendation", use_container_width=True):
                 if not has_sel: 
-                    st.error("Please select a tract on the map first.")
-                elif not notes:
-                    st.error("Please provide a justification.")
+                    st.error("Select a tract.")
                 else:
-                    pdf_name = uploaded_pdf.name if uploaded_pdf else "No Document"
-                    new_row = pd.DataFrame([{
-                        "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
-                        "User": st.session_state["username"], 
-                        "GEOID": geoid_val, 
-                        "Category": cat, 
-                        "Justification": notes,
-                        "Document": pdf_name
-                    }])
-                    
-                    # Update Google Sheet
+                    pdf_name = uploaded_pdf.name if uploaded_pdf else "None"
+                    new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": geoid_val, "Category": cat, "Justification": notes, "Document": pdf_name}])
                     updated_df = pd.concat([existing_recs, new_row], ignore_index=True)
                     conn.update(worksheet="Sheet1", data=updated_df)
-                    
-                    st.success(f"Successfully recorded recommendation for {geoid_val}!")
+                    st.success("Entry recorded.")
                     st.cache_data.clear()
                     st.rerun()
 
-# --- RUNNING TRACT LIST ---
 st.divider()
 st.subheader("📋 My Recommendations")
-user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
-if not user_recs.empty:
-    st.dataframe(user_recs.sort_values(by="Date", ascending=False), use_container_width=True, hide_index=True)
-else:
-    st.info("No recommendations submitted yet.")
+st.dataframe(existing_recs[existing_recs['User'] == st.session_state["username"]], use_container_width=True, hide_index=True)
