@@ -24,10 +24,8 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 @st.cache_data(ttl=600)
 def load_data():
-    # Replace with your actual Sheet URL if different
+    # Read the data from your connected Google Sheet
     df = conn.read()
-    # Ensure Opportunity Zone 2.0 eligibility is marked correctly
-    # (Assuming a column 'OZ_2_0' exists; adjust name as needed)
     return df
 
 df = load_data()
@@ -42,7 +40,7 @@ if uploaded_file is not None:
             service = get_drive_service()
             file_metadata = {
                 'name': uploaded_file.name,
-                'parents': ['YOUR_FOLDER_ID_HERE']  # Replace with your Drive Folder ID
+                'parents': ['1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk']  # Your Supporting Docs Folder
             }
             media = MediaIoBaseUpload(
                 io.BytesIO(uploaded_file.getvalue()), 
@@ -53,38 +51,41 @@ if uploaded_file is not None:
                 media_body=media, 
                 fields='id'
             ).execute()
-            st.sidebar.success(f"File uploaded! ID: {file.get('id')}")
+            st.sidebar.success(f"File uploaded successfully! File ID: {file.get('id')}")
         except Exception as e:
             st.sidebar.error(f"Upload failed: {e}")
 
 # --- 4. MAP & QUOTA LOGIC ---
 st.title("Louisiana Incentive Portal: Opportunity Zones")
 
-# Filter for OZ 2.0 eligibility (Highlighted Green)
-oz_eligible = df[df['OZ_2_0'] == 'Yes']
+# Filter for Opportunity Zone 2.0 eligibility (Tracks highlighted green)
+# NOTE: Ensure your sheet has a column named exactly 'OZ_2_0' with 'Yes' values
+if 'OZ_2_0' in df.columns:
+    oz_eligible = df[df['OZ_2_0'] == 'Yes']
+    
+    # Apply 25% Quota Logic: Only show 25% of the total eligible tracks
+    display_count = max(1, len(oz_eligible) // 4)
+    display_df = oz_eligible.sample(n=display_count)
 
-# Apply 25% Quota Logic
-# Only show 25% of the total eligible tracts to the user
-display_count = max(1, len(oz_eligible) // 4)
-display_df = oz_eligible.sample(n=display_count)
+    st.subheader(f"Showing {display_count} Exclusive Opportunity Zone 2.0 Tracks")
 
-st.subheader(f"Showing {display_count} Exclusive Opportunity Zone 2.0 Tracks")
+    # Plotly Map
+    fig = px.scatter_mapbox(
+        display_df,
+        lat="Latitude",
+        lon="Longitude",
+        color_discrete_sequence=["#2ca02c"],  # Highlight Green for OZ 2.0
+        zoom=6,
+        height=600,
+        hover_name="Tract_ID",
+        hover_data=["Parish", "Population"]
+    )
 
-# Plotly Map
-fig = px.scatter_mapbox(
-    display_df,
-    lat="Latitude",
-    lon="Longitude",
-    color_discrete_sequence=["#2ca02c"],  # Highlight Green
-    zoom=6,
-    height=600,
-    hover_name="Tract_ID",
-    hover_data=["Parish", "Population"]
-)
+    fig.update_layout(mapbox_style="carto-positron")
+    st.plotly_chart(fig, use_container_width=True)
 
-fig.update_layout(mapbox_style="carto-positron")
-st.plotly_chart(fig, use_container_width=True)
-
-# --- 5. DATA TABLE ---
-st.write("### Detailed View of Available Tracks")
-st.dataframe(display_df)
+    # --- 5. DATA TABLE ---
+    st.write("### Detailed View of Available Tracks")
+    st.dataframe(display_df)
+else:
+    st.error("Column 'OZ_2_0' not found in the Google Sheet. Please check your headers.")
