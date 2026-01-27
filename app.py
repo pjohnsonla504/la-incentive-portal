@@ -13,7 +13,7 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Hardcoded fallback to prevent "Spreadsheet must be specified" error
+# Fallbacks and IDs
 DEFAULT_URL = "https://docs.google.com/spreadsheets/d/1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk/edit#gid=0"
 SHEET_URL = st.secrets.get("public_gsheets_url", DEFAULT_URL)
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
@@ -178,4 +178,29 @@ with col_metrics:
             f_c1.info(f"GEOID: {geoid_val}")
             cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"], label_visibility="collapsed")
             notes = st.text_area("Justification", height=100, placeholder="Enter justification...")
-            uploaded_pdf = st.file_uploader("Attach Supporting Docs
+            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF only)", type=["pdf"])
+            
+            if st.form_submit_button("Submit Recommendation", use_container_width=True):
+                if not has_sel: 
+                    st.error("Please select a tract on the map first.")
+                else:
+                    try:
+                        file_link = "No Document"
+                        if uploaded_pdf:
+                            service = get_drive_service()
+                            file_metadata = {'name': f"REC_{geoid_val}_{uploaded_pdf.name}", 'parents': [FOLDER_ID]}
+                            media = MediaIoBaseUpload(io.BytesIO(uploaded_pdf.getvalue()), mimetype='application/pdf')
+                            drive_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+                            file_link = f"https://drive.google.com/file/d/{drive_file.get('id')}/view"
+
+                        new_row = pd.DataFrame([{
+                            "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
+                            "User": st.session_state["username"], 
+                            "GEOID": geoid_val, 
+                            "Category": cat, 
+                            "Justification": notes,
+                            "Is_Eligible": int(disp['Is_Eligible']),
+                            "Document": file_link
+                        }])
+                        
+                        conn.create(spreadsheet=SHEET_URL, worksheet="Sheet
