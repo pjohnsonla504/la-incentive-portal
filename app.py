@@ -7,7 +7,13 @@ from streamlit_gsheets import GSheetsConnection
 
 # 1. Page Configuration
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
-conn = st.connection("gsheets", type=GSheetsConnection)
+
+# Connection established using the service_account secret
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+except Exception as e:
+    st.error("Connection failed. Please check your Secrets formatting.")
+    st.stop()
 
 # Initialize Session States
 if "authenticated" not in st.session_state:
@@ -24,24 +30,19 @@ if not st.session_state["authenticated"]:
             u_input = st.text_input("Username")
             p_input = st.text_input("Password", type="password")
             if st.form_submit_button("Access Portal"):
-                try:
-                    # Added ttl=0 to ensure we always get fresh user data
-                    user_db = conn.read(worksheet="Users", ttl=0)
-                    user_db.columns = [str(c).strip() for c in user_db.columns]
-                    match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
-                    
-                    if not match.empty:
-                        user_data = match.iloc[0]
-                        st.session_state["authenticated"] = True
-                        st.session_state["username"] = u_input
-                        st.session_state["role"] = str(user_data['Role']).strip()
-                        st.session_state["a_type"] = str(user_data['Assigned_Type']).strip()
-                        st.session_state["a_val"] = str(user_data['Assigned_Value']).strip()
-                        st.rerun()
-                    else:
-                        st.error("Invalid credentials.")
-                except Exception as e:
-                    st.error(f"Connection Error: {e}")
+                user_db = conn.read(worksheet="Users", ttl=0)
+                user_db.columns = [str(c).strip() for c in user_db.columns]
+                match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
+                if not match.empty:
+                    user_data = match.iloc[0]
+                    st.session_state["authenticated"] = True
+                    st.session_state["username"] = u_input
+                    st.session_state["role"] = str(user_data['Role']).strip()
+                    st.session_state["a_type"] = str(user_data['Assigned_Type']).strip()
+                    st.session_state["a_val"] = str(user_data['Assigned_Value']).strip()
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials.")
     st.stop()
 
 # --- 3. DATA LOADING ---
@@ -105,7 +106,7 @@ with col_map:
     if sel_parish != "All Authorized Parishes":
         map_df = map_df[map_df['Parish'] == sel_parish]
     
-    # Per instructions: Green highlights are only for OZ 2.0 eligible tracks
+    # Per instructions: Highlights are only for OZ 2.0 eligible tracks
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
@@ -138,7 +139,6 @@ with col_metrics:
     m_bot[2].metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
     m_bot[3].metric("BA Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
 
-    # Designation Status
     st.divider()
     def glow_box(label, active, active_color="#28a745"):
         bg = active_color if active else "#343a40"
@@ -166,27 +166,22 @@ with col_metrics:
             geoid_val = st.session_state["selected_tract"] if has_sel else "None Selected"
             f_c1.info(f"GEOID: {geoid_val}")
             cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"], label_visibility="collapsed")
-            
             notes = st.text_area("Justification", height=100, placeholder="Enter justification...")
-            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF only)", type=["pdf"])
             
             if st.form_submit_button("Submit Recommendation", use_container_width=True):
                 if not has_sel: 
                     st.error("Please select a tract.")
                 else:
-                    pdf_name = uploaded_pdf.name if uploaded_pdf else "None"
                     new_row = pd.DataFrame([{
                         "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
                         "User": st.session_state["username"], 
                         "GEOID": geoid_val, 
                         "Category": cat, 
-                        "Justification": notes,
-                        "Document": pdf_name
+                        "Justification": notes
                     }])
-                    # Use standard update logic
                     updated_df = pd.concat([existing_recs, new_row], ignore_index=True)
                     conn.update(worksheet="Sheet1", data=updated_df)
-                    st.success(f"Entry Recorded. Document: {pdf_name}")
+                    st.success(f"Entry Recorded for {geoid_val}")
                     st.cache_data.clear()
                     st.rerun()
 
