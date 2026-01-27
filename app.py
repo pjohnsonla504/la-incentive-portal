@@ -13,7 +13,7 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Base URL to avoid 400 Bad Request conflicts
+# Base URL - Ensure this is just the /edit part in your secrets
 DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM/edit"
 SHEET_URL = st.secrets.get("public_gsheets_url", DEFAULT_SHEET_URL)
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
@@ -30,7 +30,7 @@ if "authenticated" not in st.session_state:
 if "selected_tract" not in st.session_state:
     st.session_state["selected_tract"] = None
 
-# --- 2. AUTHENTICATION & DIAGNOSTICS ---
+# --- 2. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
     st.title("🔐 Louisiana OZ 2.0 Recommendation Portal")
     col1, col2, col3 = st.columns([1,2,1])
@@ -40,8 +40,8 @@ if not st.session_state["authenticated"]:
             p_input = st.text_input("Password", type="password")
             if st.form_submit_button("Access Portal"):
                 try:
-                    # Attempt to read users
-                    user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users")
+                    # Using ttl=0 to force fresh data from the "Users" worksheet
+                    user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users", ttl=0)
                     user_db.columns = [str(c).strip() for c in user_db.columns]
                     match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
                     
@@ -57,26 +57,25 @@ if not st.session_state["authenticated"]:
                         st.error("Invalid credentials.")
                 except Exception as e:
                     st.error(f"Login connection error: {e}")
-                    # DEBUG INFO: Show the user what's wrong
-                    st.write("---")
-                    st.write("**Debug Info for Developer:**")
-                    st.write(f"Sheet URL used: `{SHEET_URL}`")
-                    st.write("Check: Is the first tab named exactly **Users**?")
+                    st.info("Check: 1. Is 'Users' the first tab? 2. Is the Service Account an Editor?")
     st.stop()
 
 # --- 3. DATA LOADING ---
 @st.cache_data(ttl=60)
 def load_data():
+    # Load tract data
     master = pd.read_csv("tract_data_final.csv")
     master.columns = [str(c).strip() for c in master.columns]
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
+    # Standardize types
     cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for col in cols_to_fix:
         if col in master.columns:
             master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
+    # Eligibility Calculations
     state_median = master['med_hh_income'].median()
     urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
     master['is_rural'] = np.where((~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 1, 0)
@@ -91,6 +90,7 @@ def load_data():
 
 master_df, la_geojson = load_data()
 
+# Filter based on user assignment
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
@@ -207,7 +207,4 @@ with col_metrics:
 st.divider()
 st.subheader("📋 My Recommendations")
 try:
-    user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
-    st.dataframe(user_recs, use_container_width=True, hide_index=True)
-except:
-    st.info("No records found.")
+    user_recs = existing_recs[existing_recs['
