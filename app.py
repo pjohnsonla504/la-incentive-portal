@@ -13,9 +13,10 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Constants for Google Integration
+# Hardcoded fallback to prevent "Spreadsheet must be specified" error
+DEFAULT_URL = "https://docs.google.com/spreadsheets/d/1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk/edit#gid=0"
+SHEET_URL = st.secrets.get("public_gsheets_url", DEFAULT_URL)
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
-SHEET_URL = st.secrets.get("public_gsheets_url", "")
 
 def get_drive_service():
     info = st.secrets["gcp_service_account"]
@@ -39,20 +40,22 @@ if not st.session_state["authenticated"]:
             u_input = st.text_input("Username")
             p_input = st.text_input("Password", type="password")
             if st.form_submit_button("Access Portal"):
-                # Authenticate via 'Users' worksheet
-                user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users")
-                user_db.columns = [str(c).strip() for c in user_db.columns]
-                match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
-                if not match.empty:
-                    user_data = match.iloc[0]
-                    st.session_state["authenticated"] = True
-                    st.session_state["username"] = u_input
-                    st.session_state["role"] = str(user_data['Role']).strip()
-                    st.session_state["a_type"] = str(user_data['Assigned_Type']).strip()
-                    st.session_state["a_val"] = str(user_data['Assigned_Value']).strip()
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials.")
+                try:
+                    user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users")
+                    user_db.columns = [str(c).strip() for c in user_db.columns]
+                    match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
+                    if not match.empty:
+                        user_data = match.iloc[0]
+                        st.session_state["authenticated"] = True
+                        st.session_state["username"] = u_input
+                        st.session_state["role"] = str(user_data['Role']).strip()
+                        st.session_state["a_type"] = str(user_data['Assigned_Type']).strip()
+                        st.session_state["a_val"] = str(user_data['Assigned_Value']).strip()
+                        st.rerun()
+                    else:
+                        st.error("Invalid credentials.")
+                except Exception as e:
+                    st.error(f"Login connection error: {e}")
     st.stop()
 
 # --- 3. DATA LOADING ---
@@ -82,7 +85,6 @@ def load_data():
 
 master_df, la_geojson = load_data()
 
-# Apply Role-based filtering
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
@@ -164,7 +166,7 @@ with col_metrics:
         st.markdown(glow_box("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
         st.markdown(glow_box("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
 
-    # --- UPDATED SUBMISSION FORM WITH PDF DRIVE UPLOAD ---
+    # --- SUBMISSION FORM ---
     st.divider()
     st.markdown("##### 📝 Record Recommendation")
     if quota_remaining <= 0:
@@ -176,43 +178,4 @@ with col_metrics:
             f_c1.info(f"GEOID: {geoid_val}")
             cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"], label_visibility="collapsed")
             notes = st.text_area("Justification", height=100, placeholder="Enter justification...")
-            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF only)", type=["pdf"])
-            
-            if st.form_submit_button("Submit Recommendation", use_container_width=True):
-                if not has_sel: 
-                    st.error("Please select a tract on the map first.")
-                else:
-                    try:
-                        file_link = "No Document"
-                        if uploaded_pdf:
-                            service = get_drive_service()
-                            file_metadata = {'name': f"REC_{geoid_val}_{uploaded_pdf.name}", 'parents': [FOLDER_ID]}
-                            media = MediaIoBaseUpload(io.BytesIO(uploaded_pdf.getvalue()), mimetype='application/pdf')
-                            drive_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                            file_link = f"https://drive.google.com/file/d/{drive_file.get('id')}/view"
-
-                        new_row = pd.DataFrame([{
-                            "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
-                            "User": st.session_state["username"], 
-                            "GEOID": geoid_val, 
-                            "Category": cat, 
-                            "Justification": notes,
-                            "Is_Eligible": int(disp['Is_Eligible']),
-                            "Document": file_link
-                        }])
-                        
-                        # Use spreadsheet= to avoid connection ambiguity
-                        conn.create(spreadsheet=SHEET_URL, worksheet="Sheet1", data=new_row)
-                        st.success("Entry Recorded Successfully!")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Submission Error: {e}")
-
-# --- RUNNING TRACT LIST ---
-st.divider()
-st.subheader("📋 My Recommended Tracts")
-try:
-    user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
-    st.dataframe(user_recs, use_container_width=True, hide_index=True)
-except:
-    st.info("Your recommendations will appear here.")
+            uploaded_pdf = st.file_uploader("Attach Supporting Docs
