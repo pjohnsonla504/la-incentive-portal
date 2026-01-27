@@ -37,7 +37,13 @@ if not st.session_state["authenticated"]:
                     user_db['Password'] = user_db['Password'].astype(str).str.strip()
                     match = user_db[(user_db['Username'] == u_in) & (user_db['Password'] == p_in)]
                     if not match.empty:
-                        st.session_state.update({"authenticated": True, "username": u_in, "role": str(match.iloc[0]['Role']).strip(), "a_type": str(match.iloc[0]['Assigned_Type']).strip(), "a_val": str(match.iloc[0]['Assigned_Value']).strip()})
+                        st.session_state.update({
+                            "authenticated": True, 
+                            "username": u_in, 
+                            "role": str(match.iloc[0]['Role']).strip(), 
+                            "a_type": str(match.iloc[0]['Assigned_Type']).strip(), 
+                            "a_val": str(match.iloc[0]['Assigned_Value']).strip()
+                        })
                         st.rerun()
                     else:
                         st.error("Invalid credentials.")
@@ -53,6 +59,7 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
+    # Cleaning the 7 indicators + population
     num_cols = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for c in num_cols:
         if c in master.columns:
@@ -87,85 +94,7 @@ except:
 # --- 5. MAIN UI ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 q_col1, q_col2 = st.columns([0.7, 0.3])
-q_col1.progress(min(1.0, curr_use / quota_limit))
+q_col1.progress(min(1.0, curr_use / quota_limit) if quota_limit > 0 else 0)
 q_col2.write(f"**Recommendations:** {curr_use} / {quota_limit}")
 
-c_map, c_met = st.columns([0.6, 0.4])
-
-with c_map:
-    f1, f2 = st.columns(2)
-    p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
-    sel_p = f1.selectbox("Filter Parish", options=p_list, label_visibility="collapsed")
-    only_elig = f2.toggle("OZ 2.0 Eligible Only (Green)")
-
-    map_df = master_df.copy()
-    if sel_p != "All Authorized Parishes":
-        map_df = map_df[map_df['Parish'] == sel_p]
-    if only_elig:
-        map_df = map_df[map_df['Is_Eligible'] == 1]
-
-    fig = px.choropleth_mapbox(
-        map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
-        color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
-        mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
-        opacity=0.6, hover_data=["GEOID", "Parish"]
-    )
-    fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
-    sel_pts = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-    
-    if sel_pts and "selection" in sel_pts and len(sel_pts["selection"]["points"]) > 0:
-        st.session_state["selected_tract"] = sel_pts["selection"]["points"][0]["location"]
-
-with c_met:
-    has_sel = st.session_state["selected_tract"] is not None
-    # --- SYNTAX ERROR FIX: CONDENSED LOGIC ---
-    if has_sel:
-        disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
-        lbl = f"Tract {st.session_state['selected_tract'][-4:]}"
-    else:
-        disp = master_df.iloc[0]
-        lbl = "Select a Tract"
-
-    st.markdown(f"#### 📈 {lbl} Profile")
-    m_top = st.columns(3)
-    m_top[0].metric("Pop", f"{disp['pop_total']:,.0f}")
-    m_top[1].metric("Income", f"${disp['med_hh_income']:,.0f}")
-    m_top[2].metric("Poverty", f"{disp['poverty_rate']:.1f}%")
-
-    st.divider()
-    def glow(label, active, color):
-        bg = color if active else "#343a40"
-        return f'<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>'
-
-    st.markdown("##### 🏛️ Designation Status")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown(glow("URBAN", (disp['is_rural']==0 and has_sel), "#dc3545"), unsafe_allow_html=True)
-        st.markdown(glow("RURAL", (disp['is_rural']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
-    with c2:
-        st.markdown(glow("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
-        st.markdown(glow("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
-
-    st.divider()
-    if q_rem <= 0 and has_sel:
-        st.warning("Quota reached.")
-    else:
-        with st.form("sub_form", clear_on_submit=True):
-            f_c1, f_c2 = st.columns([1, 1])
-            gid = st.session_state["selected_tract"] if has_sel else "None"
-            f_c1.info(f"GEOID: {gid}")
-            cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
-            notes = st.text_area("Justification")
-            up_pdf = st.file_uploader("PDF Support", type=["pdf"])
-            if st.form_submit_button("Submit", use_container_width=True):
-                if not has_sel: st.error("Select a tract.")
-                else:
-                    new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": gid, "Category": cat, "Justification": notes, "Document": (up_pdf.name if up_pdf else "None")}])
-                    conn.update(worksheet="Sheet1", data=pd.concat([existing_recs, new_row], ignore_index=True))
-                    st.success("Recorded.")
-                    st.cache_data.clear()
-                    st.rerun()
-
-st.divider()
-st.subheader("📋 My History")
-st.dataframe(existing_recs[existing_recs['User'] == st.session_state["username"]], use_container_width=True, hide_index=True)
+c_map, c_
