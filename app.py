@@ -32,6 +32,7 @@ if not st.session_state["authenticated"]:
             if st.form_submit_button("Access Portal"):
                 try:
                     # Attempt to read 'Users' tab
+                    # We use ttl=0 to bypass cache during login
                     user_db = conn.read(worksheet="Users", ttl=0)
                     user_db.columns = [str(c).strip() for c in user_db.columns]
                     
@@ -49,24 +50,30 @@ if not st.session_state["authenticated"]:
                         st.error("Invalid credentials.")
                 except Exception as e:
                     st.error("❌ Connection Error 400: Worksheet 'Users' not found.")
-                    st.info("Ensure the tab is named exactly 'Users' with no trailing spaces.")
+                    st.info("💡 **Troubleshooting Tip:** Ensure your Google Sheet tab is named exactly **Users** (no spaces, case sensitive).")
+                    # Debugging info for the user
+                    st.write("Technical error details:", e)
                     st.stop()
     st.stop()
 
 # --- 3. DATA LOADING (Local Files) ---
 @st.cache_data(ttl=60)
 def load_data():
+    # Load Tract Data
     master = pd.read_csv("tract_data_final.csv")
     master.columns = [str(c).strip() for c in master.columns]
     
+    # Standardize GEOID
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
+    # Clean Numeric Columns
     cols_to_fix = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for col in cols_to_fix:
         if col in master.columns:
             master[col] = pd.to_numeric(master[col].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
+    # Calculate Distressed Status
     state_median = master['med_hh_income'].median()
     urban_parishes = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
     master['is_rural'] = np.where((~master['Parish'].isin(urban_parishes)) & (master['pop_total'] < 5000), 1, 0)
@@ -75,20 +82,21 @@ def load_data():
     is_severe = (master['poverty_rate'] >= 30) | (master['med_hh_income'] <= (state_median * 0.6)) | (master['unemp_rate'] >= 9.0)
     master['deep_distress'] = np.where((master['poverty_rate'] >= 40) | (master['med_hh_income'] <= (state_median * 0.4)) | (master['unemp_rate'] >= 15.0) | ((master['is_rural'] == 1) & is_severe), 1, 0)
 
+    # Load GeoJSON
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
     return master, geojson
 
 master_df, la_geojson = load_data()
 
-# Apply access control filters
+# Filter by Assignment
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
 # --- 4. SHEET1 DATA (Recommendations) ---
 try:
     existing_recs = conn.read(worksheet="Sheet1", ttl=0)
-    # Highlight tracks green ONLY if eligible for OZ 2.0
+    # Per instructions: Green highlights are only those eligible for the Opportunity Zone 2.0.
     eligible_in_view = master_df[master_df['Is_Eligible'] == 1]
     quota_limit = max(1, int(len(eligible_in_view) * 0.25))
     current_usage = len(existing_recs[existing_recs['User'] == st.session_state["username"]])
@@ -100,18 +108,22 @@ except Exception:
 # --- 5. MAIN INTERFACE ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 
+# Progress Tracking
 q_col1, q_col2 = st.columns([0.7, 0.3])
-q_col1.progress(min(1.0, current_usage / quota_limit) if quota_limit > 0 else 0)
+prog = min(1.0, current_usage / quota_limit) if quota_limit > 0 else 0
+q_col1.progress(prog)
 q_col2.write(f"**Usage:** {current_usage} / {quota_limit}")
 
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
+    # Filters
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
         sel_parish = st.selectbox("Filter Parish", options=p_list, label_visibility="collapsed")
     with f2:
+        # Green highlight instruction implementation
         only_elig = st.toggle("Show Eligible Only (Green)")
 
     map_df = master_df.copy()
@@ -121,7 +133,7 @@ with col_map:
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
-    # Map highlighting logic (Green = Eligible, Grey = Ineligible)
+    # Map - 0 = Grey, 1 = Green
     fig = px.choropleth_mapbox(
         map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
@@ -145,7 +157,7 @@ with col_metrics:
     m_top[1].metric("Income", f"${disp['med_hh_income']:,.0f}")
     m_top[2].metric("Poverty", f"{disp['poverty_rate']:.1f}%")
 
-    # Status Indicators
+    # Status Indicators (Glow Boxes)
     st.divider()
     def glow_box(label, active, active_color="#28a745"):
         bg = active_color if active else "#343a40"
@@ -160,7 +172,7 @@ with col_metrics:
         st.markdown(glow_box("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
         st.markdown(glow_box("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
 
-    # Submission Form
+    # Form
     st.divider()
     st.markdown("##### 📝 Record Recommendation")
     if quota_remaining <= 0 and has_sel:
@@ -172,7 +184,7 @@ with col_metrics:
             f_c1.info(f"GEOID: {geoid_val}")
             cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
             notes = st.text_area("Justification")
-            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF)", type=["pdf"])
+            uploaded_pdf = st.file_uploader("Attach PDF", type=["pdf"])
             
             if st.form_submit_button("Submit Recommendation", use_container_width=True):
                 if not has_sel: 
