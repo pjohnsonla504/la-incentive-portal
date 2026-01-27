@@ -13,9 +13,9 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Fallbacks and IDs
-DEFAULT_URL = "https://docs.google.com/spreadsheets/d/1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk/edit#gid=0"
-SHEET_URL = st.secrets.get("public_gsheets_url", DEFAULT_URL)
+# Corrected Global Identifiers
+DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM/edit#gid=0"
+SHEET_URL = st.secrets.get("public_gsheets_url", DEFAULT_SHEET_URL)
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
 
 def get_drive_service():
@@ -146,7 +146,7 @@ with col_metrics:
         bg = active_color if active else "#343a40"
         shadow = f"0px 0px 10px {active_color}" if active else "none"
         opac = "1.0" if active else "0.3"
-        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; display:flex; align-items:center; justify-content:center;">{label}</div>"""
+        return f"""<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; box-shadow:{shadow}; opacity:{opac}; margin:2px; font-size:10px; display:flex; align-items:center; justify-content:center; min-height:40px;">{label}</div>"""
 
     st.markdown("##### 🏛️ Designation Status")
     c1, c2 = st.columns(2)
