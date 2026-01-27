@@ -59,7 +59,7 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    # Cleaning the 7 indicators + population
+    # All 7 Indicators + Pop
     num_cols = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for c in num_cols:
         if c in master.columns:
@@ -78,10 +78,11 @@ def load_data():
 
 master_df, la_geojson = load_data()
 
+# Authorization Filter
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# --- 4. RECOMMENDATIONS ---
+# --- 4. RECOMMENDATIONS & QUOTA ---
 try:
     existing_recs = conn.read(worksheet="Sheet1", ttl=0)
     elig_count = len(master_df[master_df['Is_Eligible'] == 1])
@@ -91,10 +92,95 @@ try:
 except:
     existing_recs, quota_limit, curr_use, q_rem = pd.DataFrame(columns=["Date", "User", "GEOID", "Category", "Justification", "Document"]), 1, 0, 1
 
-# --- 5. MAIN UI ---
+# --- 5. MAIN INTERFACE ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 q_col1, q_col2 = st.columns([0.7, 0.3])
 q_col1.progress(min(1.0, curr_use / quota_limit) if quota_limit > 0 else 0)
 q_col2.write(f"**Recommendations:** {curr_use} / {quota_limit}")
 
-c_map, c_
+# The line that caused the NameError is fixed here:
+c_map, c_met = st.columns([0.6, 0.4])
+
+with c_map:
+    f1, f2 = st.columns(2)
+    p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
+    sel_p = f1.selectbox("Filter Parish", options=p_list, label_visibility="collapsed")
+    only_elig = f2.toggle("OZ 2.0 Eligible Only (Green)")
+
+    map_df = master_df.copy()
+    if sel_p != "All Authorized Parishes":
+        map_df = map_df[map_df['Parish'] == sel_p]
+    if only_elig:
+        map_df = map_df[map_df['Is_Eligible'] == 1]
+
+    fig = px.choropleth_mapbox(
+        map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
+        color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
+        mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
+        opacity=0.6, hover_data=["GEOID", "Parish"]
+    )
+    fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
+    sel_pts = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+    
+    if sel_pts and "selection" in sel_pts and len(sel_pts["selection"]["points"]) > 0:
+        st.session_state["selected_tract"] = sel_pts["selection"]["points"][0]["location"]
+
+with c_met:
+    has_sel = st.session_state["selected_tract"] is not None
+    if has_sel:
+        disp = master_df[master_df['GEOID'] == st.session_state["selected_tract"]].iloc[0]
+        lbl = f"Tract {st.session_state['selected_tract'][-4:]}"
+    else:
+        disp = master_df.iloc[0]
+        lbl = "Select a Tract"
+
+    st.markdown(f"#### 📈 {lbl} Profile")
+    
+    # The 7 Metrics Grid
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Pop", f"{disp['pop_total']:,.0f}")
+    m2.metric("Income", f"${disp['med_hh_income']:,.0f}")
+    m3.metric("Poverty", f"{disp['poverty_rate']:.1f}%")
+
+    m4, m5 = st.columns(2)
+    m4.metric("Unemployment", f"{disp['unemp_rate']:.1f}%")
+    m5.metric("Student (18-24)", f"{disp['age_18_24_pct']:.1f}%")
+    
+    m6, m7 = st.columns(2)
+    m6.metric("HS Grad Rate", f"{disp['hs_plus_pct_25plus']:.1f}%")
+    m7.metric("BA+ Grad Rate", f"{disp['ba_plus_pct_25plus']:.1f}%")
+
+    st.divider()
+    def glow(label, active, color):
+        bg = color if active else "#343a40"
+        return f'<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>'
+
+    st.markdown("##### 🏛️ Designation Status")
+    box1, box2 = st.columns(2)
+    with box1:
+        st.markdown(glow("URBAN", (disp['is_rural']==0 and has_sel), "#dc3545"), unsafe_allow_html=True)
+        st.markdown(glow("RURAL", (disp['is_rural']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
+    with box2:
+        st.markdown(glow("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
+        st.markdown(glow("NMTC DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
+
+    st.divider()
+    with st.form("sub_form", clear_on_submit=True):
+        gid = st.session_state["selected_tract"] if has_sel else "None"
+        st.info(f"GEOID: {gid}")
+        cat = st.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
+        notes = st.text_area("Justification")
+        up_pdf = st.file_uploader("PDF Support", type=["pdf"])
+        if st.form_submit_button("Submit Recommendation", use_container_width=True):
+            if not has_sel: st.error("Select a tract.")
+            elif q_rem <= 0: st.warning("Quota reached.")
+            else:
+                new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": gid, "Category": cat, "Justification": notes, "Document": (up_pdf.name if up_pdf else "None")}])
+                conn.update(worksheet="Sheet1", data=pd.concat([existing_recs, new_row], ignore_index=True))
+                st.success("Recorded.")
+                st.cache_data.clear()
+                st.rerun()
+
+st.divider()
+st.subheader("📋 My History")
+st.dataframe(existing_recs[existing_recs['User'] == st.session_state["username"]], use_container_width=True, hide_index=True)
