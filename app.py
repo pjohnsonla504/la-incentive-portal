@@ -13,8 +13,8 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Corrected Global Identifiers
-DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM/edit#gid=0"
+# Base URL to avoid 400 Bad Request conflicts
+DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM/edit"
 SHEET_URL = st.secrets.get("public_gsheets_url", DEFAULT_SHEET_URL)
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
 
@@ -30,7 +30,7 @@ if "authenticated" not in st.session_state:
 if "selected_tract" not in st.session_state:
     st.session_state["selected_tract"] = None
 
-# --- 2. AUTHENTICATION ---
+# --- 2. AUTHENTICATION & DIAGNOSTICS ---
 if not st.session_state["authenticated"]:
     st.title("🔐 Louisiana OZ 2.0 Recommendation Portal")
     col1, col2, col3 = st.columns([1,2,1])
@@ -40,9 +40,11 @@ if not st.session_state["authenticated"]:
             p_input = st.text_input("Password", type="password")
             if st.form_submit_button("Access Portal"):
                 try:
+                    # Attempt to read users
                     user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users")
                     user_db.columns = [str(c).strip() for c in user_db.columns]
                     match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
+                    
                     if not match.empty:
                         user_data = match.iloc[0]
                         st.session_state["authenticated"] = True
@@ -55,6 +57,11 @@ if not st.session_state["authenticated"]:
                         st.error("Invalid credentials.")
                 except Exception as e:
                     st.error(f"Login connection error: {e}")
+                    # DEBUG INFO: Show the user what's wrong
+                    st.write("---")
+                    st.write("**Debug Info for Developer:**")
+                    st.write(f"Sheet URL used: `{SHEET_URL}`")
+                    st.write("Check: Is the first tab named exactly **Users**?")
     st.stop()
 
 # --- 3. DATA LOADING ---
