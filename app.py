@@ -9,11 +9,12 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 
-# --- 1. SETUP & CONNECTIONS ---
-st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
+# --- 1. SETUP ---
+st.set_page_config(page_title="OZ 2.0 Portal", layout="wide")
 
-# Configuration IDs
-SPREADSHEET_ID = "1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM"
+# CORE CONFIGURATION
+# Verify this ID is correct from your URL
+SPREADSHEET_ID = "1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM" 
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit"
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
 
@@ -33,32 +34,31 @@ if "selected_tract" not in st.session_state:
 
 # --- 2. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
-    st.title("🔐 Louisiana OZ 2.0 Recommendation Portal")
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        with st.form("login_form"):
-            u_input = st.text_input("Username")
-            p_input = st.text_input("Password", type="password")
-            if st.form_submit_button("Access Portal"):
-                try:
-                    user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users", ttl=0)
-                    user_db.columns = [str(c).strip() for c in user_db.columns]
-                    match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
-                    
-                    if not match.empty:
-                        user_data = match.iloc[0]
-                        st.session_state.update({
-                            "authenticated": True,
-                            "username": u_input,
-                            "role": str(user_data['Role']).strip(),
-                            "a_type": str(user_data['Assigned_Type']).strip(),
-                            "a_val": str(user_data['Assigned_Value']).strip()
-                        })
-                        st.rerun()
-                    else:
-                        st.error("Invalid credentials.")
-                except Exception as e:
-                    st.error(f"Login connection error: {e}")
+    st.title("🔐 Louisiana OZ 2.0 Portal")
+    with st.form("login_form"):
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
+        if st.form_submit_button("Access Portal"):
+            try:
+                # Use URL + Worksheet Name
+                user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users", ttl=0)
+                user_db.columns = [str(c).strip() for c in user_db.columns]
+                match = user_db[(user_db['Username'] == u) & (user_db['Password'] == p)]
+                
+                if not match.empty:
+                    user_data = match.iloc[0]
+                    st.session_state.update({
+                        "authenticated": True,
+                        "username": u,
+                        "role": str(user_data['Role']).strip(),
+                        "a_type": str(user_data['Assigned_Type']).strip(),
+                        "a_val": str(user_data['Assigned_Value']).strip()
+                    })
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials.")
+            except Exception as e:
+                st.error(f"Login connection error: {e}")
     st.stop()
 
 # --- 3. DATA LOADING ---
@@ -88,11 +88,13 @@ def load_data():
 
 master_df, la_geojson = load_data()
 
+# Filter based on user assignment
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
 # Quota Logic
 try:
+    # Use URL here too
     existing_recs = conn.read(spreadsheet=SHEET_URL, worksheet="Sheet1", ttl=0)
     eligible_count = len(master_df[master_df['Is_Eligible'] == 1])
     quota_limit = max(1, int(eligible_count * 0.25))
@@ -101,7 +103,7 @@ try:
 except:
     existing_recs, quota_limit, current_usage, quota_remaining = pd.DataFrame(), 0, 0, 0
 
-# --- 4. DASHBOARD LAYOUT ---
+# --- 4. UI ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 
 q_col1, q_col2 = st.columns([0.7, 0.3])
@@ -111,18 +113,14 @@ q_col2.write(f"**Recommendations:** {current_usage} / {quota_limit}")
 col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
-    f1, f2 = st.columns(2)
-    with f1:
-        p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
-        sel_parish = st.selectbox("Isolate Parish", options=p_list, label_visibility="collapsed")
-    with f2:
-        only_elig = st.toggle("OZ 2.0 Eligible Only (Green)")
+    p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
+    sel_parish = st.selectbox("Isolate Parish", options=p_list)
+    only_elig = st.toggle("OZ 2.0 Eligible Only (Green)")
 
     map_df = master_df.copy()
     if sel_parish != "All Authorized Parishes":
         map_df = map_df[map_df['Parish'] == sel_parish]
     
-    # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
@@ -148,25 +146,8 @@ with col_metrics:
     m1.metric("Median Income", f"${disp['med_hh_income']:,.0f}")
     m2.metric("Poverty Rate", f"{disp['poverty_rate']:.1f}%")
     
-    # DESIGNATION BADGES
-    def badge(label, active):
-        color = "#28a745" if active else "#6c757d"
-        opacity = "1.0" if active else "0.4"
-        return f'<div style="background-color:{color}; color:white; padding:5px; border-radius:5px; text-align:center; font-weight:bold; opacity:{opacity}; margin-bottom:5px;">{label}</div>'
-
     st.markdown("---")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown(badge("RURAL", disp['is_rural'] == 1), unsafe_allow_html=True)
-        st.markdown(badge("OZ 2.0 ELIGIBLE", disp['Is_Eligible'] == 1), unsafe_allow_html=True)
-    with c2:
-        st.markdown(badge("NMTC ELIGIBLE", disp['nmtc_eligible'] == 1), unsafe_allow_html=True)
-        st.markdown(badge("DEEP DISTRESS", disp['deep_distress'] == 1), unsafe_allow_html=True)
-
-    st.markdown("---")
-    if quota_remaining <= 0 and has_sel:
-        st.warning("Quota reached for your account.")
-    elif has_sel:
+    if has_sel:
         with st.form("submission"):
             cat = st.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
             notes = st.text_area("Justification / Notes")
@@ -197,9 +178,9 @@ with col_metrics:
                 except Exception as e:
                     st.error(f"Error saving: {e}")
     else:
-        st.info("Select a tract on the map to begin recommendation.")
+        st.info("Select a tract on the map to begin.")
 
-# --- 5. HISTORY TABLE ---
+# --- 5. HISTORY ---
 st.markdown("---")
 st.subheader("📋 My Submission History")
 if not existing_recs.empty:
