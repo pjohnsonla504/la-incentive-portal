@@ -11,10 +11,13 @@ from google.oauth2 import service_account
 
 # --- 1. SETUP & CONNECTIONS ---
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
-conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Configuration IDs
+# This is the master URL used for all connections
+SPREADSHEET_ID = "1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM"
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit"
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
+
+conn = st.connection("gsheets", type=GSheetsConnection)
 
 def get_drive_service():
     info = st.secrets["gcp_service_account"]
@@ -38,17 +41,20 @@ if not st.session_state["authenticated"]:
             p_input = st.text_input("Password", type="password")
             if st.form_submit_button("Access Portal"):
                 try:
-                    user_db = conn.read(worksheet="Users", ttl=0)
+                    # Added spreadsheet=SHEET_URL here to prevent the error
+                    user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users", ttl=0)
                     user_db.columns = [str(c).strip() for c in user_db.columns]
                     match = user_db[(user_db['Username'] == u_input) & (user_db['Password'] == p_input)]
                     
                     if not match.empty:
                         user_data = match.iloc[0]
-                        st.session_state["authenticated"] = True
-                        st.session_state["username"] = u_input
-                        st.session_state["role"] = str(user_data['Role']).strip()
-                        st.session_state["a_type"] = str(user_data['Assigned_Type']).strip()
-                        st.session_state["a_val"] = str(user_data['Assigned_Value']).strip()
+                        st.session_state.update({
+                            "authenticated": True,
+                            "username": u_input,
+                            "role": str(user_data['Role']).strip(),
+                            "a_type": str(user_data['Assigned_Type']).strip(),
+                            "a_val": str(user_data['Assigned_Value']).strip()
+                        })
                         st.rerun()
                     else:
                         st.error("Invalid credentials.")
@@ -89,7 +95,8 @@ if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lo
 
 # Quota Logic
 try:
-    existing_recs = conn.read(worksheet="Sheet1", ttl=0)
+    # Added spreadsheet=SHEET_URL here to prevent the error
+    existing_recs = conn.read(spreadsheet=SHEET_URL, worksheet="Sheet1", ttl=0)
     eligible_count = len(master_df[master_df['Is_Eligible'] == 1])
     quota_limit = max(1, int(eligible_count * 0.25))
     current_usage = len(existing_recs[existing_recs['User'] == st.session_state["username"]])
@@ -97,7 +104,7 @@ try:
 except:
     existing_recs, quota_limit, current_usage, quota_remaining = pd.DataFrame(), 0, 0, 0
 
-# --- 4. LAYOUT ---
+# --- 4. DASHBOARD LAYOUT ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 
 q_col1, q_col2 = st.columns([0.7, 0.3])
@@ -117,8 +124,6 @@ with col_map:
     map_df = master_df.copy()
     if sel_parish != "All Authorized Parishes":
         map_df = map_df[map_df['Parish'] == sel_parish]
-    
-    # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
@@ -186,17 +191,9 @@ with col_metrics:
                         "User": st.session_state["username"],
                         "Document": lnk
                     }])
-                    conn.create(worksheet="Sheet1", data=new_row)
+                    # Added spreadsheet=SHEET_URL here to prevent the error
+                    conn.create(spreadsheet=SHEET_URL, worksheet="Sheet1", data=new_row)
                     st.success("Recommendation Saved!")
+                    st.cache_data.clear() # Clear cache to refresh the history table
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Error saving: {e}")
-    else:
-        st.info("Select a tract on the map to begin recommendation.")
-
-# --- 5. HISTORY TABLE ---
-st.markdown("---")
-st.subheader("📋 My Submission History")
-if not existing_recs.empty:
-    user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
-    st.dataframe(user_recs, use_container_width=True, hide_index=True)
