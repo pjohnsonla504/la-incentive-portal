@@ -8,11 +8,11 @@ from streamlit_gsheets import GSheetsConnection
 # 1. Page Configuration
 st.set_page_config(page_title="OZ 2.0 Recommendation Portal", layout="wide")
 
-# Connection setup
+# Establish connection
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
 except Exception as e:
-    st.error("Secrets Configuration Missing.")
+    st.error(f"Configuration Error: {e}")
     st.stop()
 
 # Initialize Session States
@@ -31,7 +31,7 @@ if not st.session_state["authenticated"]:
             p_input = st.text_input("Password", type="password")
             if st.form_submit_button("Access Portal"):
                 try:
-                    # FETCH USER DATA - Note the worksheet name check
+                    # Attempt to read 'Users' tab
                     user_db = conn.read(worksheet="Users", ttl=0)
                     user_db.columns = [str(c).strip() for c in user_db.columns]
                     
@@ -48,10 +48,12 @@ if not st.session_state["authenticated"]:
                     else:
                         st.error("Invalid credentials.")
                 except Exception as e:
-                    st.error(f"Error 400 Fix: Is the tab named EXACTLY 'Users'? Error: {e}")
+                    st.error("❌ Connection Error 400: Worksheet 'Users' not found.")
+                    st.info("Ensure the tab is named exactly 'Users' with no trailing spaces.")
+                    st.stop()
     st.stop()
 
-# --- 3. DATA LOADING ---
+# --- 3. DATA LOADING (Local Files) ---
 @st.cache_data(ttl=60)
 def load_data():
     master = pd.read_csv("tract_data_final.csv")
@@ -79,25 +81,28 @@ def load_data():
 
 master_df, la_geojson = load_data()
 
+# Apply access control filters
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# --- 4. SHEET1 LOADING (QUOTA) ---
+# --- 4. SHEET1 DATA (Recommendations) ---
 try:
     existing_recs = conn.read(worksheet="Sheet1", ttl=0)
-    eligible_count = len(master_df[master_df['Is_Eligible'] == 1])
-    quota_limit = max(1, int(eligible_count * 0.25))
+    # Highlight tracks green ONLY if eligible for OZ 2.0
+    eligible_in_view = master_df[master_df['Is_Eligible'] == 1]
+    quota_limit = max(1, int(len(eligible_in_view) * 0.25))
     current_usage = len(existing_recs[existing_recs['User'] == st.session_state["username"]])
     quota_remaining = quota_limit - current_usage
 except Exception:
-    existing_recs, quota_limit, current_usage, quota_remaining = pd.DataFrame(), 1, 0, 1
+    existing_recs = pd.DataFrame(columns=["Date", "User", "GEOID", "Category", "Justification", "Document"])
+    quota_limit, current_usage, quota_remaining = 1, 0, 1
 
-# --- 5. LAYOUT ---
+# --- 5. MAIN INTERFACE ---
 st.title(f"📍 OZ 2.0 Portal: {st.session_state['a_val']}")
 
 q_col1, q_col2 = st.columns([0.7, 0.3])
-q_col1.progress(min(1.0, current_usage / quota_limit))
-q_col2.write(f"**Recommendations:** {current_usage} / {quota_limit}")
+q_col1.progress(min(1.0, current_usage / quota_limit) if quota_limit > 0 else 0)
+q_col2.write(f"**Usage:** {current_usage} / {quota_limit}")
 
 col_map, col_metrics = st.columns([0.6, 0.4])
 
@@ -105,9 +110,9 @@ with col_map:
     f1, f2 = st.columns(2)
     with f1:
         p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
-        sel_parish = st.selectbox("Isolate Parish", options=p_list, label_visibility="collapsed")
+        sel_parish = st.selectbox("Filter Parish", options=p_list, label_visibility="collapsed")
     with f2:
-        only_elig = st.toggle("OZ 2.0 Eligible Only (Green Highlight)")
+        only_elig = st.toggle("Show Eligible Only (Green)")
 
     map_df = master_df.copy()
     if sel_parish != "All Authorized Parishes":
@@ -116,6 +121,7 @@ with col_map:
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
+    # Map highlighting logic (Green = Eligible, Grey = Ineligible)
     fig = px.choropleth_mapbox(
         map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
@@ -139,13 +145,7 @@ with col_metrics:
     m_top[1].metric("Income", f"${disp['med_hh_income']:,.0f}")
     m_top[2].metric("Poverty", f"{disp['poverty_rate']:.1f}%")
 
-    m_bot = st.columns(4)
-    m_bot[0].metric("Unemp", f"{disp['unemp_rate']:.1f}%")
-    m_bot[1].metric("Student", f"{disp['age_18_24_pct']:.1f}%")
-    m_bot[2].metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
-    m_bot[3].metric("BA Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
-
-    # Designation boxes
+    # Status Indicators
     st.divider()
     def glow_box(label, active, active_color="#28a745"):
         bg = active_color if active else "#343a40"
@@ -164,28 +164,29 @@ with col_metrics:
     st.divider()
     st.markdown("##### 📝 Record Recommendation")
     if quota_remaining <= 0 and has_sel:
-        st.warning("Quota reached.")
+        st.warning("Quota reached for this region.")
     else:
         with st.form("sub_form", clear_on_submit=True):
             f_c1, f_c2 = st.columns([1, 1])
-            geoid_val = st.session_state["selected_tract"] if has_sel else "None"
+            geoid_val = st.session_state["selected_tract"] if has_sel else "None Selected"
             f_c1.info(f"GEOID: {geoid_val}")
             cat = f_c2.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
             notes = st.text_area("Justification")
-            uploaded_pdf = st.file_uploader("Attach PDF", type=["pdf"])
+            uploaded_pdf = st.file_uploader("Attach Supporting Docs (PDF)", type=["pdf"])
             
             if st.form_submit_button("Submit Recommendation", use_container_width=True):
                 if not has_sel: 
-                    st.error("Select a tract.")
+                    st.error("Please select a tract on the map.")
                 else:
                     pdf_name = uploaded_pdf.name if uploaded_pdf else "None"
                     new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": geoid_val, "Category": cat, "Justification": notes, "Document": pdf_name}])
                     updated_df = pd.concat([existing_recs, new_row], ignore_index=True)
                     conn.update(worksheet="Sheet1", data=updated_df)
-                    st.success("Entry recorded.")
+                    st.success("Recommendation recorded.")
                     st.cache_data.clear()
                     st.rerun()
 
+# --- 6. HISTORY ---
 st.divider()
-st.subheader("📋 My Recommendations")
+st.subheader("📋 My Submission History")
 st.dataframe(existing_recs[existing_recs['User'] == st.session_state["username"]], use_container_width=True, hide_index=True)
