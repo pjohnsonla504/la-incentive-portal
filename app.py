@@ -13,9 +13,11 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="OZ 2.0 Portal", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Config
-DEFAULT_URL = "https://docs.google.com/spreadsheets/d/1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM/edit"
-SHEET_URL = st.secrets.get("public_gsheets_url", DEFAULT_URL)
+# Using the CLEAN URL (no GIDs) to prevent 400 errors
+CLEAN_URL = "https://docs.google.com/spreadsheets/d/1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM/edit"
+SHEET_URL = st.secrets.get("public_gsheets_url", CLEAN_URL)
+if "?" in SHEET_URL: SHEET_URL = SHEET_URL.split("?")[0] # Force remove GID if present
+
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
 
 def get_drive_service():
@@ -33,6 +35,7 @@ if not st.session_state["authenticated"]:
         u, p = st.text_input("User"), st.text_input("Pass", type="password")
         if st.form_submit_button("Login"):
             try:
+                # Force read the 'Users' worksheet specifically
                 db = conn.read(spreadsheet=SHEET_URL, worksheet="Users", ttl=0)
                 db.columns = [str(c).strip() for c in db.columns]
                 m = db[(db['Username'] == u) & (db['Password'] == p)]
@@ -46,7 +49,9 @@ if not st.session_state["authenticated"]:
                     })
                     st.rerun()
                 else: st.error("Invalid Login")
-            except Exception as e: st.error(f"Error: {e}")
+            except Exception as e: 
+                st.error(f"Login connection error: {e}")
+                st.info("Technical Tip: Ensure 'Users' is the first tab and the URL in Secrets has no GID.")
     st.stop()
 
 # --- 3. DATA ---
@@ -76,7 +81,7 @@ if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lo
 
 try:
     recs = conn.read(spreadsheet=SHEET_URL, worksheet="Sheet1", ttl=0)
-    # Highlighted tracts are those eligible for Opportunity Zone 2.0
+    # Opportunity Zone 2.0 Eligibility Logic
     lim = max(1, int(len(master_df[master_df['Is_Eligible'] == 1]) * 0.25))
     used = len(recs[recs['User'] == st.session_state["username"]])
 except:
@@ -91,12 +96,13 @@ c_map, c_met = st.columns([0.6, 0.4])
 with c_map:
     p_opt = ["All"] + sorted(master_df['Parish'].unique().tolist())
     p_sel = st.selectbox("Parish", p_opt)
-    only_e = st.toggle("OZ 2.0 Eligible Only")
+    only_e = st.toggle("OZ 2.0 Eligible Only (Green)")
     
     m_df = master_df.copy()
     if p_sel != "All": m_df = m_df[m_df['Parish'] == p_sel]
     if only_e: m_df = m_df[m_df['Is_Eligible'] == 1]
 
+    # Map colors: Grey for ineligible, Green for OZ 2.0 Eligible
     fig = px.choropleth_mapbox(m_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID", color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")], mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8}, opacity=0.6)
     fig.update_layout(height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False)
     sel = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
@@ -126,7 +132,6 @@ with c_met:
                         df_id = svc.files().create(body=meta, media_body=media, fields='id').execute()
                         lnk = f"https://drive.google.com/file/d/{df_id.get('id')}/view"
                     
-                    # Exact header match: Date, GEOID, Category, Justification, Is_Eligible, User, Document
                     new = pd.DataFrame([{
                         "Date": pd.Timestamp.now().strftime("%Y-%m-%d"), 
                         "GEOID": d['GEOID'], 
