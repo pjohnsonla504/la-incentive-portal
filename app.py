@@ -9,10 +9,10 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 
-# --- 1. SETUP ---
+# --- 1. SETUP & CONFIG ---
 st.set_page_config(page_title="OZ 2.0 Portal", layout="wide")
 
-# Using the full URL is the most compatible way for the GSheetsConnection
+# Ensure these match your actual Google assets
 SPREADSHEET_ID = "1qXFpZjiq8-G9U_D_u0k301Vocjlzki-6uDZ5UfOO8zM"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit"
 FOLDER_ID = "1FHxg1WqoR3KwTpnJWLcSZTpoota-bKlk"
@@ -39,33 +39,28 @@ if not st.session_state["authenticated"]:
         p = st.text_input("Password", type="password")
         if st.form_submit_button("Access Portal"):
             try:
-                # We force a fresh read every time during login
+                # We use the full URL and worksheet name. 
+                # Ensure the tab is named exactly 'Users'
                 user_db = conn.read(spreadsheet=SHEET_URL, worksheet="Users", ttl=0)
                 user_db.columns = [str(c).strip() for c in user_db.columns]
                 
-                # Check headers
-                required = ['Username', 'Password', 'Role', 'Assigned_Type', 'Assigned_Value']
-                missing = [c for c in required if c not in user_db.columns]
+                match = user_db[(user_db['Username'] == u) & (user_db['Password'] == p)]
                 
-                if missing:
-                    st.error(f"Missing columns in 'Users' tab: {missing}")
+                if not match.empty:
+                    user_data = match.iloc[0]
+                    st.session_state.update({
+                        "authenticated": True,
+                        "username": u,
+                        "role": str(user_data['Role']).strip(),
+                        "a_type": str(user_data['Assigned_Type']).strip(),
+                        "a_val": str(user_data['Assigned_Value']).strip()
+                    })
+                    st.rerun()
                 else:
-                    match = user_db[(user_db['Username'] == u) & (user_db['Password'] == p)]
-                    if not match.empty:
-                        user_data = match.iloc[0]
-                        st.session_state.update({
-                            "authenticated": True,
-                            "username": u,
-                            "role": str(user_data['Role']).strip(),
-                            "a_type": str(user_data['Assigned_Type']).strip(),
-                            "a_val": str(user_data['Assigned_Value']).strip()
-                        })
-                        st.rerun()
-                    else:
-                        st.error("Invalid Username or Password.")
+                    st.error("Invalid Username or Password.")
             except Exception as e:
                 st.error(f"Login connection error: {e}")
-                st.info("Debugging: Check if the Service Account is an 'Editor' on the Google Sheet.")
+                st.info("Check: 1. Tab named 'Users'? 2. Service Account shared as 'Editor'?")
     st.stop()
 
 # --- 3. DATA LOADING ---
@@ -95,11 +90,11 @@ def load_data():
 
 master_df, la_geojson = load_data()
 
-# User Filtering
+# User Filter
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# Quota Logic
+# History/Quota Load
 try:
     existing_recs = conn.read(spreadsheet=SHEET_URL, worksheet="Sheet1", ttl=0)
     eligible_count = len(master_df[master_df['Is_Eligible'] == 1])
@@ -117,26 +112,27 @@ col_map, col_metrics = st.columns([0.6, 0.4])
 
 with col_map:
     p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
-    sel_parish = st.selectbox("Isolate Parish", options=p_list)
+    sel_parish = st.selectbox("Filter Parish", options=p_list)
     only_elig = st.toggle("OZ 2.0 Eligible Only (Green)")
 
-    map_df = master_df.copy()
+    m_df = master_df.copy()
     if sel_parish != "All Authorized Parishes":
-        map_df = map_df[map_df['Parish'] == sel_parish]
+        m_df = m_df[m_df['Parish'] == sel_parish]
+    
     if only_elig:
-        map_df = map_df[map_df['Is_Eligible'] == 1]
+        m_df = m_df[m_df['Is_Eligible'] == 1]
 
     fig = px.choropleth_mapbox(
-        map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
+        m_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
         mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
     fig.update_layout(height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False)
     
-    selected_points = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-    if selected_points and "selection" in selected_points and len(selected_points["selection"]["points"]) > 0:
-        st.session_state["selected_tract"] = selected_points["selection"]["points"][0]["location"]
+    map_sel = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+    if map_sel and "selection" in map_sel and len(map_sel["selection"]["points"]) > 0:
+        st.session_state["selected_tract"] = map_sel["selection"]["points"][0]["location"]
 
 with col_metrics:
     has_sel = st.session_state["selected_tract"] is not None
@@ -150,41 +146,41 @@ with col_metrics:
     
     st.markdown("---")
     if has_sel:
-        with st.form("submission"):
+        with st.form("rec_form"):
             cat = st.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
-            notes = st.text_area("Justification")
-            pdf = st.file_uploader("PDF", type="pdf")
+            txt = st.text_area("Justification")
+            up_pdf = st.file_uploader("Upload PDF", type="pdf")
             if st.form_submit_button("Submit"):
                 try:
-                    lnk = "No Document"
-                    if pdf:
+                    lnk = "None"
+                    if up_pdf:
                         svc = get_drive_service()
                         meta = {'name': f"REC_{disp['GEOID']}", 'parents': [FOLDER_ID]}
-                        media = MediaIoBaseUpload(io.BytesIO(pdf.getvalue()), mimetype='application/pdf')
-                        dfile = svc.files().create(body=meta, media_body=media, fields='id').execute()
-                        lnk = f"https://drive.google.com/file/d/{dfile.get('id')}/view"
+                        media = MediaIoBaseUpload(io.BytesIO(up_pdf.getvalue()), mimetype='application/pdf')
+                        f_meta = svc.files().create(body=meta, media_body=media, fields='id').execute()
+                        lnk = f"https://drive.google.com/file/d/{f_meta.get('id')}/view"
 
                     new_row = pd.DataFrame([{
                         "Date": pd.Timestamp.now().strftime("%Y-%m-%d"),
                         "GEOID": disp['GEOID'],
                         "Category": cat,
-                        "Justification": notes,
+                        "Justification": txt,
                         "Is_Eligible": int(disp['Is_Eligible']),
                         "User": st.session_state["username"],
                         "Document": lnk
                     }])
                     conn.create(spreadsheet=SHEET_URL, worksheet="Sheet1", data=new_row)
-                    st.success("Saved!")
+                    st.success("Submitted!")
                     st.cache_data.clear()
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Save error: {e}")
+                    st.error(f"Error: {e}")
     else:
-        st.info("Select a tract on the map.")
+        st.info("Select a tract on the map to begin.")
 
 # --- 5. HISTORY ---
 st.markdown("---")
-st.subheader("📋 My History")
+st.subheader("📋 My Submission History")
 if not existing_recs.empty:
-    user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
-    st.dataframe(user_recs, use_container_width=True, hide_index=True)
+    u_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
+    st.dataframe(u_recs, use_container_width=True, hide_index=True)
