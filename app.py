@@ -50,7 +50,6 @@ def load_data():
     master.columns = [str(c).strip() for c in master.columns]
     master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
     
-    # Process all 7 indicators
     num_cols = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for c in num_cols:
         master[c] = pd.to_numeric(master[c].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
@@ -69,7 +68,6 @@ def load_data():
 
 master_df, la_geojson, anchor_df = load_data()
 
-# Authorization Filter
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
@@ -94,25 +92,22 @@ with c_map:
     only_elig = f2.toggle("Eligible Only")
     show_anchors = f3.toggle("Show Anchor Tags", value=True)
 
-    map_df = master_df.copy()
-    if sel_p != "All": map_df = map_df[map_df['Parish'] == sel_p]
-    if only_elig: map_df = map_df[map_df['Is_Eligible'] == 1]
+    m_df = master_df.copy()
+    if sel_p != "All": m_df = m_df[m_df['Parish'] == sel_p]
+    if only_elig: m_df = m_df[m_df['Is_Eligible'] == 1]
 
-    # Base Choropleth (Tracts)
     fig = px.choropleth_mapbox(
-        map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
+        m_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
         mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
 
-    # Permanent Anchor Tags (Visible at all zoom levels)
     if show_anchors and not anchor_df.empty:
         fig.add_scattermapbox(
             lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
-            marker=dict(size=12, color='#1E90FF', opacity=1.0, symbol='circle'), # Increased size
-            text=anchor_df['name'] + " (" + anchor_df['type'] + ")",
-            hoverinfo='text', name="Anchors", below='' 
+            marker=dict(size=12, color='#1E90FF', opacity=1.0),
+            text=anchor_df['name'], hoverinfo='text', name="Anchors", below=''
         )
 
     fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select', showlegend=False)
@@ -129,7 +124,6 @@ with c_met:
 
     st.markdown(f"#### 📈 {lbl} Profile")
     
-    # --- 7 Indicators Grid ---
     m1, m2, m3 = st.columns(3)
     m1.metric("Pop", f"{disp['pop_total']:,.0f}")
     m2.metric("Income", f"${disp['med_hh_income']:,.0f}")
@@ -137,16 +131,41 @@ with c_met:
 
     m4, m5 = st.columns(2)
     m4.metric("Unemployment", f"{disp['unemp_rate']:.1f}%")
-    m5.metric("Student (18-24)", f"{disp['age_18_24_pct']:.1f}%")
+    m5.metric("Student", f"{disp['age_18_24_pct']:.1f}%")
     
     m6, m7 = st.columns(2)
-    m6.metric("HS Grad Rate", f"{disp['hs_plus_pct_25plus']:.1f}%")
-    m7.metric("BA+ Grad Rate", f"{disp['ba_plus_pct_25plus']:.1f}%")
+    m6.metric("HS Grad", f"{disp['hs_plus_pct_25plus']:.1f}%")
+    m7.metric("BA+ Grad", f"{disp['ba_plus_pct_25plus']:.1f}%")
 
     st.divider()
-    # --- Designation Glow Boxes ---
     def glow(label, active, color):
         bg = color if active else "#343a40"
         return f'<div style="background-color:{bg}; padding:8px; border-radius:6px; text-align:center; color:white; font-weight:bold; margin:2px; font-size:10px; min-height:40px; display:flex; align-items:center; justify-content:center;">{label}</div>'
 
-    st.markdown("##### 🏛️ Designation Status
+    st.markdown("##### 🏛️ Designation Status")
+    box1, box2 = st.columns(2)
+    with box1:
+        st.markdown(glow("URBAN", (disp['is_rural']==0 and has_sel), "#dc3545"), unsafe_allow_html=True)
+        st.markdown(glow("RURAL", (disp['is_rural']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
+    with box2:
+        st.markdown(glow("NMTC ELIGIBLE", (disp['nmtc_eligible']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
+        st.markdown(glow("DEEP DISTRESS", (disp['deep_distress']==1 and has_sel), "#28a745"), unsafe_allow_html=True)
+
+    st.divider()
+    with st.form("sub_form", clear_on_submit=True):
+        gid = st.session_state["selected_tract"] if has_sel else "None"
+        st.info(f"GEOID: {gid}")
+        cat = st.selectbox("Category", ["Housing", "Healthcare", "Infrastructure", "Commercial", "Other"])
+        notes = st.text_area("Justification")
+        up_pdf = st.file_uploader("PDF Support", type=["pdf"])
+        if st.form_submit_button("Submit Recommendation", use_container_width=True):
+            if not has_sel: st.error("Select a tract.")
+            elif q_rem <= 0: st.warning("Quota reached.")
+            else:
+                new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": gid, "Category": cat, "Justification": notes, "Document": (up_pdf.name if up_pdf else "None")}])
+                conn.update(worksheet="Sheet1", data=pd.concat([existing_recs, new_row], ignore_index=True))
+                st.success("Recorded."); st.cache_data.clear(); st.rerun()
+
+st.divider()
+st.subheader("📋 My History")
+st.dataframe(existing_recs[existing_recs['User'] == st.session_state["username"]], use_container_width=True, hide_index=True)
