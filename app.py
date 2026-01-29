@@ -59,7 +59,7 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    # All 7 Indicators + Pop
+    # 7 Indicators
     num_cols = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for c in num_cols:
         if c in master.columns:
@@ -74,11 +74,17 @@ def load_data():
 
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
-    return master, geojson
+    
+    # Load Anchors (Assuming anchors.csv exists with name, lat, lon, type)
+    try:
+        anchors = pd.read_csv("anchors.csv")
+    except:
+        anchors = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
 
-master_df, la_geojson = load_data()
+    return master, geojson, anchors
 
-# Authorization Filter
+master_df, la_geojson, anchor_df = load_data()
+
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
@@ -98,14 +104,14 @@ q_col1, q_col2 = st.columns([0.7, 0.3])
 q_col1.progress(min(1.0, curr_use / quota_limit) if quota_limit > 0 else 0)
 q_col2.write(f"**Recommendations:** {curr_use} / {quota_limit}")
 
-# The line that caused the NameError is fixed here:
 c_map, c_met = st.columns([0.6, 0.4])
 
 with c_map:
-    f1, f2 = st.columns(2)
+    f1, f2, f3 = st.columns([1,1,1])
     p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
     sel_p = f1.selectbox("Filter Parish", options=p_list, label_visibility="collapsed")
     only_elig = f2.toggle("OZ 2.0 Eligible Only (Green)")
+    show_anchors = f3.toggle("Show Anchor Institutions", value=True)
 
     map_df = master_df.copy()
     if sel_p != "All Authorized Parishes":
@@ -113,17 +119,33 @@ with c_map:
     if only_elig:
         map_df = map_df[map_df['Is_Eligible'] == 1]
 
+    # Base Choropleth
     fig = px.choropleth_mapbox(
         map_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
         mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
-    fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
+
+    # Overlay Anchor Institutions as Markers
+    if show_anchors and not anchor_df.empty:
+        fig.add_scattermapbox(
+            lat=anchor_df['lat'],
+            lon=anchor_df['lon'],
+            mode='markers',
+            marker=dict(size=10, color='royalblue', opacity=0.9),
+            text=anchor_df['name'] + " (" + anchor_df['type'] + ")",
+            hoverinfo='text',
+            name="Anchor Institutions"
+        )
+
+    fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select', showlegend=False)
     sel_pts = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     
     if sel_pts and "selection" in sel_pts and len(sel_pts["selection"]["points"]) > 0:
-        st.session_state["selected_tract"] = sel_pts["selection"]["points"][0]["location"]
+        # Filter out selection if a marker was clicked instead of a tract
+        loc = sel_pts["selection"]["points"][0].get("location")
+        if loc: st.session_state["selected_tract"] = loc
 
 with c_met:
     has_sel = st.session_state["selected_tract"] is not None
@@ -135,8 +157,6 @@ with c_met:
         lbl = "Select a Tract"
 
     st.markdown(f"#### 📈 {lbl} Profile")
-    
-    # The 7 Metrics Grid
     m1, m2, m3 = st.columns(3)
     m1.metric("Pop", f"{disp['pop_total']:,.0f}")
     m2.metric("Income", f"${disp['med_hh_income']:,.0f}")
