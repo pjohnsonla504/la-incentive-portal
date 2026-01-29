@@ -1,0 +1,299 @@
+Name,Lat,Lon,Type
+Louisiana State University (LSU),30.4133,-91.18,Educational
+Tulane University,29.9407,-90.1203,Educational
+University of Louisiana at Lafayette,30.2144,-92.0194,Educational
+Loyola University New Orleans,29.9348,-90.1215,Educational
+Southern University and A&M College,30.5255,-91.1911,Educational
+University of New Orleans (UNO),30.0271,-90.0673,Educational
+Louisiana Tech University,32.5292,-92.6517,Educational
+Southeastern Louisiana University,30.5144,-90.466,Educational
+McNeese State University,30.1787,-93.2163,Educational
+Nicholls State University,29.7944,-90.8038,Educational
+Northwestern State University,31.7505,-93.097,Educational
+Grambling State University,32.5186,-92.7153,Educational
+Xavier University of Louisiana,29.9622,-90.1064,Educational
+Dillard University,30.0068,-90.07,Educational
+Our Lady of the Lake Regional Medical Center,30.4024,-91.107,Medical
+Ochsner Medical Center - New Orleans,29.9634,-90.1328,Medical
+Willis-Knighton Medical Center,32.4862,-93.7845,Medical
+LSU Health Shreveport,32.4925,-93.7544,Medical
+Baton Rouge General Medical Center,30.3957,-91.0823,Medical
+Lafayette General Medical Center,30.2111,-92.025,Medical
+Rapides Regional Medical Center,31.309,-92.4461,Medical
+St. Tammany Health System,30.4792,-90.1118,Medical
+Lake Charles Memorial Hospital,30.1989,-93.212,Medical
+University Medical Center New Orleans,29.9575,-90.0792,Medical
+Port of South Louisiana,30.046,-90.505,Logistics
+Port of New Orleans,29.932,-90.06,Logistics
+Port of Greater Baton Rouge,30.44,-91.2,Logistics
+Port of Lake Charles,30.2,-93.25,Logistics
+Chennault International Airport,30.2125,-93.1483,Logistics
+Louis Armstrong New Orleans Int'l (MSY),29.9911,-90.2592,Logistics
+Baton Rouge Metropolitan Airport (BTR),30.5332,-91.1496,Logistics
+Shreveport Regional Airport (SHV),32.4468,-93.8236,Logistics
+Alexandria International Airport (AEX),31.3274,-92.5485,Logistics
+Lafayette Regional Airport (LFT),30.2053,-91.9876,Logistics
+Barksdale Air Force Base,32.5011,-93.6628,Industrial/Corporate
+Fort Johnson (formerly Fort Polk),31.0483,-93.2119,Industrial/Corporate
+CenturyLink Headquarters,32.5181,-92.0305,Industrial/Corporate
+Entergy Louisiana,30.4583,-91.1403,Industrial/Corporate
+Globalstar Headquarters,30.4215,-90.0415,Industrial/Corporate
+Stine Home & Yard Corporate,30.2285,-93.3361,Industrial/Corporate
+Standard Coffee Service Co.,29.965,-90.101,Industrial/Corporate
+Zatarain's Headquarters,29.907,-90.015,Industrial/Corporate
+Community Coffee Company,30.4507,-91.134,Industrial/Corporate
+Raising Cane's Headquarters,30.4485,-91.1882,Industrial/Corporate
+Waitr (ASAP) Headquarters,30.2241,-92.0198,Industrial/Corporate
+Tabasco (McIlhenny Co),29.985,-91.908,Industrial/Corporate
+Nucor Steel Louisiana,30.0811,-90.9324,Industrial/Corporate
+BASF Geismar,30.2111,-91.0234,Industrial/Corporate
+Dow Chemical Louisiana,30.312,-91.2541,Industrial/Corporate
+ExxonMobil Baton Rouge,30.4851,-91.1764,Industrial/Corporate
+Shell Norco,29.9986,-90.4131,Industrial/Corporate
+Marathon Petroleum Garyville,30.0531,-90.6251,Industrial/Corporate
+Cornerstone Chemical,29.9283,-90.2014,Industrial/Corporate
+Valero St. Charles,29.988,-90.4452,Industrial/Corporate
+CF Industries Donaldsonville,30.113,-90.985,Industrial/Corporate
+Sasol Lake Charles,30.2394,-93.2841,Industrial/Corporate
+Westlake Chemical,30.2255,-93.3102,Industrial/Corporate
+Honeywell Geismar,30.2055,-91.0183,Industrial/Corporate
+Pinnacle Entertainment,29.987,-90.013,Industrial/Corporate
+L'Auberge Casino Baton Rouge,30.3421,-91.1852,Industrial/Corporate
+Golden Nugget Lake Charles,30.2085,-93.2681,Industrial/Corporate
+Horseshoe Bossier City,32.5164,-93.7389,Industrial/Corporate
+Margaritaville Resort Casino,32.5211,-93.7385,Industrial/Corporate
+National WWII Museum,29.943,-90.07,Industrial/Corporate
+Louisiana State Capitol,30.4571,-91.1874,Industrial/Corporate
+Shaw Center for the Arts,30.4475,-91.1895,Industrial/Corporate
+New Orleans Museum of Art (NOMA),30.0031,-90.0933,Industrial/Corporate
+Sci-Port Discovery Center,32.5144,-93.7432,Industrial/Corporate
+LSU AgCenter,30.4121,-91.1782,Educational
+Pennington Biomedical Research,30.3951,-91.1121,Medical
+Mary Bird Perkins Cancer Center,30.3995,-91.1015,Medical
+Children's Hospital New Orleans,29.9168,-90.1311,Medical
+Shriners Children's Shreveport,32.4891,-93.7552,Medical
+St. Jude Affiliate Clinic (Shreveport),32.492,-93.754,Medical
+LSU Shreveport (LSUS),32.4225,-93.7042,Educational
+Grambling State Univ. - Monroe Tech,32.5111,-92.115,Educational
+River Parishes Community College,30.1471,-90.9152,Educational
+Fletcher Technical Community College,29.6133,-90.7103,Educational
+Baton Rouge Community College,30.456,-91.144,Educational
+Delgado Community College,29.9861,-90.1032,Educational
+Bossier Parish Community College,32.5312,-93.6685,Educational
+Louisiana Delta Community College,32.5355,-92.057,Educational
+Northshore Technical Community College,30.4894,-90.0761,Educational
+Nunez Community College,29.9472,-89.92,Educational
+South Louisiana Community College,30.2163,-92.046,Educational
+SOWELA Technical Community College,30.2105,-93.184,Educational
+Central Louisiana Technical College,31.314,-92.458,Educational
+Louisiana School for Math Science and Arts,31.7485,-93.0965,Educational
+Holy Cross University,29.9231,-89.998,Educational
+Louisiana College (Pineville),31.3283,-92.4111,Educational
+Centenary College of Louisiana,32.4851,-93.7335,Educational
+University of Holy Cross (NOLA),29.9221,-89.9991,Educational
+FranU (Franciscan Missionaries),30.4022,-91.1065,Educational
+LSU Health New Orleans,29.9548,-90.0795,Medical
+Tulane Medical Center,29.9565,-90.0754,Medical
+Our Lady of Lourdes Regional Medical,30.1585,-92.0232,Medical
+Women's & Children's Hospital,30.1545,-92.0321,Medical
+Lakeview Regional Medical Center,30.4154,-90.1112,Medical
+East Jefferson General Hospital,30.0105,-90.1542,Medical
+West Jefferson Medical Center,29.9048,-90.1065,Medical
+Slidell Memorial Hospital,30.2764,-89.7712,Medical
+North Oaks Medical Center,30.5231,-90.4632,Medical
+Lane Regional Medical Center,30.6675,-91.1542,Medical
+Terrebonne General Health System,29.5934,-90.7241,Medical
+Thibodaux Regional Health System,29.7921,-90.8252,Medical
+CHRISTUS Shreveport-Bossier,32.4385,-93.705,Medical
+CHRISTUS St. Frances Cabrini,31.3021,-92.4712,Medical
+Glenwood Regional Medical Center,32.5085,-92.1645,Medical
+St. Francis Medical Center (Monroe),32.5011,-92.1182,Medical
+Northern Louisiana Medical Center,32.5392,-92.6285,Medical
+Pointe Coupee General Hospital,30.6385,-91.4421,Medical
+Riverland Medical Center,31.5711,-91.5032,Medical
+Minden Medical Center,32.6181,-93.2845,Medical
+Jennings American Legion Hospital,30.2185,-92.6582,Medical
+Abbeville General Hospital,29.9711,-92.1315,Medical
+Iberia Medical Center,30.0055,-91.8152,Medical
+Franklin Foundation Hospital,29.7911,-91.5032,Medical
+Teche Regional Medical Center,29.6991,-91.1985,Medical
+Leonard J. Chabert Medical Center,29.5632,-90.7103,Medical
+Lady of the Sea General Hospital,29.3582,-90.2841,Medical
+South Cameron Memorial Hospital,29.7951,-93.1342,Medical
+Beauregard Health System,30.8411,-93.2842,Medical
+Byrd Regional Hospital,31.1421,-93.2632,Medical
+Sabine Medical Center,31.5742,-93.4851,Medical
+DeSoto Regional Health System,32.1481,-93.7142,Medical
+Springhill Medical Center,32.9911,-93.4582,Medical
+Coushatta Health Care Center,32.0211,-93.3421,Medical
+Winn Parish Medical Center,31.9211,-92.6321,Medical
+Jackson Parish Hospital,32.2411,-92.7142,Medical
+Hardtner Medical Center,31.8411,-92.2842,Medical
+LaSalle General Hospital,31.6711,-92.1242,Medical
+Caldwell Memorial Hospital,32.1051,-92.0321,Medical
+Franklin Medical Center (Winnsboro),32.1642,-91.7142,Medical
+Richardson Medical Center,32.4211,-91.7642,Medical
+Madison Parish Hospital,32.3781,-91.1852,Medical
+East Carroll Parish Hospital,32.8841,-91.1921,Medical
+West Carroll Health Systems,32.8851,-91.6432,Medical
+Morehouse General Hospital,32.7781,-91.9051,Medical
+Union General Hospital,32.8051,-92.4042,Medical
+Bunkie General Hospital,30.9542,-92.1852,Medical
+Avoyelles Hospital,31.1211,-92.0632,Medical
+Savoy Medical Center,30.6321,-92.4042,Medical
+Opelousas General Health System,30.5342,-92.0811,Medical
+Mercy Regional Medical Center,30.6881,-92.2742,Medical
+Acadia General Hospital,30.2142,-92.3782,Medical
+Our Lady of Angels (Bogalusa),30.7742,-89.8512,Medical
+Riverside Medical Center (Franklinton),30.8411,-90.1482,Medical
+Hood Memorial Hospital,30.7081,-90.5052,Medical
+St. Helena Parish Hospital,30.8242,-90.6742,Medical
+Crowley Parish Seat,30.2111,-92.3744,Government
+Oberlin Parish Seat,30.6206,-92.855,Government
+Donaldsonville Parish Seat,30.1106,-90.9936,Government
+Napoleonville Parish Seat,29.9377,-91.0232,Government
+Marksville Parish Seat,31.1275,-92.0669,Government
+DeRidder Parish Seat,30.8464,-93.2891,Government
+Arcadia Parish Seat,32.5519,-92.9222,Government
+Benton Parish Seat,32.6934,-93.678,Government
+Shreveport Parish Seat,32.5149,-93.7479,Government
+Lake Charles Parish Seat,30.2241,-93.2174,Government
+Columbia Parish Seat,32.1036,-92.0781,Government
+Cameron Parish Seat,29.7971,-93.3255,Government
+Harrisonburg Parish Seat,31.7709,-91.8153,Government
+Homer Parish Seat,32.7913,-93.0556,Government
+Vidalia Parish Seat,31.567,-91.4297,Government
+Mansfield Parish Seat,32.0375,-93.7028,Government
+Baton Rouge Parish Seat,30.4507,-91.1882,Government
+Lake Providence Parish Seat,32.8055,-91.1736,Government
+Clinton Parish Seat,30.8664,-91.0169,Government
+Ville Platte Parish Seat,30.6891,-92.2781,Government
+Winnsboro Parish Seat,32.1634,-91.7206,Government
+Colfax Parish Seat,31.517,-92.7111,Government
+New Iberia Parish Seat,30.0035,-91.8187,Government
+Plaquemine Parish Seat,30.2891,-91.2344,Government
+Jonesboro Parish Seat,32.2386,-92.7153,Government
+Gretna Parish Seat,29.9147,-90.0554,Government
+Jennings Parish Seat,30.2226,-92.6562,Government
+Lafayette Parish Seat,30.2241,-92.0198,Government
+Thibodaux Parish Seat,29.7958,-90.8231,Government
+Jena Parish Seat,31.6883,-92.1286,Government
+Ruston Parish Seat,32.5232,-92.6379,Government
+Livingston Parish Seat,30.5019,-90.7483,Government
+Tallulah Parish Seat,32.4089,-91.1869,Government
+Bastrop Parish Seat,32.7761,-91.8825,Government
+Natchitoches Parish Seat,31.7607,-93.0863,Government
+New Orleans Parish Seat,29.9511,-90.0715,Government
+Monroe Parish Seat,32.5093,-92.1193,Government
+Pointe a la Hache Parish Seat,29.5804,-89.7915,Government
+New Roads Parish Seat,30.6953,-91.4411,Government
+Alexandria Parish Seat,31.3113,-92.4451,Government
+Coushatta Parish Seat,32.0107,-93.3389,Government
+Rayville Parish Seat,32.4764,-91.7583,Government
+Many Parish Seat,31.5071,-93.4841,Government
+Chalmette Parish Seat,29.9427,-89.9634,Government
+Hahnville Parish Seat,29.9669,-90.4109,Government
+Greensburg Parish Seat,30.8291,-90.6732,Government
+Convent Parish Seat,30.0161,-90.8267,Government
+Edgard Parish Seat,30.0436,-90.5539,Government
+Opelousas Parish Seat,30.5344,-92.0811,Government
+St. Martinville Parish Seat,30.1241,-91.7303,Government
+Franklin Parish Seat,29.7911,-91.5032,Government
+Covington Parish Seat,30.4755,-90.1009,Government
+Amite Parish Seat,30.7277,-90.5126,Government
+St. Joseph Parish Seat,31.9161,-91.2336,Government
+Houma Parish Seat,29.5958,-90.7195,Government
+Farmerville Parish Seat,32.7741,-92.4036,Government
+Abbeville Parish Seat,29.9744,-92.1342,Government
+Leesville Parish Seat,31.1435,-93.2618,Government
+Franklinton Parish Seat,30.8475,-90.1481,Government
+Minden Parish Seat,32.6154,-93.2857,Government
+Port Allen Parish Seat,30.4531,-91.2098,Government
+Oak Grove Parish Seat,32.8614,-91.3897,Government
+St. Francisville Parish Seat,30.7335,-91.3855,Government
+Winnfield Parish Seat,31.9255,-92.6417,Government
+Abbeville Chris Crusta Memorial Airport,29.9757,-92.0841,Logistics
+Esler Regional Airport,31.3951,-92.2965,Logistics
+Arcadia-Bienville Parish Airport,32.4741,-92.9866,Logistics
+George R Carr Memorial Air Field,30.8142,-89.8732,Logistics
+Bunkie Municipal Airport,30.9511,-92.1642,Logistics
+Caldwell Parish Airport,32.1581,-92.0441,Logistics
+The Red River Airport,32.0471,-93.3081,Logistics
+St Tammany Regional Airport,30.4355,-90.0415,Logistics
+Le Gros Memorial Airport,30.2281,-92.2851,Logistics
+De Quincy Industrial Airpark,30.4385,-93.4341,Logistics
+Beauregard Regional Airport,30.8321,-93.3391,Logistics
+Delhi Municipal Airport,32.4381,-91.5032,Logistics
+Eunice Airport,30.4751,-92.4241,Logistics
+Union Parish Airport,32.8051,-92.4542,Logistics
+South Lafourche Leonard Miller Jr. Airport,29.4441,-90.2642,Logistics
+Louisiana Regional Airport,30.1651,-90.8931,Logistics
+Hammond Northshore Regional Airport,30.5211,-90.4161,Logistics
+Homer Municipal Airport,32.7481,-93.0451,Logistics
+Houma-Terrebonne Airport,29.5641,-90.6651,Logistics
+Feliciana Airpark,30.8031,-91.2181,Logistics
+Le Maire Memorial Airport,29.9542,-91.6841,Logistics
+Jena Airport,31.6831,-92.1642,Logistics
+Jennings Airport,30.2451,-92.6741,Logistics
+Jonesboro Airport,32.2541,-92.7441,Logistics
+Jonesville Airport,31.6381,-91.8341,Logistics
+Bluebird Hill Airport,32.3321,-93.8542,Logistics
+Monroe Regional Airport,32.5111,-92.0371,Logistics
+Byerley Airport,32.8151,-91.1942,Logistics
+Hart Airport,31.5451,-93.5142,Logistics
+Marksville Municipal Airport,31.0941,-92.0542,Logistics
+Minden Airport,32.6451,-93.2981,Logistics
+Lakefront Airport,30.0425,-90.0285,Logistics
+Kelly-Dumas Airport,32.8551,-91.4142,Logistics
+Allen Parish Airport,30.6051,-92.8841,Logistics
+St Landry Parish Airport,30.5541,-92.0242,Logistics
+Harry P Williams Memorial Airport,29.7151,-91.3381,Logistics
+Pineville Municipal Airport,31.3251,-92.4042,Logistics
+Pollock Municipal Airport,31.5251,-92.4142,Logistics
+John H Hooks Jr Memorial Airport,32.4841,-91.7342,Logistics
+Slidell Airport,30.3451,-89.8242,Logistics
+Springhill Airport,32.9941,-93.4742,Logistics
+Tensas Parish Airport,31.9341,-91.2142,Logistics
+Southland Field Airport,30.1341,-93.3842,Logistics
+Vicksburg Tallulah Regional Airport,32.3551,-91.0342,Logistics
+Thibodaux Municipal Airport,29.7441,-90.8142,Logistics
+Vivian Airport,32.8751,-93.9842,Logistics
+Welsh Airport,30.2341,-92.8142,Logistics
+David G Joyce Airport,31.9541,-92.6242,Logistics
+Innis Community Health Center,30.7321,-91.7042,Medical
+St. Martin Hospital,30.1242,-91.7342,Medical
+Overton Brooks VA Medical Center,32.4841,-93.7342,Medical
+Lallie Kemp Regional Medical Center,30.5942,-90.5042,Medical
+Ochsner St. Anne Hospital,29.8042,-90.8342,Medical
+Baton Rouge General - Bluebonnet,30.3851,-91.0942,Medical
+Hardtner Medical Center (Urania),31.8641,-92.2942,Medical
+Natchitoches Regional Medical Center,31.7441,-93.0842,Medical
+West Carroll Memorial Hospital,32.8641,-91.3942,Medical
+Sheriff’s HQ - East Baton Rouge,30.4141,-91.1342,Government
+Shreveport City Hall,32.5121,-93.7542,Government
+Lafayette City Hall,30.2281,-92.0142,Government
+Monroe City Hall,32.5021,-92.1142,Government
+Lake Charles City Hall,30.2121,-93.2242,Government
+Alexandria City Hall,31.3121,-92.4442,Government
+Bossier City Municipal Complex,32.5121,-93.7142,Government
+Houma Municipal Center,29.5921,-90.7242,Government
+New Iberia City Hall,30.0021,-91.8142,Government
+Slidell City Council,30.2721,-89.7842,Government
+Ruston Municipal Building,32.5241,-92.6342,Government
+Sulphur City Hall,30.2321,-93.3442,Government
+Hammond City Council,30.5041,-90.4642,Government
+Opelousas City Hall,30.5341,-92.0842,Government
+Morgan City Municipal Auditorium,29.7021,-91.2042,Government
+West Monroe City Hall,32.5121,-92.1742,Government
+Bastrop City Hall,32.7721,-91.9042,Government
+Thibodaux City Hall,29.7921,-90.8242,Government
+Minden City Hall,32.6121,-93.2842,Government
+Jennings City Hall,30.2221,-92.6542,Government
+DeRidder City Hall,30.8421,-93.2842,Government
+Abbeville City Hall,29.9721,-92.1342,Government
+Natchitoches City Hall,31.7621,-93.0842,Government
+Covington City Hall,30.4721,-90.1042,Government
+Mandeville City Hall,30.3621,-90.0642,Government
+Bogalusa City Hall,30.7721,-89.8542,Government
+Eunice City Hall,30.4921,-92.4142,Government
+Crowley City Hall,30.2121,-92.3742,Government
