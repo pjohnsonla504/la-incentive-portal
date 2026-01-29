@@ -59,7 +59,7 @@ def load_data():
     if 'GEOID' in master.columns:
         master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip().str.zfill(11)
     
-    # 7 Indicators
+    # Process numeric columns
     num_cols = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for c in num_cols:
         if c in master.columns:
@@ -75,16 +75,18 @@ def load_data():
     with open("tl_2025_22_tract.json") as f:
         geojson = json.load(f)
     
-    # Load Anchors (Assuming anchors.csv exists with name, lat, lon, type)
+    # Load Anchors from la_anchors.csv
     try:
-        anchors = pd.read_csv("anchors.csv")
-    except:
+        anchors = pd.read_csv("la_anchors.csv")
+    except Exception as e:
+        st.sidebar.warning(f"Could not load la_anchors.csv: {e}")
         anchors = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
 
     return master, geojson, anchors
 
 master_df, la_geojson, anchor_df = load_data()
 
+# Authorization Filter
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
@@ -111,7 +113,7 @@ with c_map:
     p_list = ["All Authorized Parishes"] + sorted(master_df['Parish'].unique().tolist())
     sel_p = f1.selectbox("Filter Parish", options=p_list, label_visibility="collapsed")
     only_elig = f2.toggle("OZ 2.0 Eligible Only (Green)")
-    show_anchors = f3.toggle("Show Anchor Institutions", value=True)
+    show_anchors = f3.toggle("Show Anchors (Zoom to reveal)", value=True)
 
     map_df = master_df.copy()
     if sel_p != "All Authorized Parishes":
@@ -127,23 +129,23 @@ with c_map:
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
 
-    # Overlay Anchor Institutions as Markers
+    # Add Anchor Tags (Zoom Reveal Logic)
     if show_anchors and not anchor_df.empty:
         fig.add_scattermapbox(
             lat=anchor_df['lat'],
             lon=anchor_df['lon'],
             mode='markers',
-            marker=dict(size=10, color='royalblue', opacity=0.9),
-            text=anchor_df['name'] + " (" + anchor_df['type'] + ")",
+            marker=dict(size=5, color='#0047AB', opacity=0.8),
+            text=anchor_df['name'] + "<br>Type: " + anchor_df['type'],
             hoverinfo='text',
-            name="Anchor Institutions"
+            name="Anchors",
+            below='' # Forces markers above all other layers
         )
 
     fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select', showlegend=False)
     sel_pts = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     
     if sel_pts and "selection" in sel_pts and len(sel_pts["selection"]["points"]) > 0:
-        # Filter out selection if a marker was clicked instead of a tract
         loc = sel_pts["selection"]["points"][0].get("location")
         if loc: st.session_state["selected_tract"] = loc
 
@@ -195,12 +197,4 @@ with c_met:
             if not has_sel: st.error("Select a tract.")
             elif q_rem <= 0: st.warning("Quota reached.")
             else:
-                new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": gid, "Category": cat, "Justification": notes, "Document": (up_pdf.name if up_pdf else "None")}])
-                conn.update(worksheet="Sheet1", data=pd.concat([existing_recs, new_row], ignore_index=True))
-                st.success("Recorded.")
-                st.cache_data.clear()
-                st.rerun()
-
-st.divider()
-st.subheader("📋 My History")
-st.dataframe(existing_recs[existing_recs['User'] == st.session_state["username"]], use_container_width=True, hide_index=True)
+                new_row = pd.DataFrame([{"Date": pd.
