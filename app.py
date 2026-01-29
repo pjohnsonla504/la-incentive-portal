@@ -14,7 +14,6 @@ try:
 except Exception as e:
     st.error(f"Config Error: {e}"); st.stop()
 
-# Initialize Session States
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "selected_tract": None})
 
@@ -50,6 +49,7 @@ def load_data():
     master.columns = [str(c).strip() for c in master.columns]
     master['GEOID'] = master['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
     
+    # Indicators
     num_cols = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for c in num_cols:
         master[c] = pd.to_numeric(master[c].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
@@ -62,8 +62,16 @@ def load_data():
     master['deep_distress'] = np.where((master['poverty_rate'] >= 40) | (master['med_hh_income'] <= (s_med * 0.4)) | (master['unemp_rate'] >= 15.0) | ((master['is_rural'] == 1) & sev), 1, 0)
 
     with open("tl_2025_22_tract.json") as f: geojson = json.load(f)
-    try: anchors = pd.read_csv("la_anchors.csv")
-    except: anchors = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
+    
+    # ANCHOR LOADING (Matching your exact headers: Name, Lat, Lon, Type)
+    try: 
+        anchors = pd.read_csv("la_anchors.csv")
+        # Standardize internally to lowercase for the script logic
+        anchors.columns = [str(c).strip().lower() for c in anchors.columns]
+    except Exception as e: 
+        st.sidebar.error(f"File Load Error: {e}")
+        anchors = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
+        
     return master, geojson, anchors
 
 master_df, la_geojson, anchor_df = load_data()
@@ -96,6 +104,7 @@ with c_map:
     if sel_p != "All": m_df = m_df[m_df['Parish'] == sel_p]
     if only_elig: m_df = m_df[m_df['Is_Eligible'] == 1]
 
+    # Map Layer 1: Tracts
     fig = px.choropleth_mapbox(
         m_df, geojson=la_geojson, locations="GEOID", featureidkey="properties.GEOID",
         color="Is_Eligible", color_continuous_scale=[(0, "#6c757d"), (1, "#28a745")],
@@ -103,11 +112,13 @@ with c_map:
         opacity=0.6, hover_data=["GEOID", "Parish"]
     )
 
+    # Map Layer 2: Anchor Tags
     if show_anchors and not anchor_df.empty:
         fig.add_scattermapbox(
             lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
-            marker=dict(size=12, color='#1E90FF', opacity=1.0),
-            text=anchor_df['name'], hoverinfo='text', name="Anchors", below=''
+            marker=dict(size=14, color='#1E90FF', opacity=0.9, symbol='circle'),
+            text=anchor_df['name'] + "<br>Type: " + anchor_df['type'].astype(str),
+            hoverinfo='text', name="Anchors", below='' 
         )
 
     fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select', showlegend=False)
@@ -123,7 +134,6 @@ with c_met:
     lbl = f"Tract {st.session_state['selected_tract'][-4:]}" if has_sel else "Select a Tract"
 
     st.markdown(f"#### 📈 {lbl} Profile")
-    
     m1, m2, m3 = st.columns(3)
     m1.metric("Pop", f"{disp['pop_total']:,.0f}")
     m2.metric("Income", f"${disp['med_hh_income']:,.0f}")
@@ -160,12 +170,4 @@ with c_met:
         up_pdf = st.file_uploader("PDF Support", type=["pdf"])
         if st.form_submit_button("Submit Recommendation", use_container_width=True):
             if not has_sel: st.error("Select a tract.")
-            elif q_rem <= 0: st.warning("Quota reached.")
-            else:
-                new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": gid, "Category": cat, "Justification": notes, "Document": (up_pdf.name if up_pdf else "None")}])
-                conn.update(worksheet="Sheet1", data=pd.concat([existing_recs, new_row], ignore_index=True))
-                st.success("Recorded."); st.cache_data.clear(); st.rerun()
-
-st.divider()
-st.subheader("📋 My History")
-st.dataframe(existing_recs[existing_recs['User'] == st.session_state["username"]], use_container_width=True, hide_index=True)
+            elif q
