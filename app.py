@@ -157,4 +157,36 @@ with col_side:
 
         d1.metric("Poverty Rate", f_val(cols['pov_rate']))
         d2.metric("Unemployment", f_val(cols['unemp']))
-        d3.metric("Labor Part.", f_val(cols['labor
+        d3.metric("Labor Part.", f_val(cols['labor']))
+        d4.metric("Home Value", f_val(cols['home'], False, True))
+        d5.metric("HS Grad+", f_val(cols['hs']))
+        d6.metric("Bach. Degree", f_val(cols['bach']))
+        
+        # Base Pop Calc
+        try:
+            bp = float(str(row.get(cols['pov_base'])).replace(',',''))
+            r65 = float(str(row.get("Population 65 years and over")).replace(',',''))
+            d7.metric("Base Pop", f"{bp:,.0f}")
+            d8.metric("Elderly 65+", f"{(r65/bp)*100:,.1f}%")
+        except:
+            d7.metric("Base Pop", "N/A"); d8.metric("Elderly 65+", "N/A")
+
+        # 3. 7 Nearest Anchors
+        st.markdown("<div class='section-label'>7 Nearest Strategic Assets</div>", unsafe_allow_html=True)
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_df = anchor_df.copy()
+            a_df['dist'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
+            t7 = a_df.sort_values('dist').head(7)
+            tbl = "<table class='anchor-table'><tr><th>DIST</th><th>ASSET NAME</th><th>TYPE</th></tr>"
+            for _, a in t7.iterrows():
+                tbl += f"<tr><td><b>{a['dist']:.1f}m</b></td><td>{a['name'].upper()}</td><td>{str(a.get('type','')).upper()}</td></tr>"
+            st.markdown(tbl + "</table>", unsafe_allow_html=True)
+
+        st.divider()
+        st.subheader("STRATEGIC NOMINATION")
+        if st.button("EXECUTE NOMINATION", type="primary"):
+            st.session_state.recom_count += 1
+            st.success("Tract Nominated Successfully.")
+    else:
+        st.info("Select a green census tract on the map to load the Strategic Profile.")
