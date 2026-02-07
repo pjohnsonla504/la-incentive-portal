@@ -23,9 +23,10 @@ st.markdown("""
     [data-testid="stMetricValue"] { color: #4ade80 !important; font-size: 1.5rem !important; font-weight: 800; }
     .stMetric { background-color: #1e293b; border-radius: 8px; border: 1px solid #334155; padding: 12px; }
     
-    .indicator-box { border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 12px; border: 1px solid #475569; }
-    .status-yes { background-color: rgba(74, 222, 128, 0.25); border-color: #4ade80; }
-    .status-no { background-color: #1e293b; border-color: #334155; opacity: 0.5; }
+    /* Functional Indicator Logic */
+    .indicator-box { border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 12px; border: 2px solid #475569; transition: 0.3s; }
+    .status-yes { background-color: rgba(74, 222, 128, 0.2); border-color: #4ade80 !important; box-shadow: 0 0 10px rgba(74, 222, 128, 0.1); }
+    .status-no { background-color: rgba(30, 41, 59, 0.5); border-color: #334155 !important; opacity: 0.6; }
     .indicator-label { font-size: 0.75rem; color: #ffffff; text-transform: uppercase; font-weight: 800; }
     .indicator-value { font-size: 1.1rem; font-weight: 900; color: #ffffff; }
     
@@ -52,7 +53,7 @@ def load_data():
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
     
-    # Track Highlighted Green (Explicit Instruction)
+    # Track Highlighted Green 
     df['is_eligible'] = df['5-year ACS Eligiblity'].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y'])
     df['map_status'] = np.where(df['is_eligible'], 1, 0)
 
@@ -69,7 +70,7 @@ def load_data():
 
 master_df, la_geojson, anchor_df, tract_centers = load_data()
 
-# --- 3. SESSION STATE ---
+# --- 3. STATE ---
 if "recom_count" not in st.session_state: st.session_state.recom_count = 0
 if "selected_tract" not in st.session_state: st.session_state.selected_tract = None
 
@@ -95,7 +96,7 @@ with col_map:
         mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
         height=1020, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
-    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map_v54")
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map_v55")
     if map_event and "selection" in map_event and map_event["selection"]["points"]:
         new_sid = str(map_event["selection"]["points"][0]["location"]).zfill(11)
         if st.session_state.selected_tract != new_sid:
@@ -120,18 +121,29 @@ with col_side:
             </div>
         """, unsafe_allow_html=True)
         
-        # Qualification Indicators
+        # Qualification Indicators Logic
         st.markdown("<div class='section-label'>Qualification Indicators</div>", unsafe_allow_html=True)
         i1, i2 = st.columns(2)
+        
+        # 1. Metro/Rural Logic
         mv = str(row.get('Metro Status (Metropolitan/Rural)', '')).lower()
-        with i1:
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'metropolitan' in mv else 'status-no'}'><div class='indicator-label'>Metro (Urban)</div><div class='indicator-value'>{'YES' if 'metropolitan' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'rural' in mv else 'status-no'}'><div class='indicator-label'>Rural Area</div><div class='indicator-value'>{'YES' if 'rural' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
-        with i2:
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Eligible</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Distressed</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
+        is_metro = 'metropolitan' in mv
+        is_rural = 'rural' in mv
+        
+        # 2. NMTC Logic
+        nmtc_val = str(row.get('NMTC Eligible', '')).lower().strip()
+        nmtc_dist = str(row.get('NMTC Distressed', '')).lower().strip()
+        is_nmtc = nmtc_val in ['yes', 'eligible', 'y']
+        is_distressed = nmtc_dist in ['yes', 'distressed', 'y', 'deeply distressed']
 
-        # Economic Health Metrics
+        with i1:
+            st.markdown(f"<div class='indicator-box {'status-yes' if is_metro else 'status-no'}'><div class='indicator-label'>Metro (Urban)</div><div class='indicator-value'>{'YES' if is_metro else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if is_rural else 'status-no'}'><div class='indicator-label'>Rural Area</div><div class='indicator-value'>{'YES' if is_rural else 'NO'}</div></div>", unsafe_allow_html=True)
+        with i2:
+            st.markdown(f"<div class='indicator-box {'status-yes' if is_nmtc else 'status-no'}'><div class='indicator-label'>NMTC Eligible</div><div class='indicator-value'>{'YES' if is_nmtc else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if is_distressed else 'status-no'}'><div class='indicator-label'>NMTC Deeply Distressed</div><div class='indicator-value'>{'YES' if is_distressed else 'NO'}</div></div>", unsafe_allow_html=True)
+
+        # Economic Health
         st.markdown("<div class='section-label'>Economic Health</div>", unsafe_allow_html=True)
         e1, e2, e3, e4 = st.columns(4)
         def fmt(v, is_m=False):
@@ -145,16 +157,13 @@ with col_side:
         e3.metric("Unemployment", fmt(row.get("Unemployment Rate (%)")))
         e4.metric("Broadband Access", fmt(row.get("Broadband Internet (%)")))
 
-        # Human Capital (Using Requested Poverty-Base Calculation)
+        # Human Capital
         st.markdown("<div class='section-label'>Human Capital & Demographics</div>", unsafe_allow_html=True)
         h1, h2, h3, h4 = st.columns(4)
-        
         try:
-            # Poverty-base population for poverty status determination
             base_pop = float(str(row.get("Estimate!!Total!!Population for whom poverty status is determined")).replace(",",""))
             raw_65 = float(str(row.get("Population 65 years and over")).replace(",",""))
             calc_pct_65 = (raw_65 / base_pop) * 100 if base_pop > 0 else 0
-            
             pop_display = f"{base_pop:,.0f}"
             elderly_display = f"{calc_pct_65:,.1f}%"
         except:
