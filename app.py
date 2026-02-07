@@ -38,11 +38,6 @@ st.markdown("""
 
     /* Progress Footer */
     .progress-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0b0f19; border-top: 1px solid #4ade80; padding: 10px 40px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; }
-    
-    /* Tables */
-    .stTable { font-size: 0.7rem !important; margin-top: -10px; }
-    thead tr th { background-color: #161b28 !important; color: #4ade80 !important; font-size: 0.6rem !important; padding: 4px !important; }
-    tbody tr td { padding: 4px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -82,7 +77,6 @@ def load_data():
     df['is_nmtc'] = df['pov_val'] >= 20.0
     df['is_deeply'] = (df['pov_val'] > 40.0) | (df[cols['unemp']].apply(clean) >= 10.5 if cols['unemp'] else False)
 
-    # Tracks highlighted green are only those eligible for Opportunity Zone 2.0.
     elig_col = find_col(['5-year', 'eligibility'])
     df['is_eligible'] = df[elig_col].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']) if elig_col else df['is_nmtc']
     df['map_z'] = np.where(df['is_eligible'], 1, 0)
@@ -99,7 +93,7 @@ master_df, la_geojson, anchor_df, tract_centers, cols = load_data()
 
 if "recom_count" not in st.session_state: st.session_state.recom_count = 0
 
-# --- SECTION 1: INTRODUCTION (EIG TONE) ---
+# --- SECTION 1: INTRODUCTION ---
 st.markdown("""
 <div class='content-section' style='padding-top:80px;'>
     <div class='section-num'>SECTION 1</div>
@@ -141,6 +135,9 @@ st.markdown("""
 <div class='content-section'>
     <div class='section-num'>SECTION 3</div>
     <div class='section-title'>Opportunity Zone Justification Using Data</div>
+    <div class='narrative-text'>
+        Strategic deployment requires aligning demographic distress with community assets. Below are two model justifications for how OZ 2.0 capital can be targeted to maximize both social impact and federal basis benefits.
+    </div>
 """)
 
 ex_c1, ex_c2 = st.columns(2)
@@ -172,5 +169,5 @@ with ex_c2:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# --- SECTION 4: INTERACTIVE PORTAL (PLACEHOLDER) ---
+# --- SECTION 4: INTERACTIVE PORTAL PLACEHOLDER ---
 st.markdown("<div class='portal-container'><div class='section-num'>SECTION 4</div><div class='section-title'>Strategic Selection Tool</div><p style='color:#64748b;'>Section 4 edits pending next response...</p></div>", unsafe_allow_html=True)
