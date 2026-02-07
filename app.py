@@ -51,6 +51,8 @@ def load_data():
     f_match = [c for c in df.columns if 'FIP' in c or 'digit' in c]
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
+    
+    # Track Highlighted Green (Explicit Instruction)
     df['is_eligible'] = df['5-year ACS Eligiblity'].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y'])
     df['map_status'] = np.where(df['is_eligible'], 1, 0)
 
@@ -67,7 +69,7 @@ def load_data():
 
 master_df, la_geojson, anchor_df, tract_centers = load_data()
 
-# --- 3. STATE ---
+# --- 3. SESSION STATE ---
 if "recom_count" not in st.session_state: st.session_state.recom_count = 0
 if "selected_tract" not in st.session_state: st.session_state.selected_tract = None
 
@@ -91,9 +93,9 @@ with col_map:
     ))
     fig.update_layout(
         mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
-        height=950, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+        height=1020, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
-    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map_v53")
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map_v54")
     if map_event and "selection" in map_event and map_event["selection"]["points"]:
         new_sid = str(map_event["selection"]["points"][0]["location"]).zfill(11)
         if st.session_state.selected_tract != new_sid:
@@ -133,7 +135,9 @@ with col_side:
         st.markdown("<div class='section-label'>Economic Health</div>", unsafe_allow_html=True)
         e1, e2, e3, e4 = st.columns(4)
         def fmt(v, is_m=False):
-            try: return f"${float(str(v).replace('$','').replace(',','')):,.0f}" if is_m else f"{float(v):,.1f}%"
+            try: 
+                clean = str(v).replace('$','').replace(',','').replace('%','').strip()
+                return f"${float(clean):,.0f}" if is_m else f"{float(clean):,.1f}%"
             except: return "N/A"
         
         e1.metric("Median Home Value", fmt(row.get("Median Home Value"), True))
@@ -141,23 +145,23 @@ with col_side:
         e3.metric("Unemployment", fmt(row.get("Unemployment Rate (%)")))
         e4.metric("Broadband Access", fmt(row.get("Broadband Internet (%)")))
 
-        # Human Capital (Reorganized with Calculation)
+        # Human Capital (Using Requested Poverty-Base Calculation)
         st.markdown("<div class='section-label'>Human Capital & Demographics</div>", unsafe_allow_html=True)
         h1, h2, h3, h4 = st.columns(4)
         
-        # Calculation for Pop 65%
         try:
-            total_pop = float(str(row.get("Total Population")).replace(",",""))
+            # Poverty-base population for poverty status determination
+            base_pop = float(str(row.get("Estimate!!Total!!Population for whom poverty status is determined")).replace(",",""))
             raw_65 = float(str(row.get("Population 65 years and over")).replace(",",""))
-            pct_65 = (raw_65 / total_pop) * 100
+            calc_pct_65 = (raw_65 / base_pop) * 100 if base_pop > 0 else 0
             
-            pop_display = f"{total_pop:,.0f}"
-            elderly_display = f"{pct_65:,.1f}%"
+            pop_display = f"{base_pop:,.0f}"
+            elderly_display = f"{calc_pct_65:,.1f}%"
         except:
             pop_display = "N/A"
             elderly_display = "N/A"
 
-        h1.metric("Total Population", pop_display)
+        h1.metric("Base Population", pop_display)
         h2.metric("Elderly (65+ %)", elderly_display)
         h3.metric("HS Grad+", fmt(row.get("HS Degree or More (%)")))
         h4.metric("Bachelor's+", fmt(row.get("Bachelor's Degree or More (%)")))
