@@ -5,12 +5,13 @@ import json
 import numpy as np
 from streamlit_gsheets import GSheetsConnection
 
-# --- 1. DESIGN SYSTEM ---
-st.set_page_config(page_title="OZ 2.0 | American Dynamism", layout="wide")
+# --- 1. SOFTENED DESIGN SYSTEM ---
+st.set_page_config(page_title="OZ 2.0 | Strategic Portal", layout="wide")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #050a14; color: #ffffff; }
+    /* Softer background: Slate Blue-Grey instead of pure black */
+    .stApp { background-color: #0f172a; color: #f1f5f9; }
     
     /* Demographic Metric Titles - White */
     [data-testid="stMetricLabel"] { 
@@ -18,42 +19,49 @@ st.markdown("""
         text-transform: uppercase; 
         color: #ffffff !important; 
         font-weight: 600;
-        letter-spacing: 0.5px;
     }
     
-    /* Demographic Metric Numbers - Green */
+    /* Softened Green for Numbers */
     [data-testid="stMetricValue"] { 
         font-size: 1.4rem !important; 
         font-weight: 700 !important; 
-        color: #00ff88 !important; 
+        color: #4ade80 !important; 
     }
     
     .stMetric { 
-        background-color: #0f172a; 
+        background-color: #1e293b; 
         padding: 10px; 
-        border-radius: 4px; 
-        border: 1px solid #1e293b; 
+        border-radius: 8px; 
+        border: 1px solid #334155; 
     }
     
-    /* 2x2 Indicator Cards */
+    /* 2x2 Indicator Cards - White Text */
     .indicator-box {
-        border-radius: 4px;
+        border-radius: 8px;
         padding: 12px;
         text-align: center;
         margin-bottom: 10px;
         border: 1px solid #334155;
     }
-    .status-yes { background-color: rgba(0, 255, 136, 0.15); border-color: #00ff88; }
-    .status-no { background-color: #1e293b; border-color: #334155; opacity: 0.6; }
+    .status-yes { background-color: rgba(74, 222, 128, 0.1); border-color: #4ade80; }
+    .status-no { background-color: #1e293b; border-color: #334155; opacity: 0.7; }
     
-    .indicator-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;}
-    .indicator-value { font-size: 0.9rem; font-weight: bold;}
-    .val-yes { color: #00ff88; }
-    .val-no { color: #64748b; }
+    .indicator-label { font-size: 0.7rem; color: #ffffff; text-transform: uppercase; margin-bottom: 4px; font-weight: 700;}
+    .indicator-value { font-size: 0.9rem; font-weight: bold; color: #ffffff !important;}
     
     .anchor-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .anchor-table th { text-align: left; color: #ffffff; border-bottom: 1px solid #334155; padding: 8px; }
-    .anchor-table td { padding: 8px; border-bottom: 1px solid #0f172a; color: #94a3b8; }
+    .anchor-table th { text-align: left; color: #94a3b8; border-bottom: 1px solid #334155; padding: 8px; }
+    .anchor-table td { padding: 8px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+    
+    /* Recommendation Counter Pill */
+    .counter-pill {
+        background: #4ade80;
+        color: #0f172a;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -120,9 +128,21 @@ def load_data():
 
 master_df, la_geojson, anchor_df, M_MAP, tract_centers = load_data()
 
-# --- 3. INTERFACE ---
-st.title(f"Strategic Portal: {st.session_state.get('a_val', 'Louisiana')}")
+# --- 3. DASHBOARD TOP BAR ---
+# Pull nomination count for the counter
+try:
+    history_df = conn.read(worksheet="Sheet1", ttl=0)
+    user_nominations = len(history_df[history_df['User'] == st.session_state.get('username', '')])
+except:
+    user_nominations = 0
 
+t1, t2 = st.columns([0.8, 0.2])
+with t1:
+    st.title(f"Strategic Portal: {st.session_state.get('a_val', 'Louisiana')}")
+with t2:
+    st.markdown(f"<div style='text-align:right; margin-top:20px;'><span class='counter-pill'>NOMINATIONS: {user_nominations}</span></div>", unsafe_allow_html=True)
+
+# --- 4. MAIN LAYOUT ---
 col_map, col_side = st.columns([0.5, 0.5])
 
 with col_side:
@@ -131,7 +151,9 @@ with col_side:
     
     if not match.empty:
         row = match.iloc[0]
-        st.markdown(f"<h3 style='color:#00ff88; margin-top:0;'>TRACT {sid} | {row.get('Parish')}</h3>", unsafe_allow_html=True)
+        # REFINED PROFILE HEADER
+        st.markdown(f"<h3 style='color:#4ade80; margin-top:0;'>TRACT: {sid}</h3>", unsafe_allow_html=True)
+        st.write(f"**PARISH:** {row.get('Parish')} | **REGION:** {row.get('Region', 'Louisiana Delta')}")
         
         def get_ind_html(label, value_str):
             val_clean = str(value_str).lower()
@@ -140,11 +162,10 @@ with col_side:
             else: is_yes = 'yes' in val_clean
             
             css = "status-yes" if is_yes else "status-no"
-            val_css = "val-yes" if is_yes else "val-no"
             txt = "YES" if is_yes else "NO"
-            return f"<div class='indicator-box {css}'><div class='indicator-label'>{label}</div><div class='indicator-value {val_css}'>{txt}</div></div>"
+            return f"<div class='indicator-box {css}'><div class='indicator-label'>{label}</div><div class='indicator-value'>{txt}</div></div>"
 
-        # 2x2 Indicators
+        # 2x2 Indicators (All White Text)
         i_l, i_r = st.columns(2)
         m_val = row.get('Rural or Urban', '')
         with i_l:
@@ -185,29 +206,31 @@ with col_side:
 
 with col_map:
     fig = go.Figure()
+    # Map uses the same softened green
     fig.add_trace(go.Choroplethmapbox(
         geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
         featureidkey="properties.GEOID_MATCH",
-        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0, 255, 136, 0.4)"]],
+        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(74, 222, 128, 0.4)"]],
         showscale=False, marker_line_width=0.3
     ))
     fig.add_trace(go.Scattermapbox(
         lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
-        marker=dict(size=10, color='white', symbol='diamond'),
+        marker=dict(size=8, color='#cbd5e1', symbol='circle'),
         text=anchor_df['name'], hoverinfo='text'
     ))
     fig.update_layout(
-        mapbox=dict(style="carto-darkmatter", center={"lat": 31.0, "lon": -92.0}, zoom=6.2),
+        mapbox=dict(style="carto-darkmatter", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
         height=750, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
     select_data = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     if select_data and select_data.get("selection") and select_data["selection"].get("points"):
         st.session_state["selected_tract"] = str(select_data["selection"]["points"][0].get("location")).zfill(11)
 
-# --- 4. JUSTIFICATION FORM ---
+# --- 5. FORM ---
 st.divider()
 if not match.empty:
     st.subheader("NOMINATION JUSTIFICATION")
     justification = st.text_area("Strategic Reasoning:", height=100)
     if st.button("EXECUTE NOMINATION", type="primary"):
-        st.success(f"Tract {sid} nominated.")
+        # Placeholder for sheet write logic
+        st.success(f"Tract {sid} nominated successfully.")
