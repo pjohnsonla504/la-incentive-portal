@@ -29,7 +29,7 @@ def check_password():
             else:
                 st.session_state["password_correct"] = False
         except Exception as e:
-            st.error(f"⚠️ Security Error: {e}")
+            st.error(f"⚠️ Security Connection Error: {e}")
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
@@ -71,35 +71,42 @@ if check_password():
 
     @st.cache_data(ttl=3600)
     def load_assets():
-        # Stabilized GeoJSON Fetching
-        url_geo = "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/la_louisiana_census_tracts.json"
-        try:
-            r = requests.get(url_geo, timeout=10)
-            geojson = r.json()
-        except:
-            # Fallback to the other source if needed
-            url_geo_alt = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
-            geojson = requests.get(url_geo_alt).json()
+        # ATTEMPT STABLE GEOJSON
+        geojson = None
+        urls = [
+            "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json", # Backup State check
+            "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
+        ]
+        
+        for url in urls:
+            try:
+                r = requests.get(url, timeout=5)
+                if r.status_code == 200:
+                    geojson = r.json()
+                    break
+            except:
+                continue
             
         master = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
         anchors = pd.read_csv("la_anchors.csv")
         
-        # KEY JOIN FIX
-        master['geoid_str'] = master['11-digit FIP'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else "").str.zfill(11)
+        # JOIN KEY FIX: Handle both 11-digit FIP and 11-digit FIPS column names
+        fips_col = '11-digit FIP' if '11-digit FIP' in master.columns else '11-digit FIPS'
+        master['geoid_str'] = master[fips_col].apply(lambda x: str(int(float(x))) if pd.notnull(x) else "").str.zfill(11)
         
-        # ELIGIBILITY LOGIC
+        # ELIGIBILITY COLOR
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['map_color'] = master[elig_col].apply(lambda x: 1 if str(x).strip().lower() in ['eligible', 'yes', '1'] else 0)
 
-        # Centroids
         centers = {}
-        for feature in geojson['features']:
-            geoid = feature['properties'].get('GEOID', feature['properties'].get('geoid'))
-            geom = feature['geometry']
-            # Get mean coordinates regardless of Polygon or MultiPolygon
-            c_list = geom['coordinates'][0] if geom['type'] == 'Polygon' else geom['coordinates'][0][0]
-            coords = np.array(c_list)
-            centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
+        if geojson:
+            for feature in geojson['features']:
+                geoid = feature['properties'].get('GEOID', feature['properties'].get('geoid'))
+                if geoid:
+                    geom = feature['geometry']
+                    c_list = geom['coordinates'][0] if geom['type'] == 'Polygon' else geom['coordinates'][0][0]
+                    coords = np.array(c_list)
+                    centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
             
         return geojson, master, anchors, centers
 
@@ -119,40 +126,46 @@ if check_password():
     with uc1: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><div class='benefit-label'>Use-Case: Rural Healthcare</div><div class='benefit-body'><b>Objective: Modernize critical care.</b> Utilizing the 30% Rural Step-Up...</div></div>", unsafe_allow_html=True)
     with uc2: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><div class='benefit-label'>Use-Case: Main Street Reuse</div><div class='benefit-body'><b>Objective: Historic Revitalization.</b> Driving investment into core commercial districts...</div></div>", unsafe_allow_html=True)
 
-    # --- SECTION 4: MAP ---
+    # --- SECTION 4: MAP & METRICS ---
     st.markdown("<div class='content-section' style='margin-top:40px;'><div class='section-num'>SECTION 4</div><div class='section-title'>Strategic Selection Tool</div></div>", unsafe_allow_html=True)
 
     m_col, p_col = st.columns([6, 4])
     with m_col:
-        # Check if the properties ID is 'GEOID' or 'geoid'
-        id_key = "properties.GEOID" if "GEOID" in gj['features'][0]['properties'] else "properties.geoid"
-        
-        fig = px.choropleth(master_df, geojson=gj, locations="geoid_str", featureidkey=id_key,
-                            color="map_color", color_discrete_map={1: "#4ade80", 0: "#1e293b"}, projection="mercator")
-        fig.update_geos(fitbounds="locations", visible=False)
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=700)
-        selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+        if gj:
+            id_key = "properties.GEOID" if "GEOID" in gj['features'][0]['properties'] else "properties.geoid"
+            fig = px.choropleth(master_df, geojson=gj, locations="geoid_str", featureidkey=id_key,
+                                color="map_color", color_discrete_map={1: "#4ade80", 0: "#1e293b"}, projection="mercator")
+            fig.update_geos(fitbounds="locations", visible=False)
+            fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=700)
+            selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+        else:
+            st.warning("🗺️ Map source currently unavailable. Using manual selector below.")
+            target_geoid = st.selectbox("Select Tract ID", master_df['geoid_str'].unique())
+            selection = None
 
     with p_col:
-        target_geoid = "22071001700" 
+        # Resolve target ID
+        current_id = "22071001700"
         if selection and selection.get("selection", {}).get("points"):
-            target_geoid = str(selection["selection"]["points"][0]["location"])
+            current_id = str(selection["selection"]["points"][0]["location"])
+        elif not gj:
+            current_id = target_geoid
         
-        row = master_df[master_df["geoid_str"] == target_geoid]
+        row = master_df[master_df["geoid_str"] == current_id]
         if not row.empty:
             d = row.iloc[0]
-            st.markdown(f"<h2>Tract {target_geoid}</h2><p style='color:#4ade80; font-weight:800;'>{str(d.get('Parish', 'LOUISIANA')).upper()}</p>", unsafe_allow_html=True)
+            st.markdown(f"<h2>Tract {current_id}</h2><p style='color:#4ade80; font-weight:800;'>{str(d.get('Parish', 'LOUISIANA')).upper()}</p>", unsafe_allow_html=True)
             c1, c2 = st.columns(2)
             with c1: st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 'N/A')}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
             with c2: st.markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if d['map_color']==1 else 'NO'}</div><div class='metric-label'>Eligible</div></div>", unsafe_allow_html=True)
 
-            if not anchors_df.empty and target_geoid in tract_centers:
-                t_lon, t_lat = tract_centers[target_geoid]
+            if not anchors_df.empty and current_id in tract_centers:
+                t_lon, t_lat = tract_centers[current_id]
                 anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
                 st.markdown("<br><p style='font-size:0.8rem; font-weight:bold; color:#94a3b8;'>NEAREST ANCHORS</p>", unsafe_allow_html=True)
                 for _, a in anchors_df.sort_values('dist').head(6).iterrows():
                     st.markdown(f"<div class='anchor-pill'>✔ {a['Name']} ({a['dist']:.1f} mi)</div>", unsafe_allow_html=True)
         else:
-            st.info("Select a tract on the map to see details.")
+            st.info("Select a tract to view specific indicators.")
 
     st.sidebar.button("Log Out", on_click=lambda: st.session_state.clear())
