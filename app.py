@@ -164,4 +164,42 @@ with col_side:
         m_val = str(row.get(cols['metro'], '')).lower()
         with m1: st.markdown(f"<div class='indicator-box {'status-yes' if 'metro' in m_val else 'status-no'}'><div class='indicator-label'>Urban</div><div class='indicator-value'>{'YES' if 'metro' in m_val else 'NO'}</div></div>", unsafe_allow_html=True)
         with m2: st.markdown(f"<div class='indicator-box {'status-yes' if 'rural' in m_val else 'status-no'}'><div class='indicator-label'>Rural</div><div class='indicator-value'>{'YES' if 'rural' in m_val else 'NO'}</div></div>", unsafe_allow_html=True)
-        with m3: st.markdown(f"<div class='indicator-box {'status-yes' if row['is_nmtc'] else 'status-no'}'><div class='
+        with m3: st.markdown(f"<div class='indicator-box {'status-yes' if row['is_nmtc'] else 'status-no'}'><div class='indicator-label'>NMTC</div><div class='indicator-value'>{'YES' if row['is_nmtc'] else 'NO'}</div></div>", unsafe_allow_html=True)
+        with m4: st.markdown(f"<div class='indicator-box {'status-yes' if row['is_deeply'] else 'status-no'}'><div class='indicator-label'>Deep Dist.</div><div class='indicator-value'>{'YES' if row['is_deeply'] else 'NO'}</div></div>", unsafe_allow_html=True)
+
+        # 8 METRICS (COMPACT)
+        def f_val(c, is_p=True, is_d=False):
+            v = row.get(c, 0)
+            try:
+                num = float(str(v).replace('%','').replace(',','').replace('$','').strip())
+                return f"${num:,.0f}" if is_d else (f"{num:,.1f}%" if is_p else f"{num:,.0f}")
+            except: return "N/A"
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Poverty", f_val(cols['pov'])); c2.metric("Unempl.", f_val(cols['unemp'])); c3.metric("Labor", f_val(cols['labor'])); c4.metric("Home Val", f_val(cols['home'], False, True))
+        
+        c5, c6, c7, c8 = st.columns(4)
+        c5.metric("HS Grad", f_val(cols['hs'])); c6.metric("Bach.", f_val(cols['bach']))
+        try:
+            bp = float(str(row.get(cols['base'])).replace(',',''))
+            r65 = float(str(row.get("Population 65 years and over")).replace(',',''))
+            c7.metric("Base Pop", f"{bp:,.0f}"); c8.metric("65+ %", f"{(r65/bp)*100:,.1f}%")
+        except:
+            c7.metric("Base Pop", "N/A"); c8.metric("65+ %", "N/A")
+
+        # ANCHORS
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_df = anchor_df.copy()
+            a_df['dist'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
+            t7 = a_df.sort_values('dist').head(5) # Reduced to 5 for fit
+            tbl = "<table class='anchor-table'><tr><th>DIST</th><th>ASSET</th><th>TYPE</th></tr>"
+            for _, a in t7.iterrows():
+                tbl += f"<tr><td><b>{a['dist']:.1f}mi</b></td><td>{a['name'].upper()}</td><td>{str(a.get('type','')).upper()}</td></tr>"
+            st.markdown(tbl + "</table>", unsafe_allow_html=True)
+
+        if st.button("NOMINATE TRACT", type="primary", use_container_width=True):
+            st.session_state.recom_count += 1
+            st.success(f"Nominated {sid}"); st.rerun()
+    else:
+        st.info("Click a green tract to analyze.")
