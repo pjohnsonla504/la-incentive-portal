@@ -6,7 +6,7 @@ import numpy as np
 from streamlit_gsheets import GSheetsConnection
 
 # 1. Page Configuration
-st.set_page_config(page_title="OZ 2.0 Portal", layout="wide")
+st.set_page_config(page_title="LA OZ 2.0 Portal", layout="wide")
 
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
@@ -46,52 +46,65 @@ if not st.session_state["authenticated"]:
                 else: st.error("Invalid credentials.")
     st.stop()
 
-# --- 3. DATA LOADING ---
+# --- 3. DATA LOADING (THE THREE NEW ENGINES) ---
 @st.cache_data(ttl=60)
 def load_data():
-    m = pd.read_csv("tract_data_final.csv")
-    m.columns = [c.strip() for c in m.columns]
-    m['GEOID'] = m['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
+    # ENGINE 1: Eligibility Data
+    elig_df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
+    elig_df.columns = [c.strip() for c in elig_df.columns]
+    elig_df['GEOID'] = elig_df['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
+    
+    # ENGINE 2: Demographic Data
+    demo_df = pd.read_csv("Louisiana_All_Tracts_Demographics.csv")
+    demo_df.columns = [c.strip() for c in demo_df.columns]
+    demo_df['GEOID'] = demo_df['GEOID'].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
+    
+    # Merge Engines on GEOID
+    m = pd.merge(elig_df, demo_df, on="GEOID", how="left", suffixes=('', '_demo'))
     
     # Clean indicators
     nums = ['poverty_rate', 'unemp_rate', 'med_hh_income', 'pop_total', 'age_18_24_pct', 'hs_plus_pct_25plus', 'ba_plus_pct_25plus']
     for c in nums:
-        m[c] = pd.to_numeric(m[c].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
+        if c in m.columns:
+            m[c] = pd.to_numeric(m[c].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
     
-    # Designations
-    s_med = m['med_hh_income'].median()
-    urb = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
-    m['is_rural'] = np.where((~m['Parish'].isin(urb)) & (m['pop_total'] < 5000), 1, 0)
-    m['nmtc_eligible'] = np.where((m['poverty_rate'] >= 20) | (m['med_hh_income'] <= (s_med * 0.8)), 1, 0)
-    sev = (m['poverty_rate'] >= 30) | (m['med_hh_income'] <= (s_med * 0.6)) | (m['unemp_rate'] >= 9.0)
-    m['deep_distress'] = np.where((m['poverty_rate'] >= 40) | (m['med_hh_income'] <= (s_med * 0.4)) | (m['unemp_rate'] >= 15.0) | ((m['is_rural'] == 1) & sev), 1, 0)
+    # ENGINE 3: Anchors
+    try:
+        a = pd.read_csv("la_anchors.csv")
+        a.columns = [c.strip().lower() for c in a.columns]
+    except:
+        a = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
 
+    # GeoJSON & Centroids
     with open("tl_2025_22_tract.json") as f: g = json.load(f)
-    
-    # Calculate tract centroids if lat/lon missing
     centroids = {}
     for feature in g['features']:
         coords = np.array(feature['geometry']['coordinates'][0])
-        if coords.ndim == 3: coords = coords[0] # Handle nested lists
+        if coords.ndim == 3: coords = coords[0]
         centroids[feature['properties']['GEOID']] = [np.mean(coords[:, 1]), np.mean(coords[:, 0])]
     
     m['lat'] = m['GEOID'].map(lambda x: centroids.get(x, [0,0])[0])
     m['lon'] = m['GEOID'].map(lambda x: centroids.get(x, [0,0])[1])
-
-    try:
-        a = pd.read_csv("la_anchors.csv")
-        a.columns = [c.strip().lower() for c in a.columns]
-    except: a = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
+    
     return m, g, a
 
 master_df, la_geojson, anchor_df = load_data()
 
+# Status Calculations (Master Data File logic)
+s_med = master_df['med_hh_income'].median()
+urb = ['Orleans', 'Jefferson', 'East Baton Rouge', 'Caddo', 'Lafayette', 'St. Tammany']
+master_df['is_rural'] = np.where((~master_df['Parish'].isin(urb)) & (master_df['pop_total'] < 5000), 1, 0)
+master_df['nmtc_eligible'] = np.where((master_df['poverty_rate'] >= 20) | (master_df['med_hh_income'] <= (s_med * 0.8)), 1, 0)
+sev = (master_df['poverty_rate'] >= 30) | (master_df['med_hh_income'] <= (s_med * 0.6)) | (master_df['unemp_rate'] >= 9.0)
+master_df['deep_distress'] = np.where((master_df['poverty_rate'] >= 40) | (master_df['med_hh_income'] <= (s_med * 0.4)) | (master_df['unemp_rate'] >= 15.0) | ((master_df['is_rural'] == 1) & sev), 1, 0)
+
 if st.session_state["role"].lower() != "admin" and st.session_state["a_type"].lower() != "all":
     master_df = master_df[master_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# --- 4. QUOTA ---
+# --- 4. QUOTA (Based on Master Data 'Is_Eligible' Column) ---
 try:
     recs = conn.read(worksheet="Sheet1", ttl=0)
+    # Opportunity Zone 2.0 tracks are highlighted green
     q_limit = max(1, int(len(master_df[master_df['Is_Eligible'] == 1]) * 0.25))
     q_rem = q_limit - len(recs[recs['User'] == st.session_state["username"]])
 except: recs, q_limit, q_rem = pd.DataFrame(columns=["Date", "User", "GEOID", "Category", "Justification", "Document"]), 1, 1
@@ -133,7 +146,7 @@ with c_met:
     
     st.markdown(f"#### 📈 {'Tract '+st.session_state['selected_tract'][-4:] if has_sel else 'Select Tract'}")
     
-    # 7 INDICATORS
+    # Indicators from Demographic Engine
     m1, m2, m3 = st.columns(3)
     m1.metric("Pop", f"{disp['pop_total']:,.0f}")
     m2.metric("Income", f"${disp['med_hh_income']:,.0f}")
@@ -148,7 +161,6 @@ with c_met:
         prox['dist'] = prox.apply(lambda r: get_distance(disp['lat'], disp['lon'], r['lat'], r['lon']), axis=1)
         for _, r in prox.sort_values('dist').head(5).iterrows():
             st.markdown(f"**{r['name']}** ({r['type']}) — {r['dist']:.2f} mi")
-    else: st.write("Select a tract.")
 
     st.divider()
     def glow(l, a, c):
