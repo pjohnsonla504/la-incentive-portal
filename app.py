@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import json
 import numpy as np
 
-# --- 1. DESIGN SYSTEM: CLEAN GRID RENDERING ---
+# --- 1. DESIGN SYSTEM: ENHANCED TYPOGRAPHY ---
 st.set_page_config(page_title="Louisiana OZ 2.0 Portal", layout="wide")
 
 st.markdown("""
@@ -25,37 +25,37 @@ st.markdown("""
     }
     
     .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 5px; }
-    .section-title { font-size: 2rem; font-weight: 900; margin-bottom: 15px; letter-spacing: -0.02em; display: block; width: 100%; }
+    .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; letter-spacing: -0.02em; display: block; width: 100%; }
     .hero-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 900; line-height: 1; margin-bottom: 15px; }
     .hero-subtitle { font-size: 0.9rem; color: #4ade80; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 30px; }
-    .narrative-text { font-size: 1rem; line-height: 1.6; color: #94a3b8; margin-bottom: 20px; max-width: 1100px; }
+    .narrative-text { font-size: 1.1rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 25px; max-width: 1100px; }
     
-    /* Benefit Box Styling */
+    /* Enhanced Benefit Box Styling */
     .benefit-card { 
         background: #161b28; 
-        padding: 24px; 
+        padding: 30px; 
         border: 1px solid #2d3748; 
         border-radius: 4px; 
         height: 100%;
-        transition: border 0.3s ease;
+        transition: all 0.3s ease;
     }
-    .benefit-card:hover { border-color: #4ade80; }
-    .benefit-label { font-size: 0.7rem; color: #4ade80; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; }
-    .benefit-header { font-size: 1.25rem; font-weight: 900; color: #ffffff; margin-bottom: 12px; }
-    .benefit-body { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; }
+    .benefit-card:hover { border-color: #4ade80; background: #1c2331; }
+    
+    .benefit-label { font-size: 0.8rem; color: #4ade80; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em; }
+    .benefit-header { font-size: 1.6rem; font-weight: 900; color: #ffffff; margin-bottom: 15px; line-height: 1.2; }
+    .benefit-body { font-size: 1.05rem; color: #f8fafc; line-height: 1.6; font-weight: 400; }
 
     /* Indicator UI */
-    .indicator-pill { display: inline-block; padding: 3px 10px; border-radius: 4px; font-weight: 800; font-size: 0.65rem; margin-right: 4px; border: 1px solid #2d3748; }
+    .indicator-pill { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: 800; font-size: 0.7rem; margin-right: 5px; border: 1px solid #2d3748; }
     .active { background: #4ade80; color: #0b0f19; border-color: #4ade80; }
-    .inactive { color: #475569; }
     </style>
     """, unsafe_allow_html=True)
 
 # --- 2. DATA ENGINE ---
 @st.cache_data(ttl=60)
 def load_data():
-    # Placeholder: Tracks highlighted green are only those eligible for Opportunity Zone 2.0.
-    # In production, this loads your 'Opportunity Zones 2.0 - Master Data File.csv'
+    # Tracks highlighted green are only those eligible for Opportunity Zone 2.0.
+    # [Internal Note: Ensure 'Opportunity Zones 2.0 - Master Data File.csv' is in path]
     return pd.DataFrame(), {}, pd.DataFrame(), {}, {}
 
 # --- SECTION 1: INTRODUCTION ---
@@ -83,7 +83,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Benefit Boxes (Replacing the raw HTML grid with Streamlit columns for stability)
+# Enlarged Benefit Boxes
 b1, b2, b3 = st.columns(3)
 with b1:
     st.markdown("""
@@ -126,21 +126,21 @@ st.markdown("""
 uc1, uc2 = st.columns(2)
 with uc1:
     st.markdown("""
-    <div class='benefit-card' style='border-left: 4px solid #4ade80;'>
+    <div class='benefit-card' style='border-left: 5px solid #4ade80;'>
         <div class='benefit-label'>Use-Case: Rural Healthcare</div>
         <div class='benefit-body'>
-            <b>Objective:</b> Modernize critical care facilities in parishes with high elderly populations.<br><br>
-            <b>Justification:</b> Utilizing the 30% Rural Step-Up, this QROF investment offsets higher construction costs in remote areas while meeting the OBBB's rural equity mandate.
+            <span style='font-size:1.2rem; font-weight:800; display:block; margin-bottom:10px;'>Objective: Modernize critical care.</span>
+            Utilizing the 30% Rural Step-Up, this QROF investment offsets higher construction costs in remote areas while meeting the OBBB's rural equity mandate in parishes with high elderly populations.
         </div>
     </div>
     """, unsafe_allow_html=True)
 with uc2:
     st.markdown("""
-    <div class='benefit-card' style='border-left: 4px solid #4ade80;'>
+    <div class='benefit-card' style='border-left: 5px solid #4ade80;'>
         <div class='benefit-label'>Use-Case: Main Street Reuse</div>
         <div class='benefit-body'>
-            <b>Objective:</b> Adaptive reuse of historic Main Street assets for small business and fiber hubs.<br><br>
-            <b>Justification:</b> Leveraging Louisiana Main Street designations to drive investment into core commercial districts, ensuring long-term permanent tax exclusion.
+            <span style='font-size:1.2rem; font-weight:800; display:block; margin-bottom:10px;'>Objective: Historic Revitalization.</span>
+            Leveraging Louisiana Main Street designations to drive investment into core commercial districts for small business and fiber hubs, ensuring long-term permanent tax exclusion.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -155,6 +155,3 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# Interactive Section 4 Map logic placeholder
-st.info("Section 4 Map and Data Profile active below.")
