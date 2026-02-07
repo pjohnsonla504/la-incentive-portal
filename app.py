@@ -17,7 +17,6 @@ except Exception as e:
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "selected_tract": None})
 
-# Haversine Distance Formula for Anchor Assets
 def get_distance(lat1, lon1, lat2, lon2):
     r = 3958.8 
     phi1, phi2 = np.radians(lat1), np.radians(lat2)
@@ -28,13 +27,27 @@ def get_distance(lat1, lon1, lat2, lon2):
 # --- 2. DATA LOADING ---
 @st.cache_data(ttl=60)
 def load_data():
+    # Load Master Data
     m = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
+    
+    # Clean Column Names (Crucial to prevent KeyErrors)
+    m.columns = m.columns.str.strip()
     
     # Identify GEOID (Column B / Index 1)
     geoid_col = m.columns[1]
     m['GEOID_KEY'] = m[geoid_col].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
     
-    # Load Boundaries & standardise GEOID
+    # Dynamic Mapping for Eligibility Columns (In case of typos in CSV)
+    def find_col(keywords):
+        for col in m.columns:
+            if all(k.lower() in col.lower() for k in keywords):
+                return col
+        return None
+
+    col_p = find_col(['5-Year', 'ACS', 'Eligiblity']) # Eligibility Pool
+    col_q = find_col(['Insiders', 'Eligibilty'])      # Current Recommendations
+    
+    # Load Boundaries
     with open("tl_2025_22_tract.json") as f: 
         g = json.load(f)
     for feature in g['features']:
@@ -44,12 +57,12 @@ def load_data():
     # Anchor Assets
     try:
         a = pd.read_csv("la_anchors.csv")
-        a.columns = [c.strip().lower() for c in a.columns]
+        a.columns = a.columns.str.strip().str.lower()
     except: a = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
         
-    return m, g, a
+    return m, g, a, col_p, col_q
 
-master_df, la_geojson, anchor_df = load_data()
+master_df, la_geojson, anchor_df, ELIG_COL, REC_COL = load_data()
 
 # --- 3. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
@@ -60,7 +73,7 @@ if not st.session_state["authenticated"]:
             u_in, p_in = st.text_input("Username").strip(), st.text_input("Password", type="password").strip()
             if st.form_submit_button("Access Portal"):
                 db = conn.read(worksheet="Users", ttl=0)
-                db.columns = [c.strip() for c in db.columns]
+                db.columns = db.columns.str.strip()
                 match = db[(db['Username'].astype(str) == u_in) & (db['Password'].astype(str) == p_in)]
                 if not match.empty:
                     st.session_state.update({
@@ -77,22 +90,24 @@ u_df = master_df.copy()
 if st.session_state["role"].lower() != "admin" and st.session_state["a_val"].lower() != "all":
     u_df = u_df[u_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# Budget: 25% of the regional pool
-eligible_mask = u_df['5-Year ACS Eligiblity'].astype(str).str.lower().str.contains('yes|eligible', na=False)
-total_eligible_in_region = len(u_df[eligible_mask])
-q_limit = max(1, int(total_eligible_in_region * 0.25))
+# Calculate budget based on the detected Eligibility column
+if ELIG_COL:
+    eligible_mask = u_df[ELIG_COL].astype(str).str.lower().str.contains('yes|eligible', na=False)
+    total_eligible_in_region = len(u_df[eligible_mask])
+    q_limit = max(1, int(total_eligible_in_region * 0.25))
+else:
+    st.error("Could not find Eligibility column in CSV."); st.stop()
 
-# Tracker: Reading current recommendations from "Sheet1"
+# Tracker: Reading from Sheet1 for "Tracts Recommended"
 try:
     existing_recs = conn.read(worksheet="Sheet1", ttl=0)
-    user_recs_df = existing_recs[existing_recs['User'] == st.session_state["username"]]
-    user_recs_count = len(user_recs_df)
+    user_recs_count = len(existing_recs[existing_recs['User'] == st.session_state["username"]])
 except:
     user_recs_count = 0
-    user_recs_df = pd.DataFrame()
+    existing_recs = pd.DataFrame(columns=["Date", "User", "GEOID", "Category", "Justification"])
 
 # --- 5. HEADER & PROGRESS ---
-st.title(f"📍 OZ 2.0 Strategic Planner: {st.session_state['a_val']}")
+st.title(f"📍 OZ 2.0 Strategy: {st.session_state['a_val']}")
 c_bar, c_met = st.columns([0.7, 0.3])
 with c_bar:
     st.progress(min(1.0, user_recs_count / q_limit), text=f"Budget Used: {user_recs_count} / {q_limit}")
@@ -106,7 +121,6 @@ col_map, col_profile = st.columns([0.66, 0.33])
 
 with col_map:
     u_df['map_status'] = np.where(eligible_mask, "Eligible", "Ineligible")
-    
     fig = px.choropleth_mapbox(
         u_df, geojson=la_geojson, locations="GEOID_KEY", featureidkey="properties.GEOID_MATCH",
         color="map_status", 
@@ -126,75 +140,56 @@ with col_profile:
     
     if sid:
         res = master_df[master_df['GEOID_KEY'] == sid].iloc[0]
-        
-        # 1. Identity
         st.markdown(f"#### Tract ID: `{sid}`")
-        st.write(f"**Parish:** {res.get('Parish', 'N/A')}")
-        st.write(f"**Region:** {res.get('Region', 'N/A')}")
+        st.write(f"**Parish:** {res.get('Parish', 'N/A')} | **Region:** {res.get('Region', 'N/A')}")
         
-        # 2. Expanded Demographic Snapshot (11 Metrics)
         st.markdown("##### 📊 Demographic Snapshot")
-        row1 = st.columns(2)
-        row1[0].metric("Total Population", f"{res.get('Total Population', 0):,}")
-        row1[1].metric("Median Home Value", f"${res.get('Median Home Value', 0):,}")
+        r1 = st.columns(2)
+        r1[0].metric("Total Population", f"{res.get('Total Population', 0):,}")
+        r1[1].metric("Median Home Value", f"${res.get('Median Home Value', 0):,}")
         
-        row2 = st.columns(2)
-        row2[0].metric("% Medicaid/Public", f"{res.get('% Medicaid/Public Insurance', '0%')}")
-        row2[1].metric("Median Family Income", f"${res.get('Median Family Income', 0):,}")
+        r2 = st.columns(2)
+        r2[0].metric("% Medicaid/Public", f"{res.get('% Medicaid/Public Insurance', '0%')}")
+        r2[1].metric("Median Family Income", f"${res.get('Median Family Income', 0):,}")
         
-        row3 = st.columns(2)
-        row3[0].metric("Poverty Rate (%)", f"{res.get('Poverty Rate (%)', '0%')}")
-        row3[1].metric("Labor Force Part. (%)", f"{res.get('Labor Force Participation (%)', '0%')}")
+        r3 = st.columns(2)
+        r3[0].metric("Poverty Rate (%)", f"{res.get('Poverty Rate (%)', '0%')}")
+        r3[1].metric("Labor Force Part. (%)", f"{res.get('Labor Force Participation (%)', '0%')}")
         
-        row4 = st.columns(2)
-        row4[0].metric("Unemployment Rate (%)", f"{res.get('Unemployment Rate (%)', '0%')}")
-        row4[1].metric("HS Degree+", f"{res.get('HS Degree or More (%)', '0%')}")
+        r4 = st.columns(2)
+        r4[0].metric("Unemployment Rate (%)", f"{res.get('Unemployment Rate (%)', '0%')}")
+        r4[1].metric("HS Degree+", f"{res.get('HS Degree or More (%)', '0%')}")
         
-        row5 = st.columns(2)
-        # FIXED SYNTAX: No backslash inside f-string curly braces
-        row5[0].metric("Bachelor's Degree+", f'{res.get("Bachelor\'s Degree or More (%)", "0%")}')
-        row5[1].metric("Broadband Internet", f"{res.get('Broadband Internet (%)', '0%')}")
+        r5 = st.columns(2)
+        # Using .get() with the exact column string to be safe
+        r5[0].metric("Bachelor's Degree+", res.get("Bachelor's Degree or More (%)", "0%"))
+        r5[1].metric("Broadband Internet", res.get("Broadband Internet (%)", "0%"))
         
-        st.metric("Disability Population", f"{res.get('Disability Population (%)', '0%')}")
+        st.metric("Disability Population", res.get("Disability Population (%)", "0%"))
         
-        # 3. Justification Space
         st.divider()
         st.markdown("##### ✍️ Recommendation Justification")
         j_cat = st.selectbox("Category", ["Economic Growth", "Infrastructure", "Housing", "Workforce", "Other"])
-        j_text = st.text_area("Why should this tract be nominated?", key="just_text")
+        j_text = st.text_area("Justification", key="just_text")
         
         if st.button("Submit Recommendation", type="primary"):
-            new_row = pd.DataFrame([{
-                "Date": pd.Timestamp.now().strftime("%Y-%m-%d"),
-                "User": st.session_state["username"],
-                "GEOID": sid,
-                "Category": j_cat,
-                "Justification": j_text
-            }])
-            # Append to GSheet
+            new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": sid, "Category": j_cat, "Justification": j_text}])
             try:
-                updated_df = pd.concat([existing_recs, new_row], ignore_index=True)
-                conn.update(worksheet="Sheet1", data=updated_df)
-                st.success(f"Tract {sid} saved!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Save Failed: {e}")
+                conn.update(worksheet="Sheet1", data=pd.concat([existing_recs, new_row], ignore_index=True))
+                st.success("Saved!"); st.rerun()
+            except Exception as e: st.error(f"Save Failed: {e}")
 
-        # 4. 5 Nearest Anchors
         st.divider()
         st.markdown("##### ⚓ 5 Nearest Anchor Assets")
-        if not anchor_df.empty and 'lat' in res:
+        if not anchor_df.empty:
             anchor_df['dist'] = anchor_df.apply(lambda x: get_distance(res['lat'], res['lon'], x['lat'], x['lon']), axis=1)
             st.table(anchor_df.sort_values('dist').head(5)[['name', 'type', 'dist']].rename(columns={'dist': 'Miles'}))
     else:
-        st.info("Select a tract on the map to view data.")
+        st.info("Select a tract on the map.")
 
 # --- 7. SUMMARY TABLE ---
 st.divider()
 st.subheader("📋 Your Recommendations Summary")
-if not user_recs_df.empty:
-    # Join with master data to show Parish/Region in the summary
-    summary_display = user_recs_df.merge(master_df[['GEOID_KEY', 'Parish', 'Region']], left_on='GEOID', right_on='GEOID_KEY', how='left')
-    st.dataframe(summary_display[['GEOID', 'Parish', 'Region', 'Category', 'Justification']], use_container_width=True)
-else:
-    st.write("No tracts selected yet.")
+user_recs = existing_recs[existing_recs['User'] == st.session_state["username"]]
+if not user_recs.empty:
+    st.dataframe(user_recs, use_container_width=True)
