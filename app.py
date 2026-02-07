@@ -58,7 +58,7 @@ def load_data():
 
 master_df, la_geojson, anchor_df, tract_centers = load_data()
 
-# --- 3. SESSION & COUNTER ---
+# --- 3. SESSION ---
 if "recom_count" not in st.session_state:
     st.session_state.recom_count = 0
 if "selected_tract" not in st.session_state:
@@ -67,7 +67,7 @@ if "selected_tract" not in st.session_state:
 # --- 4. TOP BAR ---
 t1, t2 = st.columns([0.7, 0.3])
 with t1:
-    st.title(f"Strategic Portal: Louisiana")
+    st.title("Strategic Portal: Louisiana")
 with t2:
     st.markdown(f"<div style='text-align:right; margin-top:20px;'><span class='counter-pill'>RECOMMENDATIONS: {st.session_state.recom_count}</span></div>", unsafe_allow_html=True)
 
@@ -84,10 +84,9 @@ with col_map:
     ))
     fig.update_layout(
         mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
-        height=900, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+        height=950, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
     
-    # Capture Selection
     map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map")
     
     if map_event and "selection" in map_event and map_event["selection"]["points"]:
@@ -101,48 +100,3 @@ with col_side:
         row = match.iloc[0]
         st.markdown(f"<h3 style='color:#4ade80;'>TRACT: {sid}</h3>", unsafe_allow_html=True)
         st.markdown(f"<p style='color:#94a3b8;'>PARISH: {row.get('Parish')} | REGION: {row.get('Region', 'LA')}</p>", unsafe_allow_html=True)
-        
-        # 2x2 Indicators
-        i1, i2 = st.columns(2)
-        mv = str(row.get('Metro Status (Metropolitan/Rural)', '')).lower()
-        with i1:
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'metropolitan' in mv else 'status-no'}'><div class='indicator-label'>Metro (Urban)</div><div class='indicator-value'>{'YES' if 'metropolitan' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'rural' in mv else 'status-no'}'><div class='indicator-label'>Rural</div><div class='indicator-value'>{'YES' if 'rural' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
-        with i2:
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Eligible</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Deeply Distressed</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
-
-        # 8 Demographic Metrics
-        m_map = {"Median Home Value": "home", "Disability Population (%)": "dis", "Population 65 years and over": "pop65", "Labor Force Participation (%)": "labor", "Unemployment Rate (%)": "unemp", "HS Degree or More (%)": "hs", "Bachelor's Degree or More (%)": "bach", "Broadband Internet (%)": "web"}
-        metrics_list = list(m_map.keys())
-        for i in range(0, 8, 4):
-            cols = st.columns(4)
-            for j, m_name in enumerate(metrics_list[i:i+4]):
-                val = row.get(m_name, "N/A")
-                # Format logic
-                try:
-                    f_val = f"${float(str(val).replace('$','').replace(',','')):,.0f}" if "Home" in m_name else f"{float(val):,.1f}%"
-                except: f_val = "N/A"
-                cols[j].metric(m_name.split('(')[0], f_val)
-
-        # Assets
-        st.markdown("<p style='font-weight:800; margin-top:20px; color:#ffffff;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
-        t_pos = tract_centers.get(sid)
-        if t_pos:
-            a_df = anchor_df.copy()
-            a_df['d'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
-            t5 = a_df.sort_values('d').head(5)
-            tbl = "<table class='anchor-table'><tr><th>DIST</th><th>NAME</th><th>TYPE</th></tr>"
-            for _, a in t5.iterrows():
-                tbl += f"<tr><td>{a['d']:.1f}m</td><td>{a['name'][:30]}</td><td>{str(a.get('type','')).upper()}</td></tr>"
-            st.markdown(tbl + "</table>", unsafe_allow_html=True)
-
-        # Nomination Form
-        st.divider()
-        st.subheader("STRATEGIC NOMINATION")
-        cat = st.selectbox("Investment Category", ["Energy Transition", "Cybersecurity", "Critical Mfg", "Defense Tech"])
-        just = st.text_area("Justification (Required)")
-        if st.button("SUBMIT NOMINATION", type="primary"):
-            if just:
-                st.session_state.recom_count += 1
-                st.success(f"Tract {sid}
