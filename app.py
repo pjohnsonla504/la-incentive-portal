@@ -16,15 +16,6 @@ except Exception as e:
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "selected_tract": None})
 
-def get_distance(lat1, lon1, lat2, lon2):
-    try:
-        r = 3958.8 
-        phi1, phi2 = np.radians(lat1), np.radians(lat2)
-        dphi, dlambda = np.radians(lat2 - lat1), np.radians(lon2 - lon1)
-        a = np.sin(dphi/2)**2 + np.cos(phi1)*np.cos(phi2)*np.sin(dlambda/2)**2
-        return r * 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
-    except: return None
-
 # --- 2. DATA LOADING ---
 @st.cache_data(ttl=60)
 def load_data():
@@ -59,26 +50,38 @@ def load_data():
         raw_id = str(feature['properties'].get('GEOID', ''))
         feature['properties']['GEOID_MATCH'] = raw_id.split('.')[0][-11:].zfill(11)
 
-    try:
-        a = pd.read_csv("la_anchors.csv")
-        a.columns = a.columns.str.strip().str.lower()
-    except: a = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
-        
-    return df, g, a, m_map
+    return df, g, m_map
 
-master_df, la_geojson, anchor_df, M_MAP = load_data()
+master_df, la_geojson, M_MAP = load_data()
 
-# --- 3. AUTHENTICATION (Omitted for brevity - logic remains same as v14) ---
+# --- 3. AUTHENTICATION (Standard Login Logic) ---
 if not st.session_state["authenticated"]:
-    # ... (Login form logic)
+    st.title("🔐 Louisiana OZ 2.0 Access")
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        with st.form("login"):
+            u, p = st.text_input("User").strip(), st.text_input("Pass", type="password").strip()
+            if st.form_submit_button("Login"):
+                user_db = conn.read(worksheet="Users", ttl=0)
+                user_db.columns = user_db.columns.str.strip()
+                match = user_db[(user_db['Username'].astype(str) == u) & (user_db['Password'].astype(str) == p)]
+                if not match.empty:
+                    st.session_state.update({
+                        "authenticated": True, "username": u, 
+                        "role": str(match.iloc[0]['Role']), 
+                        "a_type": str(match.iloc[0]['Assigned_Type']), 
+                        "a_val": str(match.iloc[0]['Assigned_Value'])
+                    })
+                    st.rerun()
+                else: st.error("Invalid credentials.")
     st.stop()
 
-# --- 4. REGIONAL FILTERING & COLOR SCHEME LOGIC ---
+# --- 4. REGIONAL FILTERING & NO-COLOR LOGIC ---
 u_df = master_df.copy()
 if st.session_state["role"].lower() != "admin" and st.session_state["a_val"].lower() != "all":
     u_df = u_df[u_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# FIXED COLOR LOGIC: Green for Eligible, Grey for Ineligible
+# Define Eligibility: Only 'Eligible' gets a visible color
 elig_col = "5-year ACS Eligiblity"
 u_df['map_status'] = np.where(
     u_df[elig_col].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']), 
@@ -86,7 +89,7 @@ u_df['map_status'] = np.where(
     "Ineligible"
 )
 
-# Budgeting
+# Quota Logic
 regional_eligible = len(u_df[u_df['map_status'] == "Eligible"])
 quota = max(1, int(regional_eligible * 0.25))
 
@@ -101,7 +104,7 @@ except:
 # --- 5. INTERFACE ---
 st.title(f"📍 OZ 2.0 Strategic Planner: {st.session_state['a_val']}")
 c_bar, c_num = st.columns([0.7, 0.3])
-c_bar.progress(min(1.0, user_count/quota), text=f"Tracts Recommended: {user_count} / {quota}")
+c_bar.progress(min(1.0, user_count/quota), text=f"Nominations: {user_count} / {quota}")
 c_num.metric("My Total Nominations", user_count)
 
 st.divider()
@@ -109,7 +112,7 @@ st.divider()
 col_map, col_data = st.columns([0.66, 0.33])
 
 with col_map:
-    # Explicitly mapping colors to categorical values
+    # Set Ineligible to transparent/no color
     fig = px.choropleth_mapbox(
         u_df, 
         geojson=la_geojson, 
@@ -117,20 +120,24 @@ with col_map:
         featureidkey="properties.GEOID_MATCH",
         color="map_status", 
         color_discrete_map={
-            "Eligible": "#28a745",    # True Green
-            "Ineligible": "#6c757d"   # Bootstrap Grey
+            "Eligible": "#28a745",        # Solid Green
+            "Ineligible": "rgba(0,0,0,0)" # Transparent (No Color)
         },
         category_orders={"map_status": ["Eligible", "Ineligible"]},
         mapbox_style="carto-positron", 
         zoom=7, 
         center={"lat": 30.8, "lon": -91.5},
-        opacity=0.7, 
+        opacity=0.8, 
         hover_data=["GEOID_KEY", "Parish"]
     )
+    
+    # Force thin borders for the "no color" tracts so they are still selectable
+    fig.update_traces(marker_line_width=0.5, marker_line_color="lightgrey")
+    
     fig.update_layout(
         height=800, 
         margin={"r":0,"t":0,"l":0,"b":0},
-        legend=dict(title="Status", orientation="h", y=1.02, x=0)
+        legend=dict(title="OZ 2.0 Eligibility", orientation="h", y=1.02, x=0)
     )
     
     selected = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
@@ -145,15 +152,10 @@ with col_data:
     
     if sid and not matching_rows.empty:
         row = matching_rows.iloc[0]
-        st.write(f"**ID:** `{sid}` | **Parish:** {row.get('Parish')} | **Region:** {row.get('Region')}")
+        st.write(f"**ID:** `{sid}` | **Parish:** {row.get('Parish')}")
         
-        # Determine status for profile display
-        is_elig = row[elig_col].lower().strip() in ['yes', 'eligible', 'y']
-        status_color = "green" if is_elig else "grey"
-        st.markdown(f"**Status:** :{status_color}[{'Eligible for OZ 2.0' if is_elig else 'Ineligible'}]")
-        
+        # Demographic Metrics
         st.divider()
-        st.markdown("##### 📊 Demographics")
         def show(lbl, k):
             h = M_MAP.get(k)
             val = row.get(h, "N/A")
@@ -175,6 +177,25 @@ with col_data:
 
         st.divider()
         st.markdown("##### ✍️ Submission")
-        # ... (Submission form logic)
+        cat = st.selectbox("Category", ["Economic Growth", "Infrastructure", "Housing", "Workforce Development", "Other"])
+        note = st.text_area("Justification")
+        
+        if st.button("Submit Recommendation", type="primary"):
+            if user_count >= quota:
+                st.error("Limit reached.")
+            elif not note:
+                st.warning("Please add a justification.")
+            else:
+                new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": sid, "Category": cat, "Justification": note}])
+                try:
+                    conn.update(worksheet="Sheet1", data=pd.concat([current_sheet, new_row], ignore_index=True))
+                    st.success("Submitted!"); st.rerun()
+                except Exception as e: st.error(f"Error: {e}")
     else:
-        st.info("Select a tract on the map to view data.")
+        st.info("Select a highlighted tract on the map to begin.")
+
+# --- 6. SUMMARY ---
+st.divider()
+st.subheader("📋 My Selected Tracts")
+if not user_recs.empty:
+    st.dataframe(user_recs[['GEOID', 'Category', 'Justification', 'Date']], use_container_width=True)
