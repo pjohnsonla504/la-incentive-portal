@@ -38,33 +38,37 @@ def safe_num(val, is_money=False):
         if pd.isna(val) or str(val).strip().lower() in ['n/a', 'nan', '']: return "N/A"
         n = float(str(val).replace('$', '').replace(',', '').replace('%', '').strip())
         if is_money: return f"${n:,.0f}"
-        # If it's a percentage (less than or equal to 100), show as %
         if n <= 100 and n > 0: return f"{n:,.1f}%"
         return f"{n:,.0f}"
     except: return "N/A"
 
-# --- 2. DATA LOADING ---
+# --- 2. DATA LOADING (WITH ENCODING FIX) ---
 @st.cache_data(ttl=60)
 def load_data():
-    # Master Data File
+    # Load Master Data
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
     df.columns = df.columns.str.strip()
     
-    # Anchor Loading (FIXED FOR CASE SENSITIVITY)
+    # Load Anchors with Robust Encoding Fallback
     try:
+        # Try standard UTF-8 first
         a = pd.read_csv("la_anchors.csv")
-        a.columns = a.columns.str.strip().str.lower() # Forces 'Lat' to 'lat'
-        a = a.dropna(subset=['lat', 'lon'])
-    except Exception as e:
-        a = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
-        st.error(f"Anchor File Error: {e}")
+    except UnicodeDecodeError:
+        try:
+            # Try Windows-1252 if UTF-8 fails
+            a = pd.read_csv("la_anchors.csv", encoding='cp1252')
+        except:
+            # Last resort: ISO-8859-1
+            a = pd.read_csv("la_anchors.csv", encoding='latin1')
+    
+    # Normalize Anchor Columns (Fixes Case Sensitivity)
+    a.columns = a.columns.str.strip().str.lower()
+    a = a.dropna(subset=['lat', 'lon'])
 
     # GEOID Logic
     f_match = [c for c in df.columns if 'FIP' in c or 'digit' in c]
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
-    
-    # Green = OZ 2.0 Eligible
     df['map_status'] = np.where(df['5-year ACS Eligiblity'].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']), 1, 0)
 
     # GeoJSON
@@ -78,10 +82,10 @@ def load_data():
         if lat and lon:
             centers[gid] = {"lat": float(str(lat).replace('+', '')), "lon": float(str(lon).replace('+', ''))}
 
-    # COLUMN HEADERS MAPPING
+    # COLUMN HEADERS MAPPING (Requested Headers)
     m_map = {
         "home": "Median Home Value",
-        "disability": "Disability Population (%)",
+        "dis": "Disability Population (%)",
         "pop65": "Population 65 years and over",
         "labor": "Labor Force Participation (%)",
         "unemp": "Unemployment Rate (%)",
@@ -116,15 +120,18 @@ st.title(f"📍 Strategic Planner: {st.session_state['a_val']}")
 col_map, col_side = st.columns([0.55, 0.45])
 
 with col_map:
+    # Build Map with Anchors as Top Layer
     fig = go.Figure()
-    # 1. Tracts Layer
+    
+    # Tracts
     fig.add_trace(go.Choroplethmapbox(
         geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
         featureidkey="properties.GEOID_MATCH",
-        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(40, 167, 69, 0.6)"]], # Green for OZ 2.0
+        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(40, 167, 69, 0.6)"]],
         showscale=False, marker_line_width=0.5, marker_line_color="white"
     ))
-    # 2. Anchors Layer (Black Diamonds)
+    
+    # Anchors
     if not anchor_df.empty:
         fig.add_trace(go.Scattermapbox(
             lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
@@ -152,22 +159,22 @@ with col_side:
         st.write(f"**Metro Status:** {row.get('Rural or Urban')}")
         
         st.divider()
-        # 8 METRIC CARDS (Requested Headers)
-        c_m1, c_m2 = st.columns(2)
-        c_m1.metric("Med. Home Value", safe_num(row.get(M_MAP["home"]), True))
-        c_m2.metric("Disability Pop", safe_num(row.get(M_MAP["disability"])))
+        # 8 Metric Cards Grid
+        m1, m2 = st.columns(2)
+        m1.metric("Median Home Value", safe_num(row.get(M_MAP["home"]), True))
+        m2.metric("Disability Pop", safe_num(row.get(M_MAP["dis"])))
         
-        c_m3, c_m4 = st.columns(2)
-        c_m3.metric("Age 65+", safe_num(row.get(M_MAP["pop65"])))
-        c_m4.metric("Labor Participation", safe_num(row.get(M_MAP["labor"])))
+        m3, m4 = st.columns(2)
+        m3.metric("Age 65+", safe_num(row.get(M_MAP["pop65"])))
+        m4.metric("Labor Force %", safe_num(row.get(M_MAP["labor"])))
         
-        c_m5, c_m6 = st.columns(2)
-        c_m5.metric("Unemployment Rate", safe_num(row.get(M_MAP["unemp"])))
-        c_m6.metric("HS Degree+", safe_num(row.get(M_MAP["hs"])))
+        m5, m6 = st.columns(2)
+        m5.metric("Unemployment", safe_num(row.get(M_MAP["unemp"])))
+        m6.metric("HS Degree+", safe_num(row.get(M_MAP["hs"])))
         
-        c_m7, c_m8 = st.columns(2)
-        c_m7.metric("Bachelor's+", safe_num(row.get(M_MAP["bach"])))
-        c_m8.metric("Broadband Access", safe_num(row.get(M_MAP["web"])))
+        m7, m8 = st.columns(2)
+        m7.metric("Bachelor's+", safe_num(row.get(M_MAP["bach"])))
+        m8.metric("Broadband Access", safe_num(row.get(M_MAP["web"])))
 
         st.divider()
         st.markdown("##### ⚓ 10 Nearest Anchors")
@@ -176,21 +183,21 @@ with col_side:
             a_copy = anchor_df.copy()
             a_copy['dist'] = a_copy.apply(lambda x: calculate_distance(t_coord['lat'], t_coord['lon'], x['lat'], x['lon']), axis=1)
             for _, a in a_copy.sort_values('dist').head(10).iterrows():
-                st.write(f"**{a['dist']:.1f} mi** — {a['name']} <small>({a.get('type','Education')})</small>", unsafe_allow_html=True)
+                st.write(f"**{a['dist']:.1f} mi** — {a['name']}")
     else:
-        st.info("👆 Click a **Green** tract on the map to view detailed demographics.")
+        st.info("👆 Click a **Green** tract on the map.")
 
-# --- 5. JUSTIFICATION & HISTORY (Bottom) ---
+# --- 5. BOTTOM SECTION ---
 st.divider()
 if not match.empty:
     st.subheader(f"Nomination Form: {sid}")
-    note = st.text_area("Justification for this nomination:")
+    note = st.text_area("Justification:")
     if st.button("Submit Recommendation", type="primary", use_container_width=True):
-        st.success("Nomination Recorded.")
+        st.success("Nomination recorded.")
 
 st.subheader("📋 My Recommendation History")
 try:
-    history = conn.read(worksheet="Sheet1", ttl=0)
-    st.dataframe(history[history['User'] == st.session_state["username"]], use_container_width=True)
-except: 
+    hist = conn.read(worksheet="Sheet1", ttl=0)
+    st.dataframe(hist[hist['User'] == st.session_state["username"]], use_container_width=True)
+except:
     st.caption("No history found yet.")
