@@ -3,12 +3,11 @@ import pandas as pd
 import plotly.express as px
 import json
 import numpy as np
-import os
 import re
 from streamlit_gsheets import GSheetsConnection
 
 # --- 1. PAGE CONFIGURATION ---
-st.set_page_config(page_title="OZ 2.0 Strategic Command", layout="wide")
+st.set_page_config(page_title="OZ 2.0 Strategic Planner", layout="wide")
 
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
@@ -18,47 +17,27 @@ except Exception as e:
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "selected_tract": None})
 
+# Haversine Distance Formula for Anchor Assets
+def get_distance(lat1, lon1, lat2, lon2):
+    r = 3958.8 
+    phi1, phi2 = np.radians(lat1), np.radians(lat2)
+    dphi, dlambda = np.radians(lat2 - lat1), np.radians(lon2 - lon1)
+    a = np.sin(dphi/2)**2 + np.cos(phi1)*np.cos(phi2)*np.sin(dlambda/2)**2
+    return r * 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
+
 # --- 2. DATA LOADING & PROCESSING ---
 @st.cache_data(ttl=60)
 def load_data():
-    # Primary Data File
     csv_filename = "Opportunity Zones 2.0 - Master Data File.csv"
-    try:
-        m = pd.read_csv(csv_filename)
-    except FileNotFoundError:
-        st.error(f"File not found: {csv_filename}")
-        st.stop()
-
-    # Identify GEOID Column (Column B / Index 1)
-    geoid_col_raw = m.columns[1]
-    m['GEOID_KEY'] = m[geoid_col_raw].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
+    m = pd.read_csv(csv_filename)
     
-    # Clean column names for consistent logic
-    m.columns = m.columns.str.strip().str.lower()
+    # Identify GEOID (Column B / Index 1)
+    geoid_col = m.columns[1]
+    m['GEOID_KEY'] = m[geoid_col].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
     
-    # Identify Census Headers dynamically
-    pov_cols = [c for c in m.columns if 'percent' in c and 'poverty level' in c]
-    inc_cols = [c for c in m.columns if 'median' in c and 'family income' in c]
+    # Clean column names
+    m.columns = m.columns.str.strip()
     
-    # Standardizing numeric data for eligibility math
-    if pov_cols:
-        m['poverty_rate_clean'] = pd.to_numeric(m[pov_cols[0]].astype(str).replace(r'[\$,%]', '', regex=True), errors='coerce').fillna(0)
-    else:
-        m['poverty_rate_clean'] = 0
-
-    # TRACT CATEGORIZATION LOGIC (The 25% budget logic)
-    def categorize(row):
-        # Column Q: opportunity zones insiders eligibilty
-        # Column P: 5-year acs eligiblity
-        is_rec = str(row.get('opportunity zones insiders eligibilty', '')).lower().strip() in ['yes', '1', 'true', 'eligible']
-        is_elig = str(row.get('5-year acs eligiblity', '')).lower().strip() in ['yes', '1', 'true', 'eligible']
-        
-        if is_rec: return "Recommended"
-        if is_elig or row.get('poverty_rate_clean', 0) >= 20.0: return "Eligible"
-        return "Ineligible"
-
-    m['status_detailed'] = m.apply(categorize, axis=1)
-
     # Load Boundaries
     with open("tl_2025_22_tract.json") as f: 
         g = json.load(f)
@@ -66,9 +45,15 @@ def load_data():
         raw_id = str(feature['properties'].get('GEOID', ''))
         feature['properties']['GEOID_MATCH'] = "".join(re.findall(r'\d+', raw_id))[-11:]
 
-    return m, g, pov_cols, inc_cols
+    # Anchor Assets
+    try:
+        a = pd.read_csv("la_anchors.csv")
+        a.columns = [c.strip().lower() for c in a.columns]
+    except: a = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
+        
+    return m, g, a
 
-master_df, la_geojson, POV_HEADER, INC_HEADER = load_data()
+master_df, la_geojson, anchor_df = load_data()
 
 # --- 3. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
@@ -85,86 +70,117 @@ if not st.session_state["authenticated"]:
                     st.session_state.update({
                         "authenticated": True, "username": u_in, 
                         "role": str(match.iloc[0]['Role']), 
-                        "a_type": str(match.iloc[0]['Assigned_Type']).lower(), 
+                        "a_type": str(match.iloc[0]['Assigned_Type']), 
                         "a_val": str(match.iloc[0]['Assigned_Value'])
                     })
                     st.rerun()
-                else: st.error("Invalid credentials.")
     st.stop()
 
-# Filter Data by User Assignment
-m_df = master_df.copy()
+# --- 4. REGIONAL FILTERING & COUNTERS ---
+# Filter to the user's region
+u_df = master_df.copy()
 if st.session_state["role"].lower() != "admin" and st.session_state["a_val"].lower() != "all":
-    target_col = st.session_state["a_type"]
-    if target_col in m_df.columns:
-        m_df = m_df[m_df[target_col].astype(str) == st.session_state["a_val"]]
+    u_df = u_df[u_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# --- 4. RECOMMENDATION COUNTER ---
-total_eligible = len(m_df[m_df['status_detailed'] != "Ineligible"])
-recommended_count = len(m_df[m_df['status_detailed'] == "Recommended"])
-rec_cap = int(total_eligible * 0.25)
+# Count Eligibility
+# Based on Column P (5-Year ACS Eligibility)
+eligible_tracts = u_df[u_df['5-Year ACS Eligiblity'].astype(str).str.lower().str.contains('yes|eligible', na=False)]
+q_limit = max(1, int(len(eligible_tracts) * 0.25))
 
-st.title(f"📍 OZ 2.0 Strategic Command: {st.session_state['a_val']}")
+# Count Current User Recommendations (Column Q)
+# In a real app, this would read from the GSheet; here it checks the Column Q status in the filtered df
+user_recs = len(u_df[u_df['Opportunity Zones Insiders Eligibilty'].astype(str).str.lower().str.contains('yes|eligible', na=False)])
 
-# Progress Bar Rendering
-usage_pct = min(1.0, recommended_count / rec_cap) if rec_cap > 0 else 0
-st.markdown("### Recommendation Tracker")
-c_prog, c_stat = st.columns([0.8, 0.2])
-with c_prog:
-    st.progress(usage_pct, text=f"{recommended_count} Recommended of {rec_cap} Allocated Budget (25%)")
-with c_stat:
-    st.metric("Budget Remaining", max(0, rec_cap - recommended_count))
+# --- 5. TOP SECTION: PROGRESS ---
+st.title(f"📍 OZ 2.0 Strategy: {st.session_state['a_val']}")
+st.markdown("### Recommendation Counter")
+c_bar, c_met = st.columns([0.8, 0.2])
+with c_bar:
+    st.progress(min(1.0, user_recs / q_limit), text=f"{user_recs} of {q_limit} Allocated Recommendation Budget")
+with c_met:
+    st.metric("Tracts Recommended", f"{user_recs}")
 
 st.divider()
 
-# --- 5. MAIN INTERFACE (2/3 MAP, 1/3 PROFILE) ---
-col_left, col_right = st.columns([0.66, 0.33])
+# --- 6. MAIN INTERFACE (2/3 MAP, 1/3 PROFILE) ---
+col_map, col_profile = st.columns([0.66, 0.33])
 
-with col_left:
-    color_map = {"Recommended": "#1E5631", "Eligible": "#74C365", "Ineligible": "#D3D3D3"}
+with col_map:
+    # Logic: Only Green (Eligible) or Grey (Ineligible)
+    u_df['map_status'] = np.where(u_df['5-Year ACS Eligiblity'].astype(str).str.lower().str.contains('yes|eligible', na=False), "Eligible", "Ineligible")
     
     fig = px.choropleth_mapbox(
-        m_df, geojson=la_geojson, locations="geoid_key", featureidkey="properties.GEOID_MATCH",
-        color="status_detailed",
-        color_discrete_map=color_map,
-        category_orders={"status_detailed": ["Recommended", "Eligible", "Ineligible"]},
-        mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
-        opacity=0.7, hover_data=["geoid_key", "parish"]
+        u_df, geojson=la_geojson, locations="GEOID_KEY", featureidkey="properties.GEOID_MATCH",
+        color="map_status", 
+        color_discrete_map={"Eligible": "#28a745", "Ineligible": "#D3D3D3"},
+        mapbox_style="carto-positron", zoom=7, center={"lat": 30.5, "lon": -91.5},
+        opacity=0.6, hover_data=["GEOID_KEY", "Parish", "Region"]
     )
-    fig.update_layout(height=750, margin={"r":0,"t":0,"l":0,"b":0}, legend=dict(orientation="h", y=1.02, x=1, xanchor="right"))
+    fig.update_layout(height=800, margin={"r":0,"t":0,"l":0,"b":0}, legend=dict(orientation="h", y=1.02))
     
-    # FIXED SELECTION SYNTAX
     sel_pts = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-    
     if sel_pts and sel_pts.get("selection") and sel_pts["selection"].get("points"):
         st.session_state["selected_tract"] = sel_pts["selection"]["points"][0].get("location")
 
-with col_right:
+with col_profile:
     st.subheader("Tract Profile")
     sid = st.session_state["selected_tract"]
     
     if sid:
-        # Locate the row in the master dataframe
-        res = master_df[master_df['geoid_key'] == sid].iloc[0]
+        res = master_df[master_df['GEOID_KEY'] == sid].iloc[0]
         
         # Identification
         st.markdown(f"#### Tract ID: `{sid}`")
-        st.write(f"**Parish:** {str(res.get('parish', 'N/A')).title()}")
-        st.write(f"**Status:** {res['status_detailed']}")
+        st.write(f"**Parish:** {res.get('Parish', 'N/A')}")
+        st.write(f"**Region:** {res.get('Region', 'N/A')}")
         
-        st.divider()
-        
-        # Demographics
+        # Demographic Snapshot
         st.markdown("##### 📊 Demographic Snapshot")
-        d1, d2 = st.columns(2)
-        with d1:
-            p_val = res[POV_HEADER[0]] if POV_HEADER else "N/A"
-            st.metric("Poverty Rate", p_val)
-        with d2:
-            i_val = res[INC_HEADER[0]] if INC_HEADER else "N/A"
-            st.metric("Median Income", i_val)
-            
-        st.write("---")
-        st.caption("Data: 2026 OZ 2.0 Master File")
+        m1, m2 = st.columns(2)
+        m1.metric("Total Population", f"{res.get('Total Population', 0):,}")
+        m2.metric("Median Home Value", f"${res.get('Median Home Value', 0):,}")
+        
+        m3, m4 = st.columns(2)
+        m3.metric("Public Insurance", f"{res.get('% Medicaid/Public Insurance', '0%')}")
+        m4.metric("Median Family Income", f"${res.get('Median Family Income', 0):,}")
+        
+        m5, m6 = st.columns(2)
+        m5.metric("Poverty Rate", f"{res.get('Poverty Rate (%)', '0%')}")
+        m6.metric("Labor Participation", f"{res.get('Labor Force Participation (%)', '0%')}")
+        
+        m7, m8 = st.columns(2)
+        m7.metric("Unemployment Rate", f"{res.get('Unemployment Rate (%)', '0%')}")
+        m8.metric("HS Degree+", f"{res.get('HS Degree or More (%)', '0%')}")
+        
+        m9, m10 = st.columns(2)
+        m9.metric("Bachelor's Degree+", f"{res.get(\"Bachelor's Degree or More (%)\", '0%')}")
+        m10.metric("Broadband Access", f"{res.get('Broadband Internet (%)', '0%')}")
+        
+        st.metric("Disability Population", f"{res.get('Disability Population (%)', '0%')}")
+        
+        # Justification Area
+        st.divider()
+        st.markdown("##### ✍️ Recommendation Justification")
+        j_cat = st.selectbox("Justification Category", ["Economic Growth", "Infrastructure", "Housing", "Workforce Development", "Other"])
+        j_text = st.text_area("Written Justification", placeholder="Describe why this tract should be nominated...")
+        if st.button("Submit Recommendation"):
+            st.success(f"Tract {sid} submitted for {j_cat}!")
+
+        # Nearest Anchors (Top 5)
+        st.divider()
+        st.markdown("##### ⚓ Nearest Anchor Assets")
+        if not anchor_df.empty and 'lat' in res:
+            anchor_df['dist'] = anchor_df.apply(lambda x: get_distance(res['lat'], res['lon'], x['lat'], x['lon']), axis=1)
+            st.table(anchor_df.sort_values('dist').head(5)[['name', 'type', 'dist']].rename(columns={'dist': 'Miles'}))
     else:
-        st.info("Click a census tract on the map to view detailed demographics.")
+        st.info("Select a tract on the map to view demographics and anchors.")
+
+# --- 7. FOOTER: SUMMARY TABLE ---
+st.divider()
+st.subheader("📋 Your Current Recommendations")
+# Show the tracts that are already marked in Column Q
+rec_table = u_df[u_df['Opportunity Zones Insiders Eligibilty'].astype(str).str.lower().str.contains('yes|eligible', na=False)]
+if not rec_table.empty:
+    st.dataframe(rec_table[['GEOID_KEY', 'Parish', 'Region', 'Poverty Rate (%)', 'Median Family Income']], use_container_width=True)
+else:
+    st.write("No recommendations selected yet.")
