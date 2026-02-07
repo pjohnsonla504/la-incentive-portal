@@ -1,1283 +1,1283 @@
-Name,Lat,Lon,Type,,,,Type,median family income,poverty,labor force participation,employment to population ratio,unemployment,high school degree or more,college degree or more,broadband internet,non-family households,high-income households ($100k+),student population,median home value,population,health insurance
-Louisiana State University (LSU),30.4133,-91.18,Educational,,,,Educational,,,,,,,,,,,,,,
-Tulane University,29.9407,-90.1203,Educational,,,,Medical,,,,,,,,,,,,,,
-University of Louisiana at Lafayette,30.2144,-92.0194,Educational,,,,Logistics,,,,,,,,,,,,,,
-Loyola University New Orleans,29.9348,-90.1215,Educational,,,,Industrial/Corporate,,,,,,,,,,,,,,
-Southern University and A&M College,30.5255,-91.1911,Educational,,,,Government,,,,,,,,,,,,,,
-University of New Orleans (UNO),30.0271,-90.0673,Educational,,,,,,,,,,,,,,,,,,
-Louisiana Tech University,32.5292,-92.6517,Educational,,,,,,,,,,,,,,,,,,
-Southeastern Louisiana University,30.5144,-90.466,Educational,,,,,,,,,,,,,,,,,,
-McNeese State University,30.1787,-93.2163,Educational,,,,,,,,,,,,,,,,,,
-Nicholls State University,29.7944,-90.8038,Educational,,,,,,,,,,,,,,,,,,
-Northwestern State University,31.7505,-93.097,Educational,,,,,,,,,,,,,,,,,,
-Grambling State University,32.5186,-92.7153,Educational,,,,,,,,,,,,,,,,,,
-Xavier University of Louisiana,29.9622,-90.1064,Educational,,,,,,,,,,,,,,,,,,
-Dillard University,30.0068,-90.07,Educational,,,,,,,,,,,,,,,,,,
-Our Lady of the Lake Regional Medical Center,30.4024,-91.107,Medical,,,,,,,,,,,,,,,,,,
-Ochsner Medical Center - New Orleans,29.9634,-90.1328,Medical,,,,,,,,,,,,,,,,,,
-Willis-Knighton Medical Center,32.4862,-93.7845,Medical,,,,,,,,,,,,,,,,,,
-LSU Health Shreveport,32.4925,-93.7544,Medical,,,,,,,,,,,,,,,,,,
-Baton Rouge General Medical Center,30.3957,-91.0823,Medical,,,,,,,,,,,,,,,,,,
-Lafayette General Medical Center,30.2111,-92.025,Medical,,,,,,,,,,,,,,,,,,
-Rapides Regional Medical Center,31.309,-92.4461,Medical,,,,,,,,,,,,,,,,,,
-St. Tammany Health System,30.4792,-90.1118,Medical,,,,,,,,,,,,,,,,,,
-Lake Charles Memorial Hospital,30.1989,-93.212,Medical,,,,,,,,,,,,,,,,,,
-University Medical Center New Orleans,29.9575,-90.0792,Medical,,,,,,,,,,,,,,,,,,
-Port of South Louisiana,30.046,-90.505,Logistics,,,,,,,,,,,,,,,,,,
-Port of New Orleans,29.932,-90.06,Logistics,,,,,,,,,,,,,,,,,,
-Port of Greater Baton Rouge,30.44,-91.2,Logistics,,,,,,,,,,,,,,,,,,
-Port of Lake Charles,30.2,-93.25,Logistics,,,,,,,,,,,,,,,,,,
-Chennault International Airport,30.2125,-93.1483,Logistics,,,,,,,,,,,,,,,,,,
-Louis Armstrong New Orleans Int'l (MSY),29.9911,-90.2592,Logistics,,,,,,,,,,,,,,,,,,
-Baton Rouge Metropolitan Airport (BTR),30.5332,-91.1496,Logistics,,,,,,,,,,,,,,,,,,
-Shreveport Regional Airport (SHV),32.4468,-93.8236,Logistics,,,,,,,,,,,,,,,,,,
-Alexandria International Airport (AEX),31.3274,-92.5485,Logistics,,,,,,,,,,,,,,,,,,
-Lafayette Regional Airport (LFT),30.2053,-91.9876,Logistics,,,,,,,,,,,,,,,,,,
-Barksdale Air Force Base,32.5011,-93.6628,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Fort Johnson (formerly Fort Polk),31.0483,-93.2119,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-CenturyLink Headquarters,32.5181,-92.0305,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Entergy Louisiana,30.4583,-91.1403,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Globalstar Headquarters,30.4215,-90.0415,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Stine Home & Yard Corporate,30.2285,-93.3361,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Standard Coffee Service Co.,29.965,-90.101,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Zatarain's Headquarters,29.907,-90.015,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Community Coffee Company,30.4507,-91.134,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Raising Cane's Headquarters,30.4485,-91.1882,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Waitr (ASAP) Headquarters,30.2241,-92.0198,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Tabasco (McIlhenny Co),29.985,-91.908,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Nucor Steel Louisiana,30.0811,-90.9324,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-BASF Geismar,30.2111,-91.0234,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Dow Chemical Louisiana,30.312,-91.2541,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-ExxonMobil Baton Rouge,30.4851,-91.1764,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Shell Norco,29.9986,-90.4131,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Marathon Petroleum Garyville,30.0531,-90.6251,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Cornerstone Chemical,29.9283,-90.2014,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Valero St. Charles,29.988,-90.4452,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-CF Industries Donaldsonville,30.113,-90.985,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Sasol Lake Charles,30.2394,-93.2841,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Westlake Chemical,30.2255,-93.3102,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Honeywell Geismar,30.2055,-91.0183,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Pinnacle Entertainment,29.987,-90.013,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-L'Auberge Casino Baton Rouge,30.3421,-91.1852,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Golden Nugget Lake Charles,30.2085,-93.2681,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Horseshoe Bossier City,32.5164,-93.7389,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Margaritaville Resort Casino,32.5211,-93.7385,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-National WWII Museum,29.943,-90.07,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Louisiana State Capitol,30.4571,-91.1874,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Shaw Center for the Arts,30.4475,-91.1895,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-New Orleans Museum of Art (NOMA),30.0031,-90.0933,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-Sci-Port Discovery Center,32.5144,-93.7432,Industrial/Corporate,,,,,,,,,,,,,,,,,,
-LSU AgCenter,30.4121,-91.1782,Educational,,,,,,,,,,,,,,,,,,
-Pennington Biomedical Research,30.3951,-91.1121,Medical,,,,,,,,,,,,,,,,,,
-Mary Bird Perkins Cancer Center,30.3995,-91.1015,Medical,,,,,,,,,,,,,,,,,,
-Children's Hospital New Orleans,29.9168,-90.1311,Medical,,,,,,,,,,,,,,,,,,
-Shriners Children's Shreveport,32.4891,-93.7552,Medical,,,,,,,,,,,,,,,,,,
-St. Jude Affiliate Clinic (Shreveport),32.492,-93.754,Medical,,,,,,,,,,,,,,,,,,
-LSU Shreveport (LSUS),32.4225,-93.7042,Educational,,,,,,,,,,,,,,,,,,
-Grambling State Univ. - Monroe Tech,32.5111,-92.115,Educational,,,,,,,,,,,,,,,,,,
-River Parishes Community College,30.1471,-90.9152,Educational,,,,,,,,,,,,,,,,,,
-Fletcher Technical Community College,29.6133,-90.7103,Educational,,,,,,,,,,,,,,,,,,
-Baton Rouge Community College,30.456,-91.144,Educational,,,,,,,,,,,,,,,,,,
-Delgado Community College,29.9861,-90.1032,Educational,,,,,,,,,,,,,,,,,,
-Bossier Parish Community College,32.5312,-93.6685,Educational,,,,,,,,,,,,,,,,,,
-Louisiana Delta Community College,32.5355,-92.057,Educational,,,,,,,,,,,,,,,,,,
-Northshore Technical Community College,30.4894,-90.0761,Educational,,,,,,,,,,,,,,,,,,
-Nunez Community College,29.9472,-89.92,Educational,,,,,,,,,,,,,,,,,,
-South Louisiana Community College,30.2163,-92.046,Educational,,,,,,,,,,,,,,,,,,
-SOWELA Technical Community College,30.2105,-93.184,Educational,,,,,,,,,,,,,,,,,,
-Central Louisiana Technical College,31.314,-92.458,Educational,,,,,,,,,,,,,,,,,,
-Louisiana School for Math Science and Arts,31.7485,-93.0965,Educational,,,,,,,,,,,,,,,,,,
-Holy Cross University,29.9231,-89.998,Educational,,,,,,,,,,,,,,,,,,
-Louisiana College (Pineville),31.3283,-92.4111,Educational,,,,,,,,,,,,,,,,,,
-Centenary College of Louisiana,32.4851,-93.7335,Educational,,,,,,,,,,,,,,,,,,
-University of Holy Cross (NOLA),29.9221,-89.9991,Educational,,,,,,,,,,,,,,,,,,
-FranU (Franciscan Missionaries),30.4022,-91.1065,Educational,,,,,,,,,,,,,,,,,,
-LSU Health New Orleans,29.9548,-90.0795,Medical,,,,,,,,,,,,,,,,,,
-Tulane Medical Center,29.9565,-90.0754,Medical,,,,,,,,,,,,,,,,,,
-Our Lady of Lourdes Regional Medical,30.1585,-92.0232,Medical,,,,,,,,,,,,,,,,,,
-Women's & Children's Hospital,30.1545,-92.0321,Medical,,,,,,,,,,,,,,,,,,
-Lakeview Regional Medical Center,30.4154,-90.1112,Medical,,,,,,,,,,,,,,,,,,
-East Jefferson General Hospital,30.0105,-90.1542,Medical,,,,,,,,,,,,,,,,,,
-West Jefferson Medical Center,29.9048,-90.1065,Medical,,,,,,,,,,,,,,,,,,
-Slidell Memorial Hospital,30.2764,-89.7712,Medical,,,,,,,,,,,,,,,,,,
-North Oaks Medical Center,30.5231,-90.4632,Medical,,,,,,,,,,,,,,,,,,
-Lane Regional Medical Center,30.6675,-91.1542,Medical,,,,,,,,,,,,,,,,,,
-Terrebonne General Health System,29.5934,-90.7241,Medical,,,,,,,,,,,,,,,,,,
-Thibodaux Regional Health System,29.7921,-90.8252,Medical,,,,,,,,,,,,,,,,,,
-CHRISTUS Shreveport-Bossier,32.4385,-93.705,Medical,,,,,,,,,,,,,,,,,,
-CHRISTUS St. Frances Cabrini,31.3021,-92.4712,Medical,,,,,,,,,,,,,,,,,,
-Glenwood Regional Medical Center,32.5085,-92.1645,Medical,,,,,,,,,,,,,,,,,,
-St. Francis Medical Center (Monroe),32.5011,-92.1182,Medical,,,,,,,,,,,,,,,,,,
-Northern Louisiana Medical Center,32.5392,-92.6285,Medical,,,,,,,,,,,,,,,,,,
-Pointe Coupee General Hospital,30.6385,-91.4421,Medical,,,,,,,,,,,,,,,,,,
-Riverland Medical Center,31.5711,-91.5032,Medical,,,,,,,,,,,,,,,,,,
-Minden Medical Center,32.6181,-93.2845,Medical,,,,,,,,,,,,,,,,,,
-Jennings American Legion Hospital,30.2185,-92.6582,Medical,,,,,,,,,,,,,,,,,,
-Abbeville General Hospital,29.9711,-92.1315,Medical,,,,,,,,,,,,,,,,,,
-Iberia Medical Center,30.0055,-91.8152,Medical,,,,,,,,,,,,,,,,,,
-Franklin Foundation Hospital,29.7911,-91.5032,Medical,,,,,,,,,,,,,,,,,,
-Teche Regional Medical Center,29.6991,-91.1985,Medical,,,,,,,,,,,,,,,,,,
-Leonard J. Chabert Medical Center,29.5632,-90.7103,Medical,,,,,,,,,,,,,,,,,,
-Lady of the Sea General Hospital,29.3582,-90.2841,Medical,,,,,,,,,,,,,,,,,,
-South Cameron Memorial Hospital,29.7951,-93.1342,Medical,,,,,,,,,,,,,,,,,,
-Beauregard Health System,30.8411,-93.2842,Medical,,,,,,,,,,,,,,,,,,
-Byrd Regional Hospital,31.1421,-93.2632,Medical,,,,,,,,,,,,,,,,,,
-Sabine Medical Center,31.5742,-93.4851,Medical,,,,,,,,,,,,,,,,,,
-DeSoto Regional Health System,32.1481,-93.7142,Medical,,,,,,,,,,,,,,,,,,
-Springhill Medical Center,32.9911,-93.4582,Medical,,,,,,,,,,,,,,,,,,
-Coushatta Health Care Center,32.0211,-93.3421,Medical,,,,,,,,,,,,,,,,,,
-Winn Parish Medical Center,31.9211,-92.6321,Medical,,,,,,,,,,,,,,,,,,
-Jackson Parish Hospital,32.2411,-92.7142,Medical,,,,,,,,,,,,,,,,,,
-Hardtner Medical Center,31.8411,-92.2842,Medical,,,,,,,,,,,,,,,,,,
-LaSalle General Hospital,31.6711,-92.1242,Medical,,,,,,,,,,,,,,,,,,
-Caldwell Memorial Hospital,32.1051,-92.0321,Medical,,,,,,,,,,,,,,,,,,
-Franklin Medical Center (Winnsboro),32.1642,-91.7142,Medical,,,,,,,,,,,,,,,,,,
-Richardson Medical Center,32.4211,-91.7642,Medical,,,,,,,,,,,,,,,,,,
-Madison Parish Hospital,32.3781,-91.1852,Medical,,,,,,,,,,,,,,,,,,
-East Carroll Parish Hospital,32.8841,-91.1921,Medical,,,,,,,,,,,,,,,,,,
-West Carroll Health Systems,32.8851,-91.6432,Medical,,,,,,,,,,,,,,,,,,
-Morehouse General Hospital,32.7781,-91.9051,Medical,,,,,,,,,,,,,,,,,,
-Union General Hospital,32.8051,-92.4042,Medical,,,,,,,,,,,,,,,,,,
-Bunkie General Hospital,30.9542,-92.1852,Medical,,,,,,,,,,,,,,,,,,
-Avoyelles Hospital,31.1211,-92.0632,Medical,,,,,,,,,,,,,,,,,,
-Savoy Medical Center,30.6321,-92.4042,Medical,,,,,,,,,,,,,,,,,,
-Opelousas General Health System,30.5342,-92.0811,Medical,,,,,,,,,,,,,,,,,,
-Mercy Regional Medical Center,30.6881,-92.2742,Medical,,,,,,,,,,,,,,,,,,
-Acadia General Hospital,30.2142,-92.3782,Medical,,,,,,,,,,,,,,,,,,
-Our Lady of Angels (Bogalusa),30.7742,-89.8512,Medical,,,,,,,,,,,,,,,,,,
-Riverside Medical Center (Franklinton),30.8411,-90.1482,Medical,,,,,,,,,,,,,,,,,,
-Hood Memorial Hospital,30.7081,-90.5052,Medical,,,,,,,,,,,,,,,,,,
-St. Helena Parish Hospital,30.8242,-90.6742,Medical,,,,,,,,,,,,,,,,,,
-Crowley Parish Seat,30.2111,-92.3744,Government,,,,,,,,,,,,,,,,,,
-Oberlin Parish Seat,30.6206,-92.855,Government,,,,,,,,,,,,,,,,,,
-Donaldsonville Parish Seat,30.1106,-90.9936,Government,,,,,,,,,,,,,,,,,,
-Napoleonville Parish Seat,29.9377,-91.0232,Government,,,,,,,,,,,,,,,,,,
-Marksville Parish Seat,31.1275,-92.0669,Government,,,,,,,,,,,,,,,,,,
-DeRidder Parish Seat,30.8464,-93.2891,Government,,,,,,,,,,,,,,,,,,
-Arcadia Parish Seat,32.5519,-92.9222,Government,,,,,,,,,,,,,,,,,,
-Benton Parish Seat,32.6934,-93.678,Government,,,,,,,,,,,,,,,,,,
-Shreveport Parish Seat,32.5149,-93.7479,Government,,,,,,,,,,,,,,,,,,
-Lake Charles Parish Seat,30.2241,-93.2174,Government,,,,,,,,,,,,,,,,,,
-Columbia Parish Seat,32.1036,-92.0781,Government,,,,,,,,,,,,,,,,,,
-Cameron Parish Seat,29.7971,-93.3255,Government,,,,,,,,,,,,,,,,,,
-Harrisonburg Parish Seat,31.7709,-91.8153,Government,,,,,,,,,,,,,,,,,,
-Homer Parish Seat,32.7913,-93.0556,Government,,,,,,,,,,,,,,,,,,
-Vidalia Parish Seat,31.567,-91.4297,Government,,,,,,,,,,,,,,,,,,
-Mansfield Parish Seat,32.0375,-93.7028,Government,,,,,,,,,,,,,,,,,,
-Baton Rouge Parish Seat,30.4507,-91.1882,Government,,,,,,,,,,,,,,,,,,
-Lake Providence Parish Seat,32.8055,-91.1736,Government,,,,,,,,,,,,,,,,,,
-Clinton Parish Seat,30.8664,-91.0169,Government,,,,,,,,,,,,,,,,,,
-Ville Platte Parish Seat,30.6891,-92.2781,Government,,,,,,,,,,,,,,,,,,
-Winnsboro Parish Seat,32.1634,-91.7206,Government,,,,,,,,,,,,,,,,,,
-Colfax Parish Seat,31.517,-92.7111,Government,,,,,,,,,,,,,,,,,,
-New Iberia Parish Seat,30.0035,-91.8187,Government,,,,,,,,,,,,,,,,,,
-Plaquemine Parish Seat,30.2891,-91.2344,Government,,,,,,,,,,,,,,,,,,
-Jonesboro Parish Seat,32.2386,-92.7153,Government,,,,,,,,,,,,,,,,,,
-Gretna Parish Seat,29.9147,-90.0554,Government,,,,,,,,,,,,,,,,,,
-Jennings Parish Seat,30.2226,-92.6562,Government,,,,,,,,,,,,,,,,,,
-Lafayette Parish Seat,30.2241,-92.0198,Government,,,,,,,,,,,,,,,,,,
-Thibodaux Parish Seat,29.7958,-90.8231,Government,,,,,,,,,,,,,,,,,,
-Jena Parish Seat,31.6883,-92.1286,Government,,,,,,,,,,,,,,,,,,
-Ruston Parish Seat,32.5232,-92.6379,Government,,,,,,,,,,,,,,,,,,
-Livingston Parish Seat,30.5019,-90.7483,Government,,,,,,,,,,,,,,,,,,
-Tallulah Parish Seat,32.4089,-91.1869,Government,,,,,,,,,,,,,,,,,,
-Bastrop Parish Seat,32.7761,-91.8825,Government,,,,,,,,,,,,,,,,,,
-Natchitoches Parish Seat,31.7607,-93.0863,Government,,,,,,,,,,,,,,,,,,
-New Orleans Parish Seat,29.9511,-90.0715,Government,,,,,,,,,,,,,,,,,,
-Monroe Parish Seat,32.5093,-92.1193,Government,,,,,,,,,,,,,,,,,,
-Pointe a la Hache Parish Seat,29.5804,-89.7915,Government,,,,,,,,,,,,,,,,,,
-New Roads Parish Seat,30.6953,-91.4411,Government,,,,,,,,,,,,,,,,,,
-Alexandria Parish Seat,31.3113,-92.4451,Government,,,,,,,,,,,,,,,,,,
-Coushatta Parish Seat,32.0107,-93.3389,Government,,,,,,,,,,,,,,,,,,
-Rayville Parish Seat,32.4764,-91.7583,Government,,,,,,,,,,,,,,,,,,
-Many Parish Seat,31.5071,-93.4841,Government,,,,,,,,,,,,,,,,,,
-Chalmette Parish Seat,29.9427,-89.9634,Government,,,,,,,,,,,,,,,,,,
-Hahnville Parish Seat,29.9669,-90.4109,Government,,,,,,,,,,,,,,,,,,
-Greensburg Parish Seat,30.8291,-90.6732,Government,,,,,,,,,,,,,,,,,,
-Convent Parish Seat,30.0161,-90.8267,Government,,,,,,,,,,,,,,,,,,
-Edgard Parish Seat,30.0436,-90.5539,Government,,,,,,,,,,,,,,,,,,
-Opelousas Parish Seat,30.5344,-92.0811,Government,,,,,,,,,,,,,,,,,,
-St. Martinville Parish Seat,30.1241,-91.7303,Government,,,,,,,,,,,,,,,,,,
-Franklin Parish Seat,29.7911,-91.5032,Government,,,,,,,,,,,,,,,,,,
-Covington Parish Seat,30.4755,-90.1009,Government,,,,,,,,,,,,,,,,,,
-Amite Parish Seat,30.7277,-90.5126,Government,,,,,,,,,,,,,,,,,,
-St. Joseph Parish Seat,31.9161,-91.2336,Government,,,,,,,,,,,,,,,,,,
-Houma Parish Seat,29.5958,-90.7195,Government,,,,,,,,,,,,,,,,,,
-Farmerville Parish Seat,32.7741,-92.4036,Government,,,,,,,,,,,,,,,,,,
-Abbeville Parish Seat,29.9744,-92.1342,Government,,,,,,,,,,,,,,,,,,
-Leesville Parish Seat,31.1435,-93.2618,Government,,,,,,,,,,,,,,,,,,
-Franklinton Parish Seat,30.8475,-90.1481,Government,,,,,,,,,,,,,,,,,,
-Minden Parish Seat,32.6154,-93.2857,Government,,,,,,,,,,,,,,,,,,
-Port Allen Parish Seat,30.4531,-91.2098,Government,,,,,,,,,,,,,,,,,,
-Oak Grove Parish Seat,32.8614,-91.3897,Government,,,,,,,,,,,,,,,,,,
-St. Francisville Parish Seat,30.7335,-91.3855,Government,,,,,,,,,,,,,,,,,,
-Winnfield Parish Seat,31.9255,-92.6417,Government,,,,,,,,,,,,,,,,,,
-Abbeville Chris Crusta Memorial Airport,29.9757,-92.0841,Logistics,,,,,,,,,,,,,,,,,,
-Esler Regional Airport,31.3951,-92.2965,Logistics,,,,,,,,,,,,,,,,,,
-Arcadia-Bienville Parish Airport,32.4741,-92.9866,Logistics,,,,,,,,,,,,,,,,,,
-George R Carr Memorial Air Field,30.8142,-89.8732,Logistics,,,,,,,,,,,,,,,,,,
-Bunkie Municipal Airport,30.9511,-92.1642,Logistics,,,,,,,,,,,,,,,,,,
-Caldwell Parish Airport,32.1581,-92.0441,Logistics,,,,,,,,,,,,,,,,,,
-The Red River Airport,32.0471,-93.3081,Logistics,,,,,,,,,,,,,,,,,,
-St Tammany Regional Airport,30.4355,-90.0415,Logistics,,,,,,,,,,,,,,,,,,
-Le Gros Memorial Airport,30.2281,-92.2851,Logistics,,,,,,,,,,,,,,,,,,
-De Quincy Industrial Airpark,30.4385,-93.4341,Logistics,,,,,,,,,,,,,,,,,,
-Beauregard Regional Airport,30.8321,-93.3391,Logistics,,,,,,,,,,,,,,,,,,
-Delhi Municipal Airport,32.4381,-91.5032,Logistics,,,,,,,,,,,,,,,,,,
-Eunice Airport,30.4751,-92.4241,Logistics,,,,,,,,,,,,,,,,,,
-Union Parish Airport,32.8051,-92.4542,Logistics,,,,,,,,,,,,,,,,,,
-South Lafourche Leonard Miller Jr. Airport,29.4441,-90.2642,Logistics,,,,,,,,,,,,,,,,,,
-Louisiana Regional Airport,30.1651,-90.8931,Logistics,,,,,,,,,,,,,,,,,,
-Hammond Northshore Regional Airport,30.5211,-90.4161,Logistics,,,,,,,,,,,,,,,,,,
-Homer Municipal Airport,32.7481,-93.0451,Logistics,,,,,,,,,,,,,,,,,,
-Houma-Terrebonne Airport,29.5641,-90.6651,Logistics,,,,,,,,,,,,,,,,,,
-Feliciana Airpark,30.8031,-91.2181,Logistics,,,,,,,,,,,,,,,,,,
-Le Maire Memorial Airport,29.9542,-91.6841,Logistics,,,,,,,,,,,,,,,,,,
-Jena Airport,31.6831,-92.1642,Logistics,,,,,,,,,,,,,,,,,,
-Jennings Airport,30.2451,-92.6741,Logistics,,,,,,,,,,,,,,,,,,
-Jonesboro Airport,32.2541,-92.7441,Logistics,,,,,,,,,,,,,,,,,,
-Jonesville Airport,31.6381,-91.8341,Logistics,,,,,,,,,,,,,,,,,,
-Bluebird Hill Airport,32.3321,-93.8542,Logistics,,,,,,,,,,,,,,,,,,
-Monroe Regional Airport,32.5111,-92.0371,Logistics,,,,,,,,,,,,,,,,,,
-Byerley Airport,32.8151,-91.1942,Logistics,,,,,,,,,,,,,,,,,,
-Hart Airport,31.5451,-93.5142,Logistics,,,,,,,,,,,,,,,,,,
-Marksville Municipal Airport,31.0941,-92.0542,Logistics,,,,,,,,,,,,,,,,,,
-Minden Airport,32.6451,-93.2981,Logistics,,,,,,,,,,,,,,,,,,
-Lakefront Airport,30.0425,-90.0285,Logistics,,,,,,,,,,,,,,,,,,
-Kelly-Dumas Airport,32.8551,-91.4142,Logistics,,,,,,,,,,,,,,,,,,
-Allen Parish Airport,30.6051,-92.8841,Logistics,,,,,,,,,,,,,,,,,,
-St Landry Parish Airport,30.5541,-92.0242,Logistics,,,,,,,,,,,,,,,,,,
-Harry P Williams Memorial Airport,29.7151,-91.3381,Logistics,,,,,,,,,,,,,,,,,,
-Pineville Municipal Airport,31.3251,-92.4042,Logistics,,,,,,,,,,,,,,,,,,
-Pollock Municipal Airport,31.5251,-92.4142,Logistics,,,,,,,,,,,,,,,,,,
-John H Hooks Jr Memorial Airport,32.4841,-91.7342,Logistics,,,,,,,,,,,,,,,,,,
-Slidell Airport,30.3451,-89.8242,Logistics,,,,,,,,,,,,,,,,,,
-Springhill Airport,32.9941,-93.4742,Logistics,,,,,,,,,,,,,,,,,,
-Tensas Parish Airport,31.9341,-91.2142,Logistics,,,,,,,,,,,,,,,,,,
-Southland Field Airport,30.1341,-93.3842,Logistics,,,,,,,,,,,,,,,,,,
-Vicksburg Tallulah Regional Airport,32.3551,-91.0342,Logistics,,,,,,,,,,,,,,,,,,
-Thibodaux Municipal Airport,29.7441,-90.8142,Logistics,,,,,,,,,,,,,,,,,,
-Vivian Airport,32.8751,-93.9842,Logistics,,,,,,,,,,,,,,,,,,
-Welsh Airport,30.2341,-92.8142,Logistics,,,,,,,,,,,,,,,,,,
-David G Joyce Airport,31.9541,-92.6242,Logistics,,,,,,,,,,,,,,,,,,
-Innis Community Health Center,30.7321,-91.7042,Medical,,,,,,,,,,,,,,,,,,
-St. Martin Hospital,30.1242,-91.7342,Medical,,,,,,,,,,,,,,,,,,
-Overton Brooks VA Medical Center,32.4841,-93.7342,Medical,,,,,,,,,,,,,,,,,,
-Lallie Kemp Regional Medical Center,30.5942,-90.5042,Medical,,,,,,,,,,,,,,,,,,
-Ochsner St. Anne Hospital,29.8042,-90.8342,Medical,,,,,,,,,,,,,,,,,,
-Baton Rouge General - Bluebonnet,30.3851,-91.0942,Medical,,,,,,,,,,,,,,,,,,
-Hardtner Medical Center (Urania),31.8641,-92.2942,Medical,,,,,,,,,,,,,,,,,,
-Natchitoches Regional Medical Center,31.7441,-93.0842,Medical,,,,,,,,,,,,,,,,,,
-West Carroll Memorial Hospital,32.8641,-91.3942,Medical,,,,,,,,,,,,,,,,,,
-Sheriffƒ??s HQ - East Baton Rouge,30.4141,-91.1342,Government,,,,,,,,,,,,,,,,,,
-Shreveport City Hall,32.5121,-93.7542,Government,,,,,,,,,,,,,,,,,,
-Lafayette City Hall,30.2281,-92.0142,Government,,,,,,,,,,,,,,,,,,
-Monroe City Hall,32.5021,-92.1142,Government,,,,,,,,,,,,,,,,,,
-Lake Charles City Hall,30.2121,-93.2242,Government,,,,,,,,,,,,,,,,,,
-Alexandria City Hall,31.3121,-92.4442,Government,,,,,,,,,,,,,,,,,,
-Bossier City Municipal Complex,32.5121,-93.7142,Government,,,,,,,,,,,,,,,,,,
-Houma Municipal Center,29.5921,-90.7242,Government,,,,,,,,,,,,,,,,,,
-New Iberia City Hall,30.0021,-91.8142,Government,,,,,,,,,,,,,,,,,,
-Slidell City Council,30.2721,-89.7842,Government,,,,,,,,,,,,,,,,,,
-Ruston Municipal Building,32.5241,-92.6342,Government,,,,,,,,,,,,,,,,,,
-Sulphur City Hall,30.2321,-93.3442,Government,,,,,,,,,,,,,,,,,,
-Hammond City Council,30.5041,-90.4642,Government,,,,,,,,,,,,,,,,,,
-Opelousas City Hall,30.5341,-92.0842,Government,,,,,,,,,,,,,,,,,,
-Morgan City Municipal Auditorium,29.7021,-91.2042,Government,,,,,,,,,,,,,,,,,,
-West Monroe City Hall,32.5121,-92.1742,Government,,,,,,,,,,,,,,,,,,
-Bastrop City Hall,32.7721,-91.9042,Government,,,,,,,,,,,,,,,,,,
-Thibodaux City Hall,29.7921,-90.8242,Government,,,,,,,,,,,,,,,,,,
-Minden City Hall,32.6121,-93.2842,Government,,,,,,,,,,,,,,,,,,
-Jennings City Hall,30.2221,-92.6542,Government,,,,,,,,,,,,,,,,,,
-DeRidder City Hall,30.8421,-93.2842,Government,,,,,,,,,,,,,,,,,,
-Abbeville City Hall,29.9721,-92.1342,Government,,,,,,,,,,,,,,,,,,
-Natchitoches City Hall,31.7621,-93.0842,Government,,,,,,,,,,,,,,,,,,
-Covington City Hall,30.4721,-90.1042,Government,,,,,,,,,,,,,,,,,,
-Mandeville City Hall,30.3621,-90.0642,Government,,,,,,,,,,,,,,,,,,
-Bogalusa City Hall,30.7721,-89.8542,Government,,,,,,,,,,,,,,,,,,
-Eunice City Hall,30.4921,-92.4142,Government,,,,,,,,,,,,,,,,,,
-Crowley City Hall,30.2121,-92.3742,Government,,,,,,,,,,,,,,,,,,
-Harmon South,30.231147,-92.436782,Land,,,,,,,,,,,,,,,,,,
-Duson Northeast Interchange,30.253855,-92.190605,Land,,,,,,,,,,,,,,,,,,
-Hwy 13 Frontage,30.299365,-92.394675,Land,,,,,,,,,,,,,,,,,,
-St. Raphael Dr,30.422401,-92.195313,Land,,,,,,,,,,,,,,,,,,
-Freeland Site,30.221473,-92.428995,Land,,,,,,,,,,,,,,,,,,
-Cedar St. Site,30.20864,-92.353411,Land,,,,,,,,,,,,,,,,,,
-Jeffers Property,30.249437,-92.395996,Land,,,,,,,,,,,,,,,,,,
-Egan Site,30.235317,-92.528752,Land,,,,,,,,,,,,,,,,,,
-Iota Site,30.325578,-92.512681,Land,,,,,,,,,,,,,,,,,,
-Lafourche Site,30.407733,-92.583031,Land,,,,,,,,,,,,,,,,,,
-Branch St. Site,30.22258,-92.282312,Land,,,,,,,,,,,,,,,,,,
-South Basile Property,30.471715,-92.532177,Land,,,,,,,,,,,,,,,,,,
-Refinery Rd Property,30.464158,-92.532141,Land,,,,,,,,,,,,,,,,,,
-Hwy 90 Rayne Property,30.230103,-92.278515,Land,,,,,,,,,,,,,,,,,,
-Lawland Commercial Park,30.234383,-92.391128,Land,,,,,,,,,,,,,,,,,,
-Interstate 10 West Frontage Land,30.238017,-92.374369,Land,,,,,,,,,,,,,,,,,,
-Bratton Family Farms,30.239613,-92.372168,Land,,,,,,,,,,,,,,,,,,
-Rare Opportunity - Historic 60 Acre Crowley Site,30.228539,-92.36642,Land,,,,,,,,,,,,,,,,,,
-Foster Site,30.224329,-92.357853,Land,,,,,,,,,,,,,,,,,,
-Allen Parish Airport,30.741578,-92.689489,Land,,,,,,,,,,,,,,,,,,
-Allen Parish Business & Industrial Park Site,30.805609,-92.674721,Land,,,,,,,,,,,,,,,,,,
-East Industrial Park,30.807705,-92.644536,Land,,,,,,,,,,,,,,,,,,
-Old Hardwood Mill,30.813988,-92.675512,Land,,,,,,,,,,,,,,,,,,
-Chachere Site,30.505303,-92.834252,Land,,,,,,,,,,,,,,,,,,
-Allen Industrial Site,30.806968,-92.675995,Land,,,,,,,,,,,,,,,,,,
-West Oberlin Site,30.63044,-92.785466,Land,,,,,,,,,,,,,,,,,,
-Monceaux Property,30.629637,-92.764775,Land,,,,,,,,,,,,,,,,,,
-Riverhouse Properties,30.623933,-92.779277,Land,,,,,,,,,,,,,,,,,,
-Allen Parish Airport Property,30.760355,-92.68945,Land,,,,,,,,,,,,,,,,,,
-Town of Oberlin Site,30.628444,-92.774115,Land,,,,,,,,,,,,,,,,,,
-Home Depot Anchored Retail Development,30.208828,-90.943729,Land,,,,,,,,,,,,,,,,,,
-Gateway II Site,30.232427,-91.026885,Land,,,,,,,,,,,,,,,,,,
-Schexnayder Site,30.079978,-90.971755,Land,,,,,,,,,,,,,,,,,,
-Britco Site,30.21438,-90.886724,Land,,,,,,,,,,,,,,,,,,
-152 Acres Vacant Land - Geismar,30.171914,-90.993496,Land,,,,,,,,,,,,,,,,,,
-River-Plex Mega-Park of Louisiana,30.148453,-91.049707,Land,,,,,,,,,,,,,,,,,,
-Hardtimes Plantation,30.136534,-90.998677,Land,,,,,,,,,,,,,,,,,,
-Foti Highway 3120 N,30.09774,-90.942256,Land,,,,,,,,,,,,,,,,,,
-Foti Highway 70,30.09203,-90.936329,Land,,,,,,,,,,,,,,,,,,
-Copperhead Industrial,30.236516,-91.019354,Land,,,,,,,,,,,,,,,,,,
-Foti Highway 18,30.102008,-90.946793,Land,,,,,,,,,,,,,,,,,,
-Burnside Industrial Parcel II,30.145831,-90.910663,Land,,,,,,,,,,,,,,,,,,
-Mon Desire,30.109443,-90.927329,Land,,,,,,,,,,,,,,,,,,
-Ascension Commerce Center II,30.223059,-90.975311,Land,,,,,,,,,,,,,,,,,,
-Rivermark 185 Industrial and Logistics Park,30.220051,-90.993752,Land,,,,,,,,,,,,,,,,,,
-IMTT-Geismar North,30.214562,-91.039068,Land,,,,,,,,,,,,,,,,,,
-Pinnacle Properties,30.217748,-90.996035,Land,,,,,,,,,,,,,,,,,,
-"Souvenir, Inc.",30.105121,-91.035342,Land,,,,,,,,,,,,,,,,,,
-40 Acre Site in Donaldsonville,30.104556,-91.022745,Land,,,,,,,,,,,,,,,,,,
-Over 7 Acres of Prime Airline Frontage in Ascension,30.283174,-90.952351,Land,,,,,,,,,,,,,,,,,,
-Potential Commercial/Light Industrial Site,30.229881,-90.994024,Land,,,,,,,,,,,,,,,,,,
-Magnolia Ridge Logistics Park,30.218358,-90.977833,Land,,,,,,,,,,,,,,,,,,
-Geismar Storage,30.235013,-91.022656,Land,,,,,,,,,,,,,,,,,,
-W. Edenborne Pkwy Industrial Land,30.190559,-90.947048,Land,,,,,,,,,,,,,,,,,,
-Highway 70 Industrial Land,30.153361,-90.871212,Land,,,,,,,,,,,,,,,,,,
-Bunkie Industrial Park - Powered by CLECO,30.946391,-92.198047,Land,,,,,,,,,,,,,,,,,,
-Avoyelles Parish Port - 195 AC Site,30.955384,-91.813734,Land,,,,,,,,,,,,,,,,,,
-Avoyelles Parish Port - 890 Acres,30.957856,-91.818109,Land,,,,,,,,,,,,,,,,,,
-Beauregard Airport Industrial Site,30.82041,-93.360942,Land,,,,,,,,,,,,,,,,,,
-DeRidder Industrial Park Site #1,30.872752,-93.28252,Land,,,,,,,,,,,,,,,,,,
-CIP Inc,32.22576,-93.154815,Land,,,,,,,,,,,,,,,,,,
-Plain Dealing Industrial Park,32.915368,-93.698018,Land,,,,,,,,,,,,,,,,,,
-Scopini Island Property,32.384998,-93.645216,Land,,,,,,,,,,,,,,,,,,
-Commerce Industrial Park,32.556006,-93.653324,Land,,,,,,,,,,,,,,,,,,
-Grand Cypress,32.558698,-93.509926,Land,,,,,,,,,,,,,,,,,,
-Shreveport Airport Aeropark Site,32.447406,-93.817694,Land,,,,,,,,,,,,,,,,,,
-Shreveport Airport Warehouse District Site,32.447433,-93.839764,Land,,,,,,,,,,,,,,,,,,
-Ward II Industrial Park,32.838586,-93.959019,Land,,,,,,,,,,,,,,,,,,
-North Whittington Property,32.383735,-93.652752,Land,,,,,,,,,,,,,,,,,,
-Ron Bean Property,32.371364,-93.643239,Land,,,,,,,,,,,,,,,,,,
-Shreve Park Industrial Campus,32.420052,-93.841768,Land,,,,,,,,,,,,,,,,,,
-Caddo Industrial Park,32.411776,-93.904755,Land,,,,,,,,,,,,,,,,,,
-North Shreveport Industrial Park,32.558468,-93.85282,Land,,,,,,,,,,,,,,,,,,
-West Shreveport Industrial Park - Lot 1 (16 acres),32.440731,-93.912977,Land,,,,,,,,,,,,,,,,,,
-West Shreveport Industrial Park - Lot 2 (14 acres),32.422632,-93.902105,Land,,,,,,,,,,,,,,,,,,
-West Shreveport Industrial Park - Lot 3 (11 acres),32.436972,-93.918104,Land,,,,,,,,,,,,,,,,,,
-LA Hwy 1/Leonard Road,32.382592,-93.680447,Land,,,,,,,,,,,,,,,,,,
-"West 70th St. and Buncombe Rd., NWC -- 97 +/- Acres For Sale",32.444829,-93.849333,Land,,,,,,,,,,,,,,,,,,
-"7100 Block of Greenwood Rd., 11.25 +/- Acres For Sale",32.449764,-93.89543,Land,,,,,,,,,,,,,,,,,,
-O'Neal Kouns,32.400922,-93.792194,Land,,,,,,,,,,,,,,,,,,
-Cupples West,32.363979,-93.651051,Land,,,,,,,,,,,,,,,,,,
-Cupples-LRF,32.359502,-93.655094,Land,,,,,,,,,,,,,,,,,,
-Tensas Delta North,32.354759,-93.630291,Land,,,,,,,,,,,,,,,,,,
-Sorensen 110W,32.343245,-93.659687,Land,,,,,,,,,,,,,,,,,,
-Robson Farms,32.351844,-93.641562,Land,,,,,,,,,,,,,,,,,,
-MFE Mega,32.33462,-93.648611,Land,,,,,,,,,,,,,,,,,,
-MFE 30 SW,32.316728,-93.649615,Land,,,,,,,,,,,,,,,,,,
-MFE 110 East,32.32219,-93.649021,Land,,,,,,,,,,,,,,,,,,
-South Bossier Development Opportunity,32.389847,-93.609896,Land,,,,,,,,,,,,,,,,,,
-LRF Property,32.357165,-93.658474,Land,,,,,,,,,,,,,,,,,,
-Former Libbey Glass Plant,32.468425,-93.799385,Land,,,,,,,,,,,,,,,,,,
-Chennault Site # 8,30.213092,-93.157654,Land,,,,,,,,,,,,,,,,,,
-Chennault Site #6,30.206512,-93.14573,Land,,,,,,,,,,,,,,,,,,
-Chennault Site #3,30.195416,-93.142661,Land,,,,,,,,,,,,,,,,,,
-Chennault Site #2,30.201154,-93.149218,Land,,,,,,,,,,,,,,,,,,
-Chennault Site #4,30.197808,-93.13196,Land,,,,,,,,,,,,,,,,,,
-Chennault Site #5,30.214274,-93.140913,Land,,,,,,,,,,,,,,,,,,
-DeQuincy Industrial Park,30.436117,-93.466018,Land,,,,,,,,,,,,,,,,,,
-Industrial Park East - PLC Tract 175,30.217521,-93.133381,Land,,,,,,,,,,,,,,,,,,
-Lincoln  Road - PLC Tract 400,30.105376,-93.240001,Land,,,,,,,,,,,,,,,,,,
-Chennault Site 2-2A,30.201128,-93.149099,Land,,,,,,,,,,,,,,,,,,
-Port of Vinton Lot 6,30.141831,-93.566583,Land,,,,,,,,,,,,,,,,,,
-Ellender Site,30.187402,-93.348792,Land,,,,,,,,,,,,,,,,,,
-Calcasieu Industrial Park,30.213161,-93.339021,Land,,,,,,,,,,,,,,,,,,
-Iowa I-10 80 Acres with additional 26 acres adjoining all have NO Zoning!,30.248,-93.000846,Land,,,,,,,,,,,,,,,,,,
-Iowa I-10 26 Acres with additional 80 acres adjoining also with NO ZONING!,30.248021,-93.006965,Land,,,,,,,,,,,,,,,,,,
-Lake Charles Regional Airport Site #1,30.131054,-93.218275,Land,,,,,,,,,,,,,,,,,,
-Lake Charles Regional Airport -- 69.2 Acres,30.121592,-93.215515,Land,,,,,,,,,,,,,,,,,,
-Lake Charles Regional Airport -- 58.9 Acres,30.114643,-93.215374,Land,,,,,,,,,,,,,,,,,,
-Horseman's Business Park Phase I,30.228432,-93.125457,Land,,,,,,,,,,,,,,,,,,
-Horseman's Business Park Phase II,30.225116,-93.12465,Land,,,,,,,,,,,,,,,,,,
-Ryan St. at I-10 W Off-ramp,30.23693,-93.216417,Land,,,,,,,,,,,,,,,,,,
-56 Acres on Power Center Pkwy.,30.190747,-93.171637,Land,,,,,,,,,,,,,,,,,,
-11 Acres of Mixed Use on East McNeese Street,30.177176,-93.193048,Land,,,,,,,,,,,,,,,,,,
-96 Acres on Tom Hebert Road,30.120471,-93.183305,Land,,,,,,,,,,,,,,,,,,
-Port of Vinton Lot 12,30.165443,-93.562371,Land,,,,,,,,,,,,,,,,,,
-Port of Vinton Lot 11,30.157937,-93.557809,Land,,,,,,,,,,,,,,,,,,
-Port of Vinton Lot 10,30.157993,-93.564611,Land,,,,,,,,,,,,,,,,,,
-Port of Vinton Lot 7,30.152118,-93.564345,Land,,,,,,,,,,,,,,,,,,
-I-10 Frontage in Sulphur,30.218861,-93.321788,Land,,,,,,,,,,,,,,,,,,
-West Cal Port,30.064428,-93.352958,Land,,,,,,,,,,,,,,,,,,
-1323 Mossville Way,30.248127,-93.327094,Land,,,,,,,,,,,,,,,,,,
-Louisiana Multimodal Terminal,30.188491,-93.138231,Land,,,,,,,,,,,,,,,,,,
-Queenan Industrial Park,30.202638,-93.318695,Land,,,,,,,,,,,,,,,,,,
-4300 Houston River Road,30.283584,-93.314247,Land,,,,,,,,,,,,,,,,,,
-Old DeQuincy Sale Barn,30.431687,-93.430379,Land,,,,,,,,,,,,,,,,,,
-Goodman Road Site,30.261095,-93.155094,Land,,,,,,,,,,,,,,,,,,
-Louisiana Tank Yard,30.129031,-93.280604,Land,,,,,,,,,,,,,,,,,,
-Tom Hebert Road Rail Site,30.123631,-93.184441,Land,,,,,,,,,,,,,,,,,,
-Cypress Bend Property,30.247175,-93.015383,Land,,,,,,,,,,,,,,,,,,
-7020 U.S. Hwy. 90,30.235173,-93.098811,Land,,,,,,,,,,,,,,,,,,
-Vision Industrial Site,30.453466,-93.392455,Land,,,,,,,,,,,,,,,,,,
-Charvais Industrial Site,30.159957,-93.357143,Land,,,,,,,,,,,,,,,,,,
-Bayou D'Inde Road Site,30.199898,-93.324375,Land,,,,,,,,,,,,,,,,,,
-Drew Light Industrial Site,30.13593,-93.203019,Land,,,,,,,,,,,,,,,,,,
-Opelousas St. at I-10 Interchange,30.241271,-93.13149,Land,,,,,,,,,,,,,,,,,,
-114 S. Cities Service Highway,30.22631,-93.326221,Land,,,,,,,,,,,,,,,,,,
-Chennault Site #1,30.208084,-93.155447,Land,,,,,,,,,,,,,,,,,,
-Calcasieu I-10 Site,30.18882,-93.521273,Land,,,,,,,,,,,,,,,,,,
-Pine Shadows Development Site,30.254796,-93.162418,Land,,,,,,,,,,,,,,,,,,
-I-10 Iowa Tract 50,30.247929,-93.00243,Land,,,,,,,,,,,,,,,,,,
-I-10 Iowa Tract 26,30.248015,-93.00705,Land,,,,,,,,,,,,,,,,,,
-Arena Road & Interstate 10 Acerage,30.211935,-93.386538,Land,,,,,,,,,,,,,,,,,,
-Calcasieu I-10 Mega Site,30.185899,-93.509896,Land,,,,,,,,,,,,,,,,,,
-Chloe Corporate Center,30.241965,-93.122462,Land,,,,,,,,,,,,,,,,,,
-4400 Hwy. 27 in Sulphur,30.184835,-93.378228,Land,,,,,,,,,,,,,,,,,,
-Southwest Iowa Site,30.22411,-93.02621,Land,,,,,,,,,,,,,,,,,,
-Holmwood Development Property,30.122343,-93.10384,Land,,,,,,,,,,,,,,,,,,
-Bell City Property,30.135186,-93.019873,Land,,,,,,,,,,,,,,,,,,
-East Edgerly Site,30.234856,-93.495253,Land,,,,,,,,,,,,,,,,,,
-West Edgerly Site,30.234475,-93.525293,Land,,,,,,,,,,,,,,,,,,
-Nalmar Landing Site,30.224266,-93.249606,Land,,,,,,,,,,,,,,,,,,
-PLC Tract 475,30.113357,-93.305709,Land,,,,,,,,,,,,,,,,,,
-Lake Charles Regional 168-Acre Site,30.136386,-93.225566,Land,,,,,,,,,,,,,,,,,,
-Johnny Breaux Road Site,30.1747,-93.555913,Land,,,,,,,,,,,,,,,,,,
-Port of Columbia,32.185943,-92.103926,Land,,,,,,,,,,,,,,,,,,
-Mudd Property on Ship Channel,29.778301,-93.35405,Land,,,,,,,,,,,,,,,,,,
-Jordan Oil Company Dock,29.932315,-93.076529,Land,,,,,,,,,,,,,,,,,,
-"Cameron Parish Port, Harbor & Terminal District",29.797001,-93.326645,Land,,,,,,,,,,,,,,,,,,
-Cameron Prairie Industrial Park,29.992751,-93.092105,Land,,,,,,,,,,,,,,,,,,
-Hackett's Corner Industrial Site,30.012807,-93.085016,Land,,,,,,,,,,,,,,,,,,
-Horseshoe Bend Industrial Site,30.030783,-93.084306,Land,,,,,,,,,,,,,,,,,,
-Pine Pasture Properties,30.015663,-93.057109,Land,,,,,,,,,,,,,,,,,,
-Mallard Lane Development Site,29.809719,-93.161618,Land,,,,,,,,,,,,,,,,,,
-Camcorp Site,29.787768,-93.157292,Land,,,,,,,,,,,,,,,,,,
-St. Johns Island Site,29.830212,-93.355844,Land,,,,,,,,,,,,,,,,,,
-"Whitehall Industrial Site (1,238 Acres / 520 Acres Certified)",31.549822,-91.480108,Land,,,,,,,,,,,,,,,,,,
-Vidalia Port Commission-Slack-Water Slip,31.537876,-91.485347,Land,,,,,,,,,,,,,,,,,,
-Vidalia Port Commission-Access Road Plat,31.542498,-91.487775,Land,,,,,,,,,,,,,,,,,,
-DeSoto Parish Industrial Park,32.08007,-93.770174,Land,,,,,,,,,,,,,,,,,,
-LSU Innovation Park,30.360056,-91.146023,Land,,,,,,,,,,,,,,,,,,
-Sullivan Site,30.481377,-91.015406,Land,,,,,,,,,,,,,,,,,,
-Highway 64-McHugh Road Site,30.653362,-91.137183,Land,,,,,,,,,,,,,,,,,,
-Baringer Park Site,30.360391,-91.018258,Land,,,,,,,,,,,,,,,,,,
-Land Available For Sale or Lease,30.383295,-91.052725,Land,,,,,,,,,,,,,,,,,,
-"18605 Highland Rd, Baton Rouge, LA 70809",30.35314,-91.023738,Land,,,,,,,,,,,,,,,,,,
-"8-Unit office Building - 5235 Florida Blvd., Baton Rouge",30.451637,-91.136215,Land,,,,,,,,,,,,,,,,,,
-Highland Rd Commercial Land For Sale,30.378349,-91.138172,Land,,,,,,,,,,,,,,,,,,
-I-10/Pecue Lane Interchange,30.365107,-91.041771,Land,,,,,,,,,,,,,,,,,,
-3.59 Acres for Sale on Plank Rd.,30.50487,-91.152978,Land,,,,,,,,,,,,,,,,,,
-14841 Greenwell Springs,30.519039,-91.026042,Land,,,,,,,,,,,,,,,,,,
-Hobgood Site,30.544548,-91.128772,Land,,,,,,,,,,,,,,,,,,
-Aviation Business Park,30.537359,-91.149134,Land,,,,,,,,,,,,,,,,,,
-DiVincenti Road,30.543137,-91.141979,Land,,,,,,,,,,,,,,,,,,
-Zachary Retail Parcel For Sale 5 Acres,30.649723,-91.116642,Land,,,,,,,,,,,,,,,,,,
-Bluebonnet Blvd Retail Parcel 2.1 Acres,30.416107,-91.073112,Land,,,,,,,,,,,,,,,,,,
-"1.26 Acre Lot Jefferson Hwy Baton Rouge, LA. 70809",30.412362,-91.082431,Land,,,,,,,,,,,,,,,,,,
-Port of Lake Providence,32.759415,-91.18199,Land,,,,,,,,,,,,,,,,,,
-Lake Providence Port Commission,32.746296,-91.168171,Land,,,,,,,,,,,,,,,,,,
-"47-acre Commerical site Lake Providence, La",32.810876,-91.169657,Land,,,,,,,,,,,,,,,,,,
-"72-acre Industrial site Lake providence, La",32.737575,-91.241977,Land,,,,,,,,,,,,,,,,,,
-"Greenbriar Mega site (Epps, La)",32.57281,-91.362924,Land,,,,,,,,,,,,,,,,,,
-Record Industrial Park,30.853803,-91.046354,Land,,,,,,,,,,,,,,,,,,
-Evangeline Ward One Industrial Park Expansion,30.718266,-92.268723,Land,,,,,,,,,,,,,,,,,,
-West Eunice Site,30.484294,-92.530346,Land,,,,,,,,,,,,,,,,,,
-Meche Property,30.748721,-92.214282,Land,,,,,,,,,,,,,,,,,,
-Winnsboro Industrial Park,32.2032,-91.723674,Land,,,,,,,,,,,,,,,,,,
-Winnsboro Industrial Park #2,32.196641,-91.725712,Land,,,,,,,,,,,,,,,,,,
-Baskin Property,32.24675,-91.746349,Land,,,,,,,,,,,,,,,,,,
-Franklin Parish Industrial Site 420 acres,32.339096,-91.529972,Land,,,,,,,,,,,,,,,,,,
-"Crowville, LA 40-acre Site",32.245085,-91.734857,Land,,,,,,,,,,,,,,,,,,
-Franklin Parish 60-acre site (subdividable/ two 30-acre parcels),32.272412,-91.59021,Land,,,,,,,,,,,,,,,,,,
-6-acre Site Franklin Parish,32.169204,-91.722977,Land,,,,,,,,,,,,,,,,,,
-"193 acres available in Winnsboro, La (4 parcels)",32.245789,-91.705801,Land,,,,,,,,,,,,,,,,,,
-Montgomery Industrial Site,31.681275,-92.894583,Land,,,,,,,,,,,,,,,,,,
-Port of Iberia NE Site,29.945518,-91.831594,Land,,,,,,,,,,,,,,,,,,
-Acadiana Regional Airport Site P-1,30.039133,-91.879696,Land,,,,,,,,,,,,,,,,,,
-Acadiana Regional Airport Site P-3,30.05472,-91.880958,Land,,,,,,,,,,,,,,,,,,
-Acadiana Regional Airport Site P-5,30.019047,-91.88395,Land,,,,,,,,,,,,,,,,,,
-Port of Iberia - North Site,29.951286,-91.837255,Land,,,,,,,,,,,,,,,,,,
-Acadiana Regional Airport - New Site,30.032848,-91.857848,Land,,,,,,,,,,,,,,,,,,
-Iberia Hwy 674,29.975541,-91.779643,Land,,,,,,,,,,,,,,,,,,
-Antook - 75 Acre Tract,30.042223,-91.866207,Land,,,,,,,,,,,,,,,,,,
-Coteau Road - Keller Williams,30.059876,-91.887732,Land,,,,,,,,,,,,,,,,,,
-Acadiana Regional Airport Site P2,30.04561,-91.877845,Land,,,,,,,,,,,,,,,,,,
-Gulf Coast Land Group Admiral Doyle Drive Property,30.042188,-91.86611,Land,,,,,,,,,,,,,,,,,,
-Adm Doyle Acres,29.98114,-91.806522,Land,,,,,,,,,,,,,,,,,,
-Progress Point,30.005624,-91.878219,Land,,,,,,,,,,,,,,,,,,
-Howard Segura Rd Site,30.004004,-91.886967,Land,,,,,,,,,,,,,,,,,,
-Coastal Timbers Site,30.022207,-91.81988,Land,,,,,,,,,,,,,,,,,,
-Acadiana Regional Airport P3 Site,30.054877,-91.881135,Land,,,,,,,,,,,,,,,,,,
-Admiral Doyle East Site,30.033655,-91.856841,Land,,,,,,,,,,,,,,,,,,
-Admiral Doyle Dr. West Site,30.030398,-91.860149,Land,,,,,,,,,,,,,,,,,,
-10.77 Acres W Admiral Doyle For Sale,30.050135,-91.873264,Land,,,,,,,,,,,,,,,,,,
-Acadiana Regional Airport - A3,30.02533,-91.894649,Land,,,,,,,,,,,,,,,,,,
-Iberville Industrial & Technology Park,30.310673,-91.276065,Land,,,,,,,,,,,,,,,,,,
-Kinder Morgan St. Gabriel Terminal,30.222956,-91.124613,Land,,,,,,,,,,,,,,,,,,
-3000 Acres Sunshine,30.297562,-91.145893,Land,,,,,,,,,,,,,,,,,,
-Grace Farms East,30.409718,-91.497851,Land,,,,,,,,,,,,,,,,,,
-Grace Farms West,30.412866,-91.512299,Land,,,,,,,,,,,,,,,,,,
-Carville Riverfront Development,30.226276,-91.111708,Land,,,,,,,,,,,,,,,,,,
-Claiborne Site,30.192304,-91.073729,Land,,,,,,,,,,,,,,,,,,
-Belle Grove Site,30.180475,-91.10909,Land,,,,,,,,,,,,,,,,,,
-Willow Glen Terminal Site,30.281585,-91.11469,Land,,,,,,,,,,,,,,,,,,
-Point Clair 95,30.224888,-91.121482,Land,,,,,,,,,,,,,,,,,,
-Allemania River Road,30.269297,-91.161465,Land,,,,,,,,,,,,,,,,,,
-U.S. 167 Commercial Acreage,32.250912,-92.721976,Land,,,,,,,,,,,,,,,,,,
-Churchill Technology & Business Park (480 total acres/25 Acres Certified),29.885723,-90.182145,Land,,,,,,,,,,,,,,,,,,
-Cornerstone Energy Park,29.95246,-90.268154,Land,,,,,,,,,,,,,,,,,,
-WB 5,29.932235,-90.053852,Land,,,,,,,,,,,,,,,,,,
-Avondale Global Gateway,29.923496,-90.184548,Land,,,,,,,,,,,,,,,,,,
-Available Land With Marine Access at IMTT-Avondale,29.914341,-90.197132,Land,,,,,,,,,,,,,,,,,,
-C-2 Zoned Land Off Highway 90,29.963541,-90.152118,Land,,,,,,,,,,,,,,,,,,
-Bucktown Oversized Lot for Sale,30.018465,-90.124797,Land,,,,,,,,,,,,,,,,,,
-S & B Properties,30.241013,-92.643289,Land,,,,,,,,,,,,,,,,,,
-Broussard Property,30.235847,-92.676408,Land,,,,,,,,,,,,,,,,,,
-CALCAM LLC,30.234563,-92.946175,Land,,,,,,,,,,,,,,,,,,
-T.O. Allen Industrial Park North,30.234561,-92.974279,Land,,,,,,,,,,,,,,,,,,
-"OBrien Air, Inc Property",30.233786,-92.931882,Land,,,,,,,,,,,,,,,,,,
-Sabbaghian Property,30.244734,-92.684698,Land,,,,,,,,,,,,,,,,,,
-Downes Development LLC/Harris-Downes Properties LLC,30.241421,-92.648269,Land,,,,,,,,,,,,,,,,,,
-Trahan Management Property,30.237958,-92.634878,Land,,,,,,,,,,,,,,,,,,
-T.O. Allen Industrial Park South,30.225051,-92.960149,Land,,,,,,,,,,,,,,,,,,
-Camara Property,30.234634,-92.890223,Land,,,,,,,,,,,,,,,,,,
-Welsh Airport Property,30.244519,-92.832467,Land,,,,,,,,,,,,,,,,,,
-Rail Logix - Lacassine Complex,30.240764,-92.947298,Land,,,,,,,,,,,,,,,,,,
-"North American Land Company, LLC",30.244703,-92.958217,Land,,,,,,,,,,,,,,,,,,
-REDUCED Price - 33 Acre Site on I-10 Frontage Rd.,30.244837,-92.953163,Land,,,,,,,,,,,,,,,,,,
-Benoit LA-26,30.089311,-92.673281,Land,,,,,,,,,,,,,,,,,,
-Old Castle,30.482655,-92.683528,Land,,,,,,,,,,,,,,,,,,
-Harris Downes Property,30.241928,-92.653876,Land,,,,,,,,,,,,,,,,,,
-Hwy. 395 Site,30.24219,-92.735934,Land,,,,,,,,,,,,,,,,,,
-101 Calcasieu Avenue,30.077975,-92.671027,Land,,,,,,,,,,,,,,,,,,
-88-Acre Development,30.242034,-92.925959,Land,,,,,,,,,,,,,,,,,,
-Guinn SilverWood Property,30.187676,-92.601795,Land,,,,,,,,,,,,,,,,,,
-Logan Property,30.24203,-92.966551,Land,,,,,,,,,,,,,,,,,,
-2150 Youngsville Hwy 89,30.124526,-91.988383,Land,,,,,,,,,,,,,,,,,,
-1 Alcide Dominique Drive,30.2489562832,-92.0396804809,Land,,,,,,,,,,,,,,,,,,
-Cameron St  and  Ambassador Caffery Pkwy,30.2337833173,-92.060880661,Land,,,,,,,,,,,,,,,,,,
-500 Old Spanish,30.231609,-92.106897,Land,,,,,,,,,,,,,,,,,,
-Northpark Certified Site,30.269101,-92.039388,Land,,,,,,,,,,,,,,,,,,
-3100 Ridge Rd.,30.177388,-92.184672,Land,,,,,,,,,,,,,,,,,,
-16.9 Acres on Commission Blvd. Rail Access.,30.164386,-91.99198,Land,,,,,,,,,,,,,,,,,,
-Fredette Property,30.299023,-92.013622,Land,,,,,,,,,,,,,,,,,,
-Garber Industrial Park,30.164695,-91.964153,Land,,,,,,,,,,,,,,,,,,
-I-90 Tract Broussard,30.082399,-91.946287,Land,,,,,,,,,,,,,,,,,,
-Northpark Technology Center,30.271355,-92.039581,Land,,,,,,,,,,,,,,,,,,
-Girouard Site,30.149218,-91.945881,Land,,,,,,,,,,,,,,,,,,
-Hero's Point,30.256168,-92.040184,Land,,,,,,,,,,,,,,,,,,
-1 N Bernard Rd,30.163444,-91.967078,Land,,,,,,,,,,,,,,,,,,
-Martial Farms,30.124741,-91.937254,Land,,,,,,,,,,,,,,,,,,
-AC Commercial Site,30.124281,-91.954011,Land,,,,,,,,,,,,,,,,,,
-South Morgan Site,30.133892,-91.967592,Land,,,,,,,,,,,,,,,,,,
-Loul's Landing,30.127222,-91.946278,Land,,,,,,,,,,,,,,,,,,
-Country View on Ambassador Caffery Pwky. (28+ acres),30.135318,-91.971556,Land,,,,,,,,,,,,,,,,,,
-Ambassador Commons Zone,30.114201,-91.947038,Land,,,,,,,,,,,,,,,,,,
-Lucile's Commerce Plaza,30.138275,-91.947712,Land,,,,,,,,,,,,,,,,,,
-LA-89/ Albertson Pkwy Property,30.143674,-91.990084,Land,,,,,,,,,,,,,,,,,,
-St. Julien Park Frontage Site,30.134486,-91.933838,Land,,,,,,,,,,,,,,,,,,
-Maxie and Vida Girouard Site,30.152158,-91.950839,Land,,,,,,,,,,,,,,,,,,
-2826 Bonin Road,30.10228,-92.00765,Land,,,,,,,,,,,,,,,,,,
-100 Centre Sarcelle Blvd,30.107327,-92.01712,Land,,,,,,,,,,,,,,,,,,
-2215 E Milton Ave,30.110633,-92.031485,Land,,,,,,,,,,,,,,,,,,
-900 BLK Larriviere RD,30.081834,-91.974915,Land,,,,,,,,,,,,,,,,,,
-2400 BLK Chemin Metairie PKWY,30.088956,-92.004536,Land,,,,,,,,,,,,,,,,,,
-2400 Blk Chemin Metairie Rd Lot 3,30.089724,-92.003581,Land,,,,,,,,,,,,,,,,,,
-2400 Blk Chemin Metairie Rd Lot 1,30.089786,-92.004824,Land,,,,,,,,,,,,,,,,,,
-2400 Blk Chemin Metairie Rd Lot 2,30.089687,-92.004212,Land,,,,,,,,,,,,,,,,,,
-2400 Blk Chemin Metairie Rd Lot 4,30.088433,-92.004695,Land,,,,,,,,,,,,,,,,,,
-3038 Chemin Metairie Pkwy,30.083637,-91.982445,Land,,,,,,,,,,,,,,,,,,
-2024 Chemin Metairie PKWY,30.096073,-92.016744,Land,,,,,,,,,,,,,,,,,,
-2510 Youngsville Hwy,30.116885,-91.991142,Land,,,,,,,,,,,,,,,,,,
-2300 Youngsville HWY,30.120804,-91.99001,Land,,,,,,,,,,,,,,,,,,
-1900 BLK Chemin Metairie PKWY,30.095558,-92.01342,Land,,,,,,,,,,,,,,,,,,
-700 BLK SAVOY RD,30.095458,-92.009387,Land,,,,,,,,,,,,,,,,,,
-700 BLK Iberia ST,30.101135,-92.00685,Land,,,,,,,,,,,,,,,,,,
-Rue Bon Secours,30.252646,-92.117625,Land,,,,,,,,,,,,,,,,,,
-405 Rue Bon Secours,30.252459,-92.119679,Land,,,,,,,,,,,,,,,,,,
-615 Lafayette St,30.106998,-91.990994,Land,,,,,,,,,,,,,,,,,,
-103 W Main St,30.14796,-91.964674,Land,,,,,,,,,,,,,,,,,,
-102 & 200 Block Albertson Pkwy,30.143729,-91.990195,Land,,,,,,,,,,,,,,,,,,
-Country View Phase 2 Site,30.136668,-91.974577,Land,,,,,,,,,,,,,,,,,,
-Country View on Ambassador Caffery,30.135302,-91.971572,Land,,,,,,,,,,,,,,,,,,
-Morgan Broadview Site,30.131818,-91.967724,Land,,,,,,,,,,,,,,,,,,
-6922 Ambassador Caffery Pkwy,30.133211,-91.974522,Land,,,,,,,,,,,,,,,,,,
-Acadian Hills,30.257255,-92.02632,Land,,,,,,,,,,,,,,,,,,
-Enterprise Industrial Park,29.605294,-90.486784,Land,,,,,,,,,,,,,,,,,,
-5-Cher's,29.47326,-90.323894,Land,,,,,,,,,,,,,,,,,,
-Polmer Bros - LA Hwy 316 - 236 Acres,29.676987,-90.712469,Land,,,,,,,,,,,,,,,,,,
-30 Acre Tract on Hwy 20,29.899184,-90.736761,Land,,,,,,,,,,,,,,,,,,
-Lockport Rouse's Outparcel,29.642648,-90.525307,Land,,,,,,,,,,,,,,,,,,
-South Lafourche Airport North,29.440233,-90.271759,Land,,,,,,,,,,,,,,,,,,
-South Lafourche Airport South,29.428212,-90.271773,Land,,,,,,,,,,,,,,,,,,
-1.9 acres on N Canal for Sale,29.80092,-90.816622,Land,,,,,,,,,,,,,,,,,,
-McLeod Site,29.648492,-90.511954,Land,,,,,,,,,,,,,,,,,,
-Valentine Industrial Site,29.607388,-90.464596,Land,,,,,,,,,,,,,,,,,,
-Lockport Rouses Market Outparcels for Lease,29.642628,-90.525449,Land,,,,,,,,,,,,,,,,,,
-Olla Industrial Park,31.89267,-92.258607,Land,,,,,,,,,,,,,,,,,,
-RUSTON INTERSTATE DEVELOPMENT,32.53866,-92.63513,Land,,,,,,,,,,,,,,,,,,
-I-20 Frontage Commercial Site,32.543026,-92.603668,Land,,,,,,,,,,,,,,,,,,
-City of Ruston Industrial Park,32.530443,-92.59492,Land,,,,,,,,,,,,,,,,,,
-Ruston Former Airport,32.513917,-92.628884,Land,,,,,,,,,,,,,,,,,,
-Simsboro West,32.543449,-92.806793,Land,,,,,,,,,,,,,,,,,,
-I-20 Business & Technology Park Site,32.538084,-92.609999,Land,,,,,,,,,,,,,,,,,,
-Tarbutton at Hwy 150,32.531748,-92.676306,Land,,,,,,,,,,,,,,,,,,
-Grambling State University West Campus,32.534544,-92.743964,Land,,,,,,,,,,,,,,,,,,
-City of Ruston - 6+ acres,32.510071,-92.628332,Land,,,,,,,,,,,,,,,,,,
-City of Ruston - 25+ acres,32.514766,-92.628073,Land,,,,,,,,,,,,,,,,,,
-Holden Industrial Park,30.508175,-90.646075,Land,,,,,,,,,,,,,,,,,,
-Denkmann,30.466998,-90.791653,Land,,,,,,,,,,,,,,,,,,
-South Livingston,30.468233,-90.750003,Land,,,,,,,,,,,,,,,,,,
-Land on Buddy Hood Rd & I12,30.476903,-90.647843,Land,,,,,,,,,,,,,,,,,,
-A Hartman Ln,30.471856,-90.8576,Land,,,,,,,,,,,,,,,,,,
-25.85 Acres in Livingston,30.472694,-90.752089,Land,,,,,,,,,,,,,,,,,,
-North Satsuma,30.480879,-90.786303,Land,,,,,,,,,,,,,,,,,,
-Colyell,30.459772,-90.758259,Land,,,,,,,,,,,,,,,,,,
-MCM Site,30.508229,-90.649439,Land,,,,,,,,,,,,,,,,,,
-Hornsby,30.506846,-90.825158,Land,,,,,,,,,,,,,,,,,,
-Gilmore Property,30.469343,-90.632384,Land,,,,,,,,,,,,,,,,,,
-J3 Investments - Satsuma,30.48223,-90.809405,Land,,,,,,,,,,,,,,,,,,
-33.42 Acres Hwy 190,30.495614,-90.834167,Land,,,,,,,,,,,,,,,,,,
-56 Acres - Hwy 190 and Satsuma Rd.,30.501268,-90.799204,Land,,,,,,,,,,,,,,,,,,
-300 Acres off North Doyle Rd.,30.508411,-90.713727,Land,,,,,,,,,,,,,,,,,,
-Lee Martin Rd. & Hwy 190,30.509041,-90.786787,Land,,,,,,,,,,,,,,,,,,
-Henry Ballard Rd.,30.526205,-90.644069,Land,,,,,,,,,,,,,,,,,,
-"12.26 AC. Florida Blvd., Holden, La",30.502046,-90.650497,Land,,,,,,,,,,,,,,,,,,
-6.53 Ac. Interstate Frontage and Additional Adj. acreage available!,30.47182,-90.857669,Land,,,,,,,,,,,,,,,,,,
-"0.7 Acres Juban Road, Denham Springs",30.478944,-90.919224,Land,,,,,,,,,,,,,,,,,,
-Coker Vail Rd,30.484534,-90.623127,Land,,,,,,,,,,,,,,,,,,
-Juban Rd Land for Sale,30.471462,-90.913694,Land,,,,,,,,,,,,,,,,,,
-Wal-Mart Out Parcel Sale or Build to Suit,30.471991,-90.95613,Land,,,,,,,,,,,,,,,,,,
-0.69 Acres Walker South Road; Adjacent lot available,30.465093,-90.861831,Land,,,,,,,,,,,,,,,,,,
-"Terral Farms, Inc",32.480331,-91.127435,Land,,,,,,,,,,,,,,,,,,
-Madison Parish Port,32.495274,-91.122781,Land,,,,,,,,,,,,,,,,,,
-City of Tallulah Industrial Park,32.399026,-91.220552,Land,,,,,,,,,,,,,,,,,,
-Coulter Industrial Park,32.751931,-91.889023,Land,,,,,,,,,,,,,,,,,,
-Mer Rouge Site,32.762762,-91.796909,Land,,,,,,,,,,,,,,,,,,
-Morehouse Airport,32.756595,-91.879172,Land,,,,,,,,,,,,,,,,,,
-Bastrop Vision Property,32.771779,-91.870913,Land,,,,,,,,,,,,,,,,,,
-"Bennett 300 ( Collinston , La)",32.651414,-91.894963,Land,,,,,,,,,,,,,,,,,,
-"Morehouse Intermodal Industrial 50-acre site (Prime location Bastrop, La)",32.760606,-91.862617,Land,,,,,,,,,,,,,,,,,,
-Natchitoches Parish Port,31.846794,-93.069462,Land,,,,,,,,,,,,,,,,,,
-Natchitoches Industrial Park,31.708601,-93.069679,Land,,,,,,,,,,,,,,,,,,
-Natchitoches Industrial Park III,31.717017,-93.083072,Land,,,,,,,,,,,,,,,,,,
-Natchitoches Business Park I,31.73057,-93.079163,Land,,,,,,,,,,,,,,,,,,
-Natchitoches Business Park II,31.728224,-93.0821,Land,,,,,,,,,,,,,,,,,,
-Highway 478 Development Tract,31.658902,-93.107041,Land,,,,,,,,,,,,,,,,,,
-NSU North Business Park,31.75362,-93.101286,Land,,,,,,,,,,,,,,,,,,
-3101 Patterson Street,29.945689,-90.023999,Land,,,,,,,,,,,,,,,,,,
-3666 France Road,29.995058,-90.026086,Land,,,,,,,,,,,,,,,,,,
-4501 North Miro Street,29.976332,-90.025764,Land,,,,,,,,,,,,,,,,,,
-4490 Florida Avenue,29.981258,-90.024471,Land,,,,,,,,,,,,,,,,,,
-3900 Jourdan Road,30.001914,-90.023074,Land,,,,,,,,,,,,,,,,,,
-Almonaster Avenue CSX Property,30.004351,-90.001728,Land,,,,,,,,,,,,,,,,,,
-Paterson North,30.020023,-90.02491,Land,,,,,,,,,,,,,,,,,,
-7300 Jourdan Road,30.024071,-90.030593,Land,,,,,,,,,,,,,,,,,,
-3410 Jourdan Road,29.995303,-90.020122,Land,,,,,,,,,,,,,,,,,,
-4.6 Acres off Bullard Ave,30.043146,-89.955639,Land,,,,,,,,,,,,,,,,,,
-"Propel Park @ NASA MAF | Premier Class A Industrial Park | Up to 800,000 SF",30.017254,-89.922051,Land,,,,,,,,,,,,,,,,,,
-4325 France Road (Formally Trinity Yachts),30.011892,-90.029916,Land,,,,,,,,,,,,,,,,,,
-Prime 2.17-Acre Industrial Parcel  Almonaster Ave & Grant St,30.012125,-89.949457,Land,,,,,,,,,,,,,,,,,,
-4.5 Acres for Lease on Old Gentilly Road,30.014182,-89.976313,Land,,,,,,,,,,,,,,,,,,
-Charleston Industrial Park,32.424538,-92.08583,Land,,,,,,,,,,,,,,,,,,
-Pecanland Industrial Park,32.505588,-91.96459,Land,,,,,,,,,,,,,,,,,,
-Petty Company South,32.498744,-91.996484,Land,,,,,,,,,,,,,,,,,,
-Petty Company North,32.520796,-91.98663,Land,,,,,,,,,,,,,,,,,,
-Monroe Air Industrial Park,32.509458,-92.058478,Land,,,,,,,,,,,,,,,,,,
-I 20/Millhaven,32.484855,-91.998444,Land,,,,,,,,,,,,,,,,,,
-Calhoun Technology Park South Site,32.510671,-92.345551,Land,,,,,,,,,,,,,,,,,,
-Monroe Airport Site3,32.502372,-92.033547,Land,,,,,,,,,,,,,,,,,,
-Monroe Airport - Site1,32.522135,-92.036321,Land,,,,,,,,,,,,,,,,,,
-Monroe Airport Site2,32.507489,-92.065953,Land,,,,,,,,,,,,,,,,,,
-Tower Boardmoor Medical Corridor Site (Biomedical Research and Innovation Park),32.531833,-92.096525,Land,,,,,,,,,,,,,,,,,,
-Calhoun Technology Park North Site,32.516874,-92.345126,Land,,,,,,,,,,,,,,,,,,
-Highland Park Mixed-Use Development Site,32.525419,-92.146704,Land,,,,,,,,,,,,,,,,,,
-Sterlington River Site,32.686361,-92.089072,Land,,,,,,,,,,,,,,,,,,
-58.25 Acre Site Richwood Louisiana,32.438927,-92.075162,Land,,,,,,,,,,,,,,,,,,
-"West Monroe, LA 10-acre Business Site",32.503462,-92.186352,Land,,,,,,,,,,,,,,,,,,
-"West Monroe, LA Industrial 50 acre site",32.497712,-92.174896,Land,,,,,,,,,,,,,,,,,,
-"64 acres Monroe, La site (HWY- 139)",32.601054,-91.96182,Land,,,,,,,,,,,,,,,,,,
-"West Monroe, La (Well Road WEST) 10 acres site",32.502083,-92.189926,Land,,,,,,,,,,,,,,,,,,
-"West Monroe, La (WELL ROAD EAST) site 14.5-acre site",32.502057,-92.186336,Land,,,,,,,,,,,,,,,,,,
-"25-acre West Monroe, La Light Industrial Site.",32.500541,-92.181433,Land,,,,,,,,,,,,,,,,,,
-Goshen Gardens- Monroe La 60-acre site,32.486541,-92.051137,Land,,,,,,,,,,,,,,,,,,
-Millhaven Estates (251 acres total),32.522145,-91.998154,Land,,,,,,,,,,,,,,,,,,
-North 20 Monroe Light industrial site (13 acres adjacent to Amazon),32.493056,-92.021942,Land,,,,,,,,,,,,,,,,,,
-North Ouachita Industrial (Prime location on HWY 165 N),32.629007,-92.067421,Land,,,,,,,,,,,,,,,,,,
-South Monroe Industrial Park (Prime location),32.485748,-92.008567,Land,,,,,,,,,,,,,,,,,,
-0.7 acres West Monroe (on Cypress frontage),32.515379,-92.172826,Land,,,,,,,,,,,,,,,,,,
-Pecanland 144 acre site,32.514771,-91.958608,Land,,,,,,,,,,,,,,,,,,
-Sterlington Industrial Site (75 acres),32.686316,-92.062373,Land,,,,,,,,,,,,,,,,,,
-Victory Tower and Village (Multi-parcel lots),32.591279,-92.071078,Land,,,,,,,,,,,,,,,,,,
-HWY 594 PROPERTY,32.504695,-91.998638,Land,,,,,,,,,,,,,,,,,,
-Port Nickel - Mississippi Riverfront Heavy Industrial Tract w/ Ship Dock & Rail,29.858778,-89.968015,Land,,,,,,,,,,,,,,,,,,
-NOLA Terminal,29.635283,-89.942762,Land,,,,,,,,,,,,,,,,,,
-Port Eads Marina and Docking Facility,29.015349,-89.168927,Land,,,,,,,,,,,,,,,,,,
-Port Sulphur 39,29.472353,-89.687532,Land,,,,,,,,,,,,,,,,,,
-Mississippi River Land for Sale or Lease,29.627105,-89.926339,Land,,,,,,,,,,,,,,,,,,
-Venice Port Complex Marine Terminal,29.269201,-89.352872,Land,,,,,,,,,,,,,,,,,,
-Port of Pointe Coupee Industrial Park,31.000651,-91.717468,Land,,,,,,,,,,,,,,,,,,
-Kent Site,30.822179,-91.656139,Land,,,,,,,,,,,,,,,,,,
-Pointe Coupee Power Park,30.664762,-91.34604,Land,,,,,,,,,,,,,,,,,,
-New Roads Industrial Park,30.700577,-91.469656,Land,,,,,,,,,,,,,,,,,,
-Angel Ranch Site,30.732995,-91.41561,Land,,,,,,,,,,,,,,,,,,
-Moseley North Site,30.719798,-91.366918,Land,,,,,,,,,,,,,,,,,,
-Woodley Site,30.542588,-91.559923,Land,,,,,,,,,,,,,,,,,,
-Shuler Road Site,31.369138,-92.593204,Land,,,,,,,,,,,,,,,,,,
-England Airpark E1 Heavy Industrial Site,31.342281,-92.528997,Land,,,,,,,,,,,,,,,,,,
-England Airpark Heavy Industrial Site W1,31.328415,-92.559957,Land,,,,,,,,,,,,,,,,,,
-England Heavy Industrial E2,31.333126,-92.530268,Land,,,,,,,,,,,,,,,,,,
-England Heavy Industrial Site E3,31.33039,-92.527786,Land,,,,,,,,,,,,,,,,,,
-Central Louisiana Regional Port ISR 45,31.332589,-92.463006,Land,,,,,,,,,,,,,,,,,,
-"7510 Hwy 28, Alexandria, LA",31.299468,-92.526586,Land,,,,,,,,,,,,,,,,,,
-Central Louisiana Region Port Industrial Site,31.333568,-92.463345,Land,,,,,,,,,,,,,,,,,,
-Rapides Station Distribution Site,31.362152,-92.599098,Land,,,,,,,,,,,,,,,,,,
-Third Street Industrial Site,31.326802,-92.463454,Land,,,,,,,,,,,,,,,,,,
-1904 Third Street,31.303845,-92.440324,Land,,,,,,,,,,,,,,,,,,
-West Calhoun Drive - Parcel L,31.346806,-92.52527,Land,,,,,,,,,,,,,,,,,,
-Red River Parish Port Site,31.958514,-93.340533,Land,,,,,,,,,,,,,,,,,,
-Franklin 425 Property,32.444293,-91.753514,Land,,,,,,,,,,,,,,,,,,
-Rayville Industrial Park,32.476118,-91.774595,Land,,,,,,,,,,,,,,,,,,
-Delhi #1,32.450431,-91.507308,Land,,,,,,,,,,,,,,,,,,
-Delhi #2,32.438702,-91.50188,Land,,,,,,,,,,,,,,,,,,
-Delhi - BT Site,32.452758,-91.5093,Land,,,,,,,,,,,,,,,,,,
-Rayville I-20 Boles,32.462956,-91.780137,Land,,,,,,,,,,,,,,,,,,
-Bee Bayou Site,32.467755,-91.687744,Land,,,,,,,,,,,,,,,,,,
-Holly Ridge East Site,32.461317,-91.620807,Land,,,,,,,,,,,,,,,,,,
-Holly Ridge West Site,32.462765,-91.635977,Land,,,,,,,,,,,,,,,,,,
-North Dunn 180,32.473857,-91.582897,Land,,,,,,,,,,,,,,,,,,
-"360 acres in Richland Parish, Louisiana near Meta site",32.468909,-91.711507,Land,,,,,,,,,,,,,,,,,,
-427 acres Richland Parish Site (adjacent to Meta site),32.482533,-91.620422,Land,,,,,,,,,,,,,,,,,,
-Bee Bayou East (Richland Parish),32.467303,-91.675238,Land,,,,,,,,,,,,,,,,,,
-Bee Bayou West (Richland Parish),32.468594,-91.700056,Land,,,,,,,,,,,,,,,,,,
-Bee Bayou South (Richland Parish),32.461934,-91.67265,Land,,,,,,,,,,,,,,,,,,
-"0 Highway 17, Delhi, LA 71232",32.428392,-91.491862,Land,,,,,,,,,,,,,,,,,,
-77 acres PRIME location Richland Parish (adjacent to META),32.487847,-91.639988,Land,,,,,,,,,,,,,,,,,,
-178 acres Richland Parish (Adjacent to META) PRIME,32.532965,-91.649498,Land,,,,,,,,,,,,,,,,,,
-"I- 20 Mega Site (1,050 acres Rayville, La)",32.445523,-91.711181,Land,,,,,,,,,,,,,,,,,,
-"Prime 60 acres (Richland Parish, LA)",32.459069,-91.699679,Land,,,,,,,,,,,,,,,,,,
-Sanders 120 (120 acres near META data center),32.498649,-91.676773,Land,,,,,,,,,,,,,,,,,,
-Paris Road Ground Lease,29.945982,-89.962707,Land,,,,,,,,,,,,,,,,,,
-Taft Industrial Park,29.986489,-90.418752,Land,,,,,,,,,,,,,,,,,,
-"Esperanza Land, LLC Site 3",29.935183,-90.38646,Land,,,,,,,,,,,,,,,,,,
-"Esperanza Investments, LLC Site 1",29.92563,-90.40555,Land,,,,,,,,,,,,,,,,,,
-Pelican Occidental,29.971745,-90.434842,Land,,,,,,,,,,,,,,,,,,
-St. Charles Industrial Park,29.968619,-90.422331,Land,,,,,,,,,,,,,,,,,,
-St. Charles/Jefferson Boundary,29.975348,-90.280842,Land,,,,,,,,,,,,,,,,,,
-James Business Park,29.979608,-90.28137,Land,,,,,,,,,,,,,,,,,,
-Chevron,29.862216,-90.453718,Land,,,,,,,,,,,,,,,,,,
-Authement Property,29.89027,-90.404541,Land,,,,,,,,,,,,,,,,,,
-St. Charles Plaza,29.908014,-90.363886,Land,,,,,,,,,,,,,,,,,,
-Lauve/Hull - U.S. Highway 90,29.891065,-90.399243,Land,,,,,,,,,,,,,,,,,,
-15442 U.S. Highway 90 Paradis,29.874583,-90.441289,Land,,,,,,,,,,,,,,,,,,
-Ray Hymel Property,29.97715,-90.42899,Land,,,,,,,,,,,,,,,,,,
-US Highway 90 (next to Mini-Storage),29.890378,-90.397708,Land,,,,,,,,,,,,,,,,,,
-US 90 Youngs/Hicks Heirs (next to Jake's Towing),29.890861,-90.401729,Land,,,,,,,,,,,,,,,,,,
-Tinney,29.895192,-90.394111,Land,,,,,,,,,,,,,,,,,,
-James Business Park (Sq. 4 Lot 3),29.980525,-90.284741,Land,,,,,,,,,,,,,,,,,,
-James Business Park (Sq. 4 Lot 4),29.981114,-90.284722,Land,,,,,,,,,,,,,,,,,,
-James Business Park (Sq. 4 Lot 5),29.981628,-90.284684,Land,,,,,,,,,,,,,,,,,,
-Airline Drive (10111 Airline Drive),29.977224,-90.284291,Land,,,,,,,,,,,,,,,,,,
-Carte Land (US Highway 90 Paradis),29.878991,-90.43185,Land,,,,,,,,,,,,,,,,,,
-LA 306 (One Mille LLC),29.863469,-90.430363,Land,,,,,,,,,,,,,,,,,,
-LA635 & US Highway 90 (Dufrene),29.85309,-90.450903,Land,,,,,,,,,,,,,,,,,,
-US 90 Paradis,29.874811,-90.440792,Land,,,,,,,,,,,,,,,,,,
-River Road (LA18) Hahnville,29.961519,-90.404586,Land,,,,,,,,,,,,,,,,,,
-Darensbsbourg,29.991767,-90.494864,Land,,,,,,,,,,,,,,,,,,
-"Esperanza Land, LLC Site 2",29.939093,-90.384779,Land,,,,,,,,,,,,,,,,,,
-"Esperanza Land, LLC Site 4",29.934419,-90.389307,Land,,,,,,,,,,,,,,,,,,
-"Esperanza Investments, LLC Site 2",29.940507,-90.380445,Land,,,,,,,,,,,,,,,,,,
-Vial Property (Cornerstone),29.953101,-90.41964,Land,,,,,,,,,,,,,,,,,,
-SoLaPort,29.973302,-90.436955,Land,,,,,,,,,,,,,,,,,,
-15305 U.S. Highway 90 Paradis,29.875656,-90.436581,Land,,,,,,,,,,,,,,,,,,
-421 Almedia Road,29.968648,-90.307251,Land,,,,,,,,,,,,,,,,,,
-Esperanza Business Park,29.932754,-90.394968,Land,,,,,,,,,,,,,,,,,,
-US 90 (Maryland Drive),29.908513,-90.361047,Land,,,,,,,,,,,,,,,,,,
-LA3127 & LA3141,29.994425,-90.497449,Land,,,,,,,,,,,,,,,,,,
-Ashton Commercial,29.935422,-90.374853,Land,,,,,,,,,,,,,,,,,,
-Esperanza Business Park,29.927366,-90.388133,Land,,,,,,,,,,,,,,,,,,
-Airline Drive (10175 East St. Rose),29.976825,-90.285882,Land,,,,,,,,,,,,,,,,,,
-Esperanza Business Park Lot 9-A,29.928426,-90.38916,Land,,,,,,,,,,,,,,,,,,
-13517 U.S. Highway 90 Boutte,29.899555,-90.388651,Land,,,,,,,,,,,,,,,,,,
-Riverbend Business Park (Behind 10446 River Road on Delta Drive),29.970877,-90.293913,Land,,,,,,,,,,,,,,,,,,
-"US Highway 90, Des Allemands",29.837552,-90.453654,Land,,,,,,,,,,,,,,,,,,
-St. Rose Industrial Batture,29.968707,-90.290099,Land,,,,,,,,,,,,,,,,,,
-"15376 Highway 90, Paradis",29.875333,-90.439641,Land,,,,,,,,,,,,,,,,,,
-Available Land With Marine Access at IMTT-St. Rose,29.959934,-90.335754,Land,,,,,,,,,,,,,,,,,,
-10436 Airline Hwy. St. Rose,29.975257,-90.302561,Land,,,,,,,,,,,,,,,,,,
-14600 Hwy. 90-Bent's Property,29.883548,-90.426925,Land,,,,,,,,,,,,,,,,,,
-James Business Park-2.38 ac.,29.981053,-90.284676,Land,,,,,,,,,,,,,,,,,,
-Available Land With Marine Access at IMTT-St. Rose,29.939472,-90.333042,Land,,,,,,,,,,,,,,,,,,
-Available Land With Marine Access at IMTT-St. Rose,29.947097,-90.334319,Land,,,,,,,,,,,,,,,,,,
-Destrehan Business Campus,29.949828,-90.366637,Land,,,,,,,,,,,,,,,,,,
-IMTT Luling,29.923042,-90.330383,Land,,,,,,,,,,,,,,,,,,
-Des Allemands Hwy. 90 Retail Site,29.825689,-90.46474,Land,,,,,,,,,,,,,,,,,,
-"St. Charles Intermodal | 1,165 Acres Greenfield Site with Deepwater Capacity on Mississippi River",30.011727,-90.491638,Land,,,,,,,,,,,,,,,,,,
-West Alpha Drive Phase II,29.951953,-90.366308,Land,,,,,,,,,,,,,,,,,,
-Singleton Farm Site,30.831327,-90.580794,Land,,,,,,,,,,,,,,,,,,
-Residential Subdivision Near I-55,30.739948,-90.612679,Land,,,,,,,,,,,,,,,,,,
-Ancient Domain,30.099362,-90.878649,Land,,,,,,,,,,,,,,,,,,
-Balot & Whitehall,30.076636,-90.885341,Land,,,,,,,,,,,,,,,,,,
-Shady Grove,30.076022,-90.826893,Land,,,,,,,,,,,,,,,,,,
-Welham,30.026068,-90.793663,Land,,,,,,,,,,,,,,,,,,
-Savannah,30.046532,-90.887182,Land,,,,,,,,,,,,,,,,,,
-Minnie & St. Louis,30.041507,-90.907566,Land,,,,,,,,,,,,,,,,,,
-St. Alice,30.043523,-90.903639,Land,,,,,,,,,,,,,,,,,,
-Elina (Upper),30.054973,-90.932704,Land,,,,,,,,,,,,,,,,,,
-Zeringue/St. Emma,29.969683,-90.851091,Land,,,,,,,,,,,,,,,,,,
-Succeed Property,30.006402,-90.687355,Land,,,,,,,,,,,,,,,,,,
-Rich Bend,29.969006,-90.821051,Land,,,,,,,,,,,,,,,,,,
-Dunhill,30.099083,-90.9215,Land,,,,,,,,,,,,,,,,,,
-Louisiana Sugar Refinery Site A,30.049945,-90.677121,Land,,,,,,,,,,,,,,,,,,
-Elina (Lower),30.052955,-90.929254,Land,,,,,,,,,,,,,,,,,,
-PSL St. James Property,29.985227,-90.685841,Land,,,,,,,,,,,,,,,,,,
-Bessie-K,29.977546,-90.78816,Land,,,,,,,,,,,,,,,,,,
-Whiterose,30.012852,-90.60171,Land,,,,,,,,,,,,,,,,,,
-Hope,30.050274,-90.626202,Land,,,,,,,,,,,,,,,,,,
-Goodwill,30.012107,-90.678133,Land,,,,,,,,,,,,,,,,,,
-Belle Terre Commercial Property,30.093053,-90.503729,Land,,,,,,,,,,,,,,,,,,
-Phase 1 Belle Terre Blvd.,30.098086,-90.505056,Land,,,,,,,,,,,,,,,,,,
-Lot 13 Belle Terre Commercial Property,30.099604,-90.504907,Land,,,,,,,,,,,,,,,,,,
-Belle Terre Blvd. Commercial Property,30.102227,-90.501089,Land,,,,,,,,,,,,,,,,,,
-Lots Belle Terre Commercial,30.095131,-90.50584,Land,,,,,,,,,,,,,,,,,,
-Woodland Drive Property,30.091628,-90.458328,Land,,,,,,,,,,,,,,,,,,
-Globalplex Parcel F,30.062217,-90.568907,Land,,,,,,,,,,,,,,,,,,
-Willow Bend - Deep Draft Riverfront Development Land - Heavy Industrial Opportunity,30.027783,-90.610853,Land,,,,,,,,,,,,,,,,,,
-4265 West Airline Highway,30.074007,-90.580496,Land,,,,,,,,,,,,,,,,,,
-4121 West Airline Highway,30.074009,-90.575483,Land,,,,,,,,,,,,,,,,,,
-Industrial Land in Reserve,30.074043,-90.575378,Land,,,,,,,,,,,,,,,,,,
-Corner of Hwy. 51 & Woodland Drive,30.08556,-90.449025,Land,,,,,,,,,,,,,,,,,,
-Hwy 51 & I-10,30.088334,-90.44625,Land,,,,,,,,,,,,,,,,,,
-Across from 221 East Airline Hwy (Airline Motors),30.064175,-90.478493,Land,,,,,,,,,,,,,,,,,,
-"435 Belle Terre Blvd., Lot 741A-1",30.084936,-90.503343,Land,,,,,,,,,,,,,,,,,,
-452 Belle Terre Blvd,30.085527,-90.502204,Land,,,,,,,,,,,,,,,,,,
-430 Belle Terre Blvd,30.084785,-90.502192,Land,,,,,,,,,,,,,,,,,,
-314 Belle Terre Blvd,30.080665,-90.501481,Land,,,,,,,,,,,,,,,,,,
-279 Belle Terre Blvd +,30.079406,-90.502355,Land,,,,,,,,,,,,,,,,,,
-Belle Point 2 West Airline Highway,30.078771,-90.528021,Land,,,,,,,,,,,,,,,,,,
-Belle Pointe PLT/West Airline Hwy.,30.078147,-90.521498,Land,,,,,,,,,,,,,,,,,,
-West Airline across from New 51,30.066991,-90.482677,Land,,,,,,,,,,,,,,,,,,
-Industrial Land off of West 19th Street,30.070008,-90.5807,Land,,,,,,,,,,,,,,,,,,
-West 10th Street Reserve,30.068535,-90.561822,Land,,,,,,,,,,,,,,,,,,
-Terre Haute Development,30.08214,-90.589328,Land,,,,,,,,,,,,,,,,,,
-Globalplex Parcel E,30.062077,-90.570804,Land,,,,,,,,,,,,,,,,,,
-Across the Airline from ESJ High School,30.074625,-90.531408,Land,,,,,,,,,,,,,,,,,,
-3735 W Airline Hwy Reserve,30.075893,-90.560193,Land,,,,,,,,,,,,,,,,,,
-Port of South Louisiana Globalplex Parcel J,30.05681,-90.568004,Land,,,,,,,,,,,,,,,,,,
-Globalplex Parcel G,30.062215,-90.565479,Land,,,,,,,,,,,,,,,,,,
-Globalplex Parcel H,30.05802,-90.570756,Land,,,,,,,,,,,,,,,,,,
-Gold River Industrial Mega Site | 985 Acres Deep Draft Hydrogen Served Land,30.032354,-90.525326,Land,,,,,,,,,,,,,,,,,,
-"27 Acres, Hwy-51, C-3 Zoning",30.071359,-90.479686,Land,,,,,,,,,,,,,,,,,,
-High Traffic Retail Spaces @ Airline & Belle Terre Blvd,30.074333,-90.501226,Land,,,,,,,,,,,,,,,,,,
-"St. John Intermodal (1,250 acre Mississippi River Deep Draft Intermodal Site)",30.032527,-90.655131,Land,,,,,,,,,,,,,,,,,,
-St. Landry Parish ED North,30.59049,-92.030382,Land,,,,,,,,,,,,,,,,,,
-Port Barre Industrial Park - Central Site,30.544259,-91.951384,Land,,,,,,,,,,,,,,,,,,
-MRF Sunset Site,30.421757,-92.059399,Land,,,,,,,,,,,,,,,,,,
-Blue Andrus Property,30.4305,-92.060779,Land,,,,,,,,,,,,,,,,,,
-Port Barre Industrial Park - East Site,30.54535,-91.943909,Land,,,,,,,,,,,,,,,,,,
-Daly Farms Site,30.42366,-92.099529,Land,,,,,,,,,,,,,,,,,,
-Opelousas Downtown Development District Site,30.52848,-92.067803,Land,,,,,,,,,,,,,,,,,,
-AKDN_RR Site,30.55315,-92.087143,Land,,,,,,,,,,,,,,,,,,
-Astros - 238 Napoleon Avenue,30.415001,-92.082936,Land,,,,,,,,,,,,,,,,,,
-Commercial Park East Phase 2,30.297227,-91.89223,Land,,,,,,,,,,,,,,,,,,
-Schaefer Industrial Park,30.076263,-91.92696,Land,,,,,,,,,,,,,,,,,,
-Hwy 182 Industrial Park,30.106238,-91.93555,Land,,,,,,,,,,,,,,,,,,
-Knott/Zimmerman Property,30.318134,-91.835933,Land,,,,,,,,,,,,,,,,,,
-Champagne Property,30.301628,-91.887355,Land,,,,,,,,,,,,,,,,,,
-Breaux Bridge I-10 Site,30.291586,-91.923334,Land,,,,,,,,,,,,,,,,,,
-TBD North Barn Road,30.324669,-91.810196,Land,,,,,,,,,,,,,,,,,,
-North Schaefer Site,30.078588,-91.925388,Land,,,,,,,,,,,,,,,,,,
-South Schaefer Site,30.07403,-91.927664,Land,,,,,,,,,,,,,,,,,,
-Mouton Site,30.098932,-91.936585,Land,,,,,,,,,,,,,,,,,,
-Williams Memorial Airport Business Park,29.706051,-91.336355,Land,,,,,,,,,,,,,,,,,,
-Port of West St. Mary,29.778524,-91.743052,Land,,,,,,,,,,,,,,,,,,
-Hwy 317 South,29.725018,-91.44164,Land,,,,,,,,,,,,,,,,,,
-Coastal Land Company Site - Port of West St. Mary,29.772981,-91.751812,Land,,,,,,,,,,,,,,,,,,
-US 90 COMMERCIAL ACREAGE FRANKLIN LA,29.800026,-91.53191,Land,,,,,,,,,,,,,,,,,,
-NORTHWEST BLVD COMMERCIAL ACREAGE FRANKLIN LA,29.801652,-91.530071,Land,,,,,,,,,,,,,,,,,,
-St. Joe Brick Site-Powered by CLECO,30.349,-89.748626,Land,,,,,,,,,,,,,,,,,,
-The Lakes at Madison Park,30.457102,-90.185954,Land,,,,,,,,,,,,,,,,,,
-Nor du Lac West,30.455861,-90.152556,Land,,,,,,,,,,,,,,,,,,
-Fremaux Park - Up to 43 Acres,30.268302,-89.764871,Land,,,,,,,,,,,,,,,,,,
-Johnny F. Smith Memorial Business Park - Phase II,30.321707,-89.773986,Land,,,,,,,,,,,,,,,,,,
-"Old Spanish Trail/Pinehurst 17 acres ""Reduced""",30.244794,-89.755523,Land,,,,,,,,,,,,,,,,,,
-Chemical Road Industrial Site Parcel B,30.56298,-89.884168,Land,,,,,,,,,,,,,,,,,,
-Chemical Road Vacant Land,30.572007,-89.881026,Land,,,,,,,,,,,,,,,,,,
-Collins Blvd Commercial Site,30.493734,-90.097037,Land,,,,,,,,,,,,,,,,,,
-Bilten Park (Salmen Estate 6000+ Acres),30.349365,-89.864179,Land,,,,,,,,,,,,,,,,,,
-144.56 Acres For Sale - Journey Rd,30.361768,-89.834465,Land,,,,,,,,,,,,,,,,,,
-400+/- Acres,30.346509,-89.832532,Land,,,,,,,,,,,,,,,,,,
-40 Acres - Slidell,30.349227,-89.903325,Land,,,,,,,,,,,,,,,,,,
-I-12 & Hwy 434,30.34972,-89.923994,Land,,,,,,,,,,,,,,,,,,
-TJ Smith Industrial Site,30.338367,-89.807017,Land,,,,,,,,,,,,,,,,,,
-Gulf South Commerce Park,30.399085,-90.007609,Land,,,,,,,,,,,,,,,,,,
-"HWY 25, COVINGTON LA",30.523692,-90.123195,Land,,,,,,,,,,,,,,,,,,
-3 Acre Commercial,30.2898,-89.732681,Land,,,,,,,,,,,,,,,,,,
-Fremaux Park - Up to 44 Acres,30.258725,-89.766829,Land,,,,,,,,,,,,,,,,,,
-Port of Slidell,30.270762,-89.798231,Land,,,,,,,,,,,,,,,,,,
-Lacombe Business Park,30.349477,-89.92934,Land,,,,,,,,,,,,,,,,,,
-Hwy 59 & I-12 Development Site,30.413647,-90.044228,Land,,,,,,,,,,,,,,,,,,
-Versailles Business Center,30.435277,-90.088793,Land,,,,,,,,,,,,,,,,,,
-LA-3241 Development Opportunity,30.600891,-89.900564,Land,,,,,,,,,,,,,,,,,,
-Waldheim Industrial Site,30.563265,-90.000449,Land,,,,,,,,,,,,,,,,,,
-Port Manchac Industrial Site,30.315404,-90.404997,Land,,,,,,,,,,,,,,,,,,
-Airport Plaza on Pride Drive - LED Certified Site  20.03 Acres,30.523515,-90.430396,Land,,,,,,,,,,,,,,,,,,
-1010 E Thomas Lot,30.506517,-90.449696,Land,,,,,,,,,,,,,,,,,,
-12.02 acres on CM Fagan Dr,30.480779,-90.465283,Land,,,,,,,,,,,,,,,,,,
-Hwy 22 5.84 Acres,30.43983,-90.405304,Land,,,,,,,,,,,,,,,,,,
-Hwy 22 22.09 Acres,30.440011,-90.40705,Land,,,,,,,,,,,,,,,,,,
-80 acres Airport Road / I-12,30.481292,-90.396584,Land,,,,,,,,,,,,,,,,,,
-Farris Property -- 35.39 Acres,30.498846,-90.489041,Land,,,,,,,,,,,,,,,,,,
-+/- 8 Acres Hwy 190 and Booker Rd,30.511325,-90.409547,Land,,,,,,,,,,,,,,,,,,
-Conrad Anderson - LED Certified Site - 40 Acres,30.539364,-90.421199,Land,,,,,,,,,,,,,,,,,,
-+/- 7.6 Acres Club Deluxe Rd & I-12,30.477726,-90.462097,Land,,,,,,,,,,,,,,,,,,
-Tower Drive,30.51137,-90.440456,Land,,,,,,,,,,,,,,,,,,
-27.75 Acres on LA 40--West of I-55 & Amite City,30.641502,-90.53732,Land,,,,,,,,,,,,,,,,,,
-9.08 Acres located on East Hwy 190. 400 Foot Railroad frontage. 300 Foot frontage on U.S. 190,30.510899,-90.432285,Land,,,,,,,,,,,,,,,,,,
-Airport Judge Leon Ford Dr,30.518694,-90.421594,Land,,,,,,,,,,,,,,,,,,
-Airport Site 6,30.513541,-90.41299,Land,,,,,,,,,,,,,,,,,,
-Airport East Property Site 11,30.521384,-90.407677,Land,,,,,,,,,,,,,,,,,,
-Independence Industrial Park,30.647434,-90.501833,Land,,,,,,,,,,,,,,,,,,
-1.2+/- Acres I-12 & S Airport Rd - Lot 14-B,30.480293,-90.413736,Land,,,,,,,,,,,,,,,,,,
-800-Foot Railroad Spur on 17.59 Acres with 34K SF Warehouse,30.713237,-90.507449,Land,,,,,,,,,,,,,,,,,,
-2.6 +/- Acres S. Airport Rd.,30.482634,-90.41609,Land,,,,,,,,,,,,,,,,,,
-892 FEET FRONTING U.S. 51 in Town of Tickfaw  7.14 ACRES,30.566726,-90.481742,Land,,,,,,,,,,,,,,,,,,
-"1,312 FEET ADJACENT TO RAILROAD in Tickfaw.  8.8 Acres",30.565927,-90.480393,Land,,,,,,,,,,,,,,,,,,
-Fronts Hwy 51 in Tickfaw.  6.55 Acres,30.563486,-90.480776,Land,,,,,,,,,,,,,,,,,,
-14 Acre Site - Pumpkin Center,30.486874,-90.543706,Land,,,,,,,,,,,,,,,,,,
-I-12 Industrial Site---258 Acre LED Certified Site--Development Ready,30.50114,-90.254228,Land,,,,,,,,,,,,,,,,,,
-Cross Point North Commercial Park  (13.17 Acres),30.484892,-90.544692,Land,,,,,,,,,,,,,,,,,,
-3.79 AC. with 234.57 feet frontage on LA 16. Less than  Mile West of Exit # 46 on I-55. Commercial/Retail or Industrial.,30.727579,-90.540496,Land,,,,,,,,,,,,,,,,,,
-INDUSTRIAL DEVELOPMENT SITE FOR SALE,30.475185,-90.333035,Land,,,,,,,,,,,,,,,,,,
-64 +/- Acres  Mile South of I-12 Exit 40 on Veteran's Ave--Prime Retail/Medical/Commercial Development Opportunity,30.470097,-90.453443,Land,,,,,,,,,,,,,,,,,,
-Jamestown Business Park,30.507474,-90.404481,Land,,,,,,,,,,,,,,,,,,
-Cross Point South Commercial Park (18.8 Acres),30.482122,-90.544633,Land,,,,,,,,,,,,,,,,,,
-I-55 Frontage--29-Acres on  I-55 Exit #36. (I-55 Ramp Frontage)  S.E Quadrant I-55 & LA-442,30.574989,-90.501686,Land,,,,,,,,,,,,,,,,,,
-"23.25 Acres within Hammond city limits, convenient to interstate, rail, air and water, 706 ft. frontage Hwy 190, 863 ft. frontage on Railway",30.510742,-90.434551,Land,,,,,,,,,,,,,,,,,,
-20.2 Ac. with Interstate Visibility,30.524422,-90.502331,Land,,,,,,,,,,,,,,,,,,
-11.36 Ac Interstate Visibility with Additional adjacent 20.2 Acres,30.524592,-90.502726,Land,,,,,,,,,,,,,,,,,,
-"5.05 Acres Bauerle Road, Hammond, LA",30.485385,-90.465058,Land,,,,,,,,,,,,,,,,,,
-"Veterans Ave, Hammond, LA",30.461195,-90.45845,Land,,,,,,,,,,,,,,,,,,
-BELLE DR,30.462588,-90.459689,Land,,,,,,,,,,,,,,,,,,
-".5 ac Corner Lot in Downtown Hammond, LA",30.50132,-90.458445,Land,,,,,,,,,,,,,,,,,,
-3.47 Acres | Ponchatoula Pavilion,30.439758,-90.463891,Land,,,,,,,,,,,,,,,,,,
-I-12 Event Center Parcel A,30.480818,-90.445593,Land,,,,,,,,,,,,,,,,,,
-South Tract Industrial Complex,30.504541,-90.418904,Land,,,,,,,,,,,,,,,,,,
-2100 N. Morrison Blvd,30.520157,-90.48216,Land,,,,,,,,,,,,,,,,,,
-University Vacant Land,30.520104,-90.48807,Land,,,,,,,,,,,,,,,,,,
-"8.91 ACRES HAMMOND, LA",30.507725,-90.434784,Land,,,,,,,,,,,,,,,,,,
-I-55 Development Opportunity,30.521283,-90.50616,Land,,,,,,,,,,,,,,,,,,
-23.25 AC 1915 E U.S. 190 Hwy Hammond,30.510734,-90.43449,Land,,,,,,,,,,,,,,,,,,
-Kentwood Sand & Gravel Land,30.942548,-90.499972,Land,,,,,,,,,,,,,,,,,,
-42763 +/- La Hwy 445 (2.723AC),30.474775,-90.329787,Land,,,,,,,,,,,,,,,,,,
-36.443 Acres | River Rd. Hammond,30.517577,-90.384434,Land,,,,,,,,,,,,,,,,,,
-7.694 Acres | SW I-55 Service Rd.,30.434355,-90.458848,Land,,,,,,,,,,,,,,,,,,
-Interstate Commerce Park - 46 Acres - NW Corner of I-55 & LA-442 - Exit #36,30.580534,-90.507861,Land,,,,,,,,,,,,,,,,,,
-I-55 & Hwy 1048 Development Opportunity,30.77818,-90.530433,Land,,,,,,,,,,,,,,,,,,
-22+ Acres Pumpkin Center Intersection!,30.478002,-90.536892,Land,,,,,,,,,,,,,,,,,,
-"5.4 AC Interstate 12 & LA-445, Ponchatoula, LA 70454",30.478315,-90.331549,Land,,,,,,,,,,,,,,,,,,
-78 AC.  Tract that includes a 20 AC. LED Certified Site. Light & Heavy Industrial Zoned.,30.522803,-90.429463,Land,,,,,,,,,,,,,,,,,,
-Tensas Business Park,31.961922,-91.271115,Land,,,,,,,,,,,,,,,,,,
-Rebecca North Development Park,29.690215,-90.821615,Land,,,,,,,,,,,,,,,,,,
-Port of Terrebonne - 44 acres,29.564154,-90.697644,Land,,,,,,,,,,,,,,,,,,
-Polmer Bros - Main Project Rd - 727 Acres,29.751387,-90.839693,Land,,,,,,,,,,,,,,,,,,
-Polmer Bros - LA Hwy 20 292 Acres,29.752045,-90.808402,Land,,,,,,,,,,,,,,,,,,
-Polmer Bros - Broadway/Horseshoe 30 Acres,29.747734,-90.817456,Land,,,,,,,,,,,,,,,,,,
-Rebecca South Development Park,29.678902,-90.825154,Land,,,,,,,,,,,,,,,,,,
-75-acre Development Site at Houma-Terrebonne Airport,29.57097,-90.674084,Land,,,,,,,,,,,,,,,,,,
-5.5 Acre Dividable Hard Lit Corner on MLK in Houma,29.621034,-90.760623,Land,,,,,,,,,,,,,,,,,,
-"25 Acre Dividable, Hard Lit Corner on MLK in Houma",29.618661,-90.760554,Land,,,,,,,,,,,,,,,,,,
-3.9 Acre Retail Site on MLK in Houma,29.617201,-90.756413,Land,,,,,,,,,,,,,,,,,,
-Three 10+ acre lots at the corner of Hwy 182 and Coteau Rd in Houma,29.6346,-90.703907,Land,,,,,,,,,,,,,,,,,,
-180 acres at Port of Terrebonne,29.562609,-90.694191,Land,,,,,,,,,,,,,,,,,,
-Port of Terrebonne Tract 1,29.571034,-90.697905,Land,,,,,,,,,,,,,,,,,,
-Port of Terrebonne Tract 2 .4 acres,29.571958,-90.696421,Land,,,,,,,,,,,,,,,,,,
-Port of Terrebonne - Tract 3 7.5 acres,29.57027,-90.699383,Land,,,,,,,,,,,,,,,,,,
-Port of Terrebonne Tract 4 - 8 acres,29.565136,-90.699486,Land,,,,,,,,,,,,,,,,,,
-VACANT LAND 23.58-acre site Terrebonne Parish,29.645832,-90.738206,Land,,,,,,,,,,,,,,,,,,
-Bernice Industrial Park,32.839559,-92.653331,Land,,,,,,,,,,,,,,,,,,
-Union Parish Southeast,32.73502,-92.139921,Land,,,,,,,,,,,,,,,,,,
-Deere Park,30.034138,-92.120239,Land,,,,,,,,,,,,,,,,,,
-Port of Vermilion,29.894139,-92.118536,Land,,,,,,,,,,,,,,,,,,
-Abbeville South Site,29.968655,-92.10854,Land,,,,,,,,,,,,,,,,,,
-Neame Industrial Site,30.977429,-93.282893,Land,,,,,,,,,,,,,,,,,,
-Franklinton Industrial Park,30.841899,-90.123961,Land,,,,,,,,,,,,,,,,,,
-City Limits Road Development Site,30.805188,-89.842209,Land,,,,,,,,,,,,,,,,,,
-NWPID - Site #2 - 23+ acres,32.955937,-93.46202,Land,,,,,,,,,,,,,,,,,,
-NWPID - Site #3 - 16+ acres,32.953094,-93.454541,Land,,,,,,,,,,,,,,,,,,
-NWPID - Site #5 - 15+acres,32.942684,-93.455475,Land,,,,,,,,,,,,,,,,,,
-NWPID -  Site #1 - 60acres - Certified Site,32.961097,-93.451065,Land,,,,,,,,,,,,,,,,,,
-NWPID - Site #6 - 12+ acres,32.940531,-93.455065,Land,,,,,,,,,,,,,,,,,,
-NWPID Site # 7 - 12+ Acres,32.95641,-93.457369,Land,,,,,,,,,,,,,,,,,,
-Industrial Drive Minden Webster Site,32.589889,-93.276483,Land,,,,,,,,,,,,,,,,,,
-Kitchco Ryans Way,32.587928,-93.256325,Land,,,,,,,,,,,,,,,,,,
-Camp Minden,32.558724,-93.393916,Land,,,,,,,,,,,,,,,,,,
-South Webster Parish Industrial District,32.559955,-93.294473,Land,,,,,,,,,,,,,,,,,,
-Sun Plus Development,30.426958,-91.230635,Land,,,,,,,,,,,,,,,,,,
-"320 Acre Site (Epps, La)",32.561664,-91.591734,Land,,,,,,,,,,,,,,,,,,
-Oliveaux,30.761238,-91.304165,Land,,,,,,,,,,,,,,,,,,
-Garan Building,30.40697,-92.203094,Buildings,,,,,,,,,,,,,,,,,,
-Industrial Drive Rayne,30.234847,-92.305324,Buildings,,,,,,,,,,,,,,,,,,
-Crowley-Rayne Hwy,30.230735,-92.31301,Buildings,,,,,,,,,,,,,,,,,,
-The Boulevard,30.2503,-92.271374,Buildings,,,,,,,,,,,,,,,,,,
-600 N G Ave,30.216326,-92.372978,Buildings,,,,,,,,,,,,,,,,,,
-"Warehouse-Office on 19.04 Acres near Donaldsonville, La",30.101724,-91.020397,Buildings,,,,,,,,,,,,,,,,,,
-New Grocery Anchored Retail in Gonzales,30.243566,-90.919816,Buildings,,,,,,,,,,,,,,,,,,
-8500 Sq Ft Warehouse/Office in Donaldsonville,30.099858,-91.015063,Buildings,,,,,,,,,,,,,,,,,,
-Columns on the River - Donaldsonville,30.105635,-90.986337,Buildings,,,,,,,,,,,,,,,,,,
-"Former Louisiana Binding Services, Inc. Building",30.873394,-93.281085,Buildings,,,,,,,,,,,,,,,,,,
-Westside Office Park,30.848036,-93.303766,Buildings,,,,,,,,,,,,,,,,,,
-Former Ampacet Warehouse Building,30.869771,-93.282191,Buildings,,,,,,,,,,,,,,,,,,
-VIVIAN MARINE,32.861438,-93.985915,Buildings,,,,,,,,,,,,,,,,,,
-HEXION OILFIELD SERVICES - PORT OF CADDO-BOSSIER,32.367244,-93.640866,Buildings,,,,,,,,,,,,,,,,,,
-Shreveport Business Park - Building C,32.427032,-93.919492,Buildings,,,,,,,,,,,,,,,,,,
-Shreveport Business Park - Building A,32.427032,-93.919492,Buildings,,,,,,,,,,,,,,,,,,
-LTRi - Louisiana Tech Research Institute,32.539517,-93.64382,Buildings,,,,,,,,,,,,,,,,,,
-6339 Opelousas Street,30.239139,-93.114477,Buildings,,,,,,,,,,,,,,,,,,
-Industrial Storage Services Building,30.210781,-93.341463,Buildings,,,,,,,,,,,,,,,,,,
-309 N. Huntington Street,30.240038,-93.37771,Buildings,,,,,,,,,,,,,,,,,,
-Industrial Property on Joe Ledoux Road,30.093684,-93.281567,Buildings,,,,,,,,,,,,,,,,,,
-LAKE CHARLES INDUSTRIAL FACILITY,30.218664,-93.215688,Buildings,,,,,,,,,,,,,,,,,,
-Southern Storage Warehouse,30.234188,-93.175691,Buildings,,,,,,,,,,,,,,,,,,
-Cameron Fisheries Building,29.797926,-93.330544,Buildings,,,,,,,,,,,,,,,,,,
-Mainstay SuitesSportsmans Lodge for Sale!,29.994231,-93.356624,Buildings,,,,,,,,,,,,,,,,,,
-Acadian Centre,30.422253,-91.150314,Buildings,,,,,,,,,,,,,,,,,,
-CitiPlace Centre I,30.422233,-91.128049,Buildings,,,,,,,,,,,,,,,,,,
-CitiPlace Centre II,30.423772,-91.124768,Buildings,,,,,,,,,,,,,,,,,,
-CitiPlace Centre III,30.424006,-91.127026,Buildings,,,,,,,,,,,,,,,,,,
-Corporate Atrium,30.423903,-91.133308,Buildings,,,,,,,,,,,,,,,,,,
-Sherwood Oaks Office Park,30.413842,-91.052571,Buildings,,,,,,,,,,,,,,,,,,
-9489 Interline,30.423547,-91.079536,Buildings,,,,,,,,,,,,,,,,,,
-"6,000 sf Warehouse For Lease Dock High Baton Rouge",30.473096,-91.051146,Buildings,,,,,,,,,,,,,,,,,,
-12555 Ronaldson Rd,30.560964,-91.180655,Buildings,,,,,,,,,,,,,,,,,,
-"LSU Innovation Park , Bldg 3000",30.360244,-91.13984,Buildings,,,,,,,,,,,,,,,,,,
-"LSU Innovation, Bldg 3100",30.358953,-91.141274,Buildings,,,,,,,,,,,,,,,,,,
-"LSU Innovation, Bldg 3005",30.35991,-91.139345,Buildings,,,,,,,,,,,,,,,,,,
-Neighborhood Market For Sale,30.462435,-91.042889,Buildings,,,,,,,,,,,,,,,,,,
-Air Cargo Building 2,30.529743,-91.156482,Buildings,,,,,,,,,,,,,,,,,,
-Baton Rouge Flex Space with Interstate Visibility,30.431219,-91.047843,Buildings,,,,,,,,,,,,,,,,,,
-Lake Providence Building #1,32.866399,-91.225682,Buildings,,,,,,,,,,,,,,,,,,
-Terral Norris Building,32.795404,-91.177783,Buildings,,,,,,,,,,,,,,,,,,
-Lake Providence Port Commission-H&W Warehouses,32.866057,-91.225714,Buildings,,,,,,,,,,,,,,,,,,
-"25,000 sf building Epps, La",32.597933,-91.484253,Buildings,,,,,,,,,,,,,,,,,,
-Chauncey Pitre Barn,30.694551,-92.335917,Buildings,,,,,,,,,,,,,,,,,,
-"1524 HOSPITAL AVE FRANKLIN, LA",29.804057,-91.498287,Buildings,,,,,,,,,,,,,,,,,,
-"44,720 sq Franklin Parish Warehouse (3 Available)",32.201882,-91.728999,Buildings,,,,,,,,,,,,,,,,,,
-"82,000 SF building (Gilbert, La) (62,000 climate controlled)",32.015918,-91.65088,Buildings,,,,,,,,,,,,,,,,,,
-Business Opportunity,30.029256,-91.853413,Buildings,,,,,,,,,,,,,,,,,,
-3508 Curtis Lane,29.967895,-91.846715,Buildings,,,,,,,,,,,,,,,,,,
-615 North Landry Drive,30.02057,-91.82029,Buildings,,,,,,,,,,,,,,,,,,
-Jeanerette Industrial Building,29.909004,-91.663218,Buildings,,,,,,,,,,,,,,,,,,
-"400 Edwards Avenue, New Orleans, LA 70123",29.947102,-90.190711,Buildings,,,,,,,,,,,,,,,,,,
-Ridgewood Main Campus Building,29.976669,-90.172775,Buildings,,,,,,,,,,,,,,,,,,
-RIdgewood Gym Building,29.976193,-90.172895,Buildings,,,,,,,,,,,,,,,,,,
-Prime Veterans Blvd Investment Property for Sale,30.007079,-90.236689,Buildings,,,,,,,,,,,,,,,,,,
-East Jefferson Office Space,29.955905,-90.187555,Buildings,,,,,,,,,,,,,,,,,,
-Prime Redevelopment and Investment Opportunity on Airline Drive,29.980016,-90.240258,Buildings,,,,,,,,,,,,,,,,,,
-10-unit Multi-family Property in Bridge City,29.931575,-90.163013,Buildings,,,,,,,,,,,,,,,,,,
-3939 Houma Blvd Building 4 Suite 216,30.011819,-90.180026,Buildings,,,,,,,,,,,,,,,,,,
-The Best Full Service Office Rate in Metairie CBD,30.007966,-90.154013,Buildings,,,,,,,,,,,,,,,,,,
-405 N Causeway and 122 Sierra in Metairie for Sale or Lease,29.977685,-90.155796,Buildings,,,,,,,,,,,,,,,,,,
-Medical Arts Plaza,30.237863,-92.661828,Buildings,,,,,,,,,,,,,,,,,,
-625 Hector Connoly Road,30.321904,-92.018131,Buildings,,,,,,,,,,,,,,,,,,
-1016 SW Evangeline Thruway,30.220714,-92.009761,Buildings,,,,,,,,,,,,,,,,,,
-1229 NW Evangeline Thruway,30.239238,-92.015409,Buildings,,,,,,,,,,,,,,,,,,
-Aviation/Aerospace Manufacturing & Final Assembly facility,30.205383,-91.997773,Buildings,,,,,,,,,,,,,,,,,,
-State of the Art Office/Flex Building and Expansion Acreage,30.126912,-91.939555,Buildings,,,,,,,,,,,,,,,,,,
-State of the Art Office/Flex Building with 13.49 acres for Expansion,30.126085,-91.938772,Buildings,,,,,,,,,,,,,,,,,,
-Commercial Building/Office Space for Sale,30.13769,-91.955004,Buildings,,,,,,,,,,,,,,,,,,
-Regional Distribution Center,30.273444,-92.044597,Buildings,,,,,,,,,,,,,,,,,,
-Dock-high warehouse for Sale,30.232891,-92.043418,Buildings,,,,,,,,,,,,,,,,,,
-Industrial Facility 100 South Bernard Road,30.160174,-91.972585,Buildings,,,,,,,,,,,,,,,,,,
-2nd floor of former Sears Box,30.172679,-92.075197,Buildings,,,,,,,,,,,,,,,,,,
-Industrial: Warehouse/Distribution,30.257237,-92.026143,Buildings,,,,,,,,,,,,,,,,,,
-Valley Ranch Industrial Park - Two Buildings,30.131593,-91.938818,Buildings,,,,,,,,,,,,,,,,,,
-"15,300 SF Office Building",29.571024,-90.372218,Buildings,,,,,,,,,,,,,,,,,,
-Industrial Cold Storage,29.378637,-90.264312,Buildings,,,,,,,,,,,,,,,,,,
-"Valentine Paper Mill (43 Acres, 18 Buildings)",29.595266,-90.464245,Buildings,,,,,,,,,,,,,,,,,,
-South Lafourche Nursing & Rehab Center,29.550159,-90.341473,Buildings,,,,,,,,,,,,,,,,,,
-Galliano Housing Units,29.408493,-90.29479,Buildings,,,,,,,,,,,,,,,,,,
-Industrial Complex - Warehouse and Office Space,29.476873,-90.322308,Buildings,,,,,,,,,,,,,,,,,,
-Ruston Steam Plant,32.528991,-92.612574,Buildings,,,,,,,,,,,,,,,,,,
-Ruston Industrial Building,32.510063,-92.629219,Buildings,,,,,,,,,,,,,,,,,,
-Range Ave Retail For Lease  ste D,30.478939,-90.956388,Buildings,,,,,,,,,,,,,,,,,,
-609 Centerville St. Single Tenant NNN Industrial Investment,30.487419,-90.946059,Buildings,,,,,,,,,,,,,,,,,,
-28145 Walker South Rd,30.475097,-90.864671,Buildings,,,,,,,,,,,,,,,,,,
-Retail Suite For Lease,30.450817,-90.959629,Buildings,,,,,,,,,,,,,,,,,,
-Multi-Family Trailer Park For Sale,30.491517,-90.92612,Buildings,,,,,,,,,,,,,,,,,,
-Denham Springs Retail for Lease 1F,30.475797,-90.955008,Buildings,,,,,,,,,,,,,,,,,,
-Denham Springs Retail for Lease 2F,30.475797,-90.955008,Buildings,,,,,,,,,,,,,,,,,,
-Bastrop Warehouse and Office Space,32.753042,-91.886307,Buildings,,,,,,,,,,,,,,,,,,
-"13,888 sqft Building & 4 acres Land for Sale in Bastrop, La.",32.731467,-91.923059,Buildings,,,,,,,,,,,,,,,,,,
-"Propel Park | Premier Class A Industrial Space | Up to 800,000 SF",30.017249,-89.922054,Buildings,,,,,,,,,,,,,,,,,,
-MIXED-USE PROPERTY ON MAGAZINESTREET,29.921629,-90.120525,Buildings,,,,,,,,,,,,,,,,,,
-OFFICE/WAREHOUSE IN MIDCITY NEW ORLEANS,29.977092,-90.109391,Buildings,,,,,,,,,,,,,,,,,,
-New Construction Retail/Office in New Orleans,29.968506,-90.104462,Buildings,,,,,,,,,,,,,,,,,,
-Modern Historic Office Building Bywater New Orleans,29.962076,-90.04243,Buildings,,,,,,,,,,,,,,,,,,
-MID-CITY OFFICE/RETAIL BLDG. FOR SALE,29.966964,-90.086684,Buildings,,,,,,,,,,,,,,,,,,
-TWO CANAL STREET BUILDINGS FOR SALE,29.970296,-90.095154,Buildings,,,,,,,,,,,,,,,,,,
-Mid-city Commercial/Residential for Sale,29.97018,-90.095451,Buildings,,,,,,,,,,,,,,,,,,
-ULM Facilities Corp (Prof Pharm),32.525688,-92.072639,Buildings,,,,,,,,,,,,,,,,,,
-ULM Pharmacy Building,32.532604,-92.097896,Buildings,,,,,,,,,,,,,,,,,,
-Plug and Play Call Center,32.523711,-92.103198,Buildings,,,,,,,,,,,,,,,,,,
-"Former Data, Storage & Distribution Center",32.523711,-92.103198,Buildings,,,,,,,,,,,,,,,,,,
-"43,348 SF Ready Call Center",32.523711,-92.103198,Buildings,,,,,,,,,,,,,,,,,,
-"250,000sq Warehouse Monroe, LA (Jackson St.)",32.480645,-92.108345,Buildings,,,,,,,,,,,,,,,,,,
-Clarke Williams Innovation Campus,32.590541,-92.067104,Buildings,,,,,,,,,,,,,,,,,,
-"17,000 SF Warehouse and Office Space - Sterlington, LA",32.689108,-92.066927,Buildings,,,,,,,,,,,,,,,,,,
-"Versatile 37,000 SF Facility in Prime North Monroe Location  Ideal for Commercial or Industrial Use",32.536904,-92.103296,Buildings,,,,,,,,,,,,,,,,,,
-"12,000 sq Building Monroe, La",32.430534,-92.090673,Buildings,,,,,,,,,,,,,,,,,,
-"West Monroe, La Warehouse (20,000 sq) available",32.503009,-92.173228,Buildings,,,,,,,,,,,,,,,,,,
-"46,000 SF Warehouse (Monroe, La)",32.512166,-92.050589,Buildings,,,,,,,,,,,,,,,,,,
-"Industrial Complex in Belle Chasse, LA",29.834774,-90.000934,Buildings,,,,,,,,,,,,,,,,,,
-Building 1500 England Airpark,31.327387,-92.529045,Buildings,,,,,,,,,,,,,,,,,,
-Building 806 England Airpark,31.327269,-92.536728,Buildings,,,,,,,,,,,,,,,,,,
-Building 1213 England Airpark,31.32864,-92.53428,Buildings,,,,,,,,,,,,,,,,,,
-Building 2107,31.321087,-92.534736,Buildings,,,,,,,,,,,,,,,,,,
-Building 2533,31.322904,-92.531761,Buildings,,,,,,,,,,,,,,,,,,
-Building 3505,31.323638,-92.525952,Buildings,,,,,,,,,,,,,,,,,,
-Building 2102,31.321042,-92.536992,Buildings,,,,,,,,,,,,,,,,,,
-Building #2327 England Airpark,31.330225,-92.529522,Buildings,,,,,,,,,,,,,,,,,,
-Building #1718 England Airpark,31.331852,-92.533995,Buildings,,,,,,,,,,,,,,,,,,
-England Airpark Hospital Building,31.321187,-92.527464,Buildings,,,,,,,,,,,,,,,,,,
-Alexandria Bonded Warehouse Service Inc. - Warehouse,31.258784,-92.437436,Buildings,,,,,,,,,,,,,,,,,,
-"Class A Office Space in Alexandria, LA",31.310409,-92.44295,Buildings,,,,,,,,,,,,,,,,,,
-2510 & 2426 Broadway,31.289454,-92.440181,Buildings,,,,,,,,,,,,,,,,,,
-1501 Wimbledon Blvd,31.276723,-92.476211,Buildings,,,,,,,,,,,,,,,,,,
-1421 Wimbledon Blvd,31.276832,-92.474516,Buildings,,,,,,,,,,,,,,,,,,
-"Delhi, La Light Industrial Warehouse (64,572 sf)",32.459114,-91.500011,Buildings,,,,,,,,,,,,,,,,,,
-"Rayville North Warehouse (56,100 SF)",32.489066,-91.757325,Buildings,,,,,,,,,,,,,,,,,,
-Chalmette Updated Office/ Warehouse for Lease,29.952199,-89.980414,Buildings,,,,,,,,,,,,,,,,,,
-New Modern Office Building for Sale,29.952267,-89.980564,Buildings,,,,,,,,,,,,,,,,,,
-RETAIL CENTER ANDQSR SITE FOR LEASE,29.956456,-89.988629,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Five James Park,29.98006,-90.285506,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Five James Park,29.980136,-90.285468,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park St. Charles I,29.984405,-90.285555,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park St. Charles II,29.981886,-90.281009,Buildings,,,,,,,,,,,,,,,,,,
-Boutte Warehouse,29.901263,-90.390263,Buildings,,,,,,,,,,,,,,,,,,
-Plantation Business Campus (Suite 102),29.945121,-90.35996,Buildings,,,,,,,,,,,,,,,,,,
-Destrehan Flex Space,29.94537,-90.359298,Buildings,,,,,,,,,,,,,,,,,,
-Village Shopping Center,29.903543,-90.381999,Buildings,,,,,,,,,,,,,,,,,,
-Winnwood Shopping Center,29.919225,-90.374593,Buildings,,,,,,,,,,,,,,,,,,
-One American Place,29.94088,-90.383218,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Westside I,29.980115,-90.285508,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Service Center 23,29.982251,-90.28271,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Westside II,29.980781,-90.285258,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Westside II,29.981227,-90.285519,Buildings,,,,,,,,,,,,,,,,,,
-"150 Teal Street, Suite 180",29.982828,-90.282969,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Sealy Business Center I,29.986756,-90.283886,Buildings,,,,,,,,,,,,,,,,,,
-Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings,,,,,,,,,,,,,,,,,,
-Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings,,,,,,,,,,,,,,,,,,
-River Road Norco,29.996771,-90.41276,Buildings,,,,,,,,,,,,,,,,,,
-Paul Maillard Doctors Office,29.929495,-90.367654,Buildings,,,,,,,,,,,,,,,,,,
-Ormond Square,29.969572,-90.376759,Buildings,,,,,,,,,,,,,,,,,,
-River Road Medical Clinic,29.940646,-90.352564,Buildings,,,,,,,,,,,,,,,,,,
-River Road Hahnville,29.977202,-90.407378,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Westside II,29.98131,-90.285483,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Service Center 21,29.98226,-90.284154,Buildings,,,,,,,,,,,,,,,,,,
-Village Square Shopping Center,29.928091,-90.368384,Buildings,,,,,,,,,,,,,,,,,,
-Red Church Center,29.951177,-90.378855,Buildings,,,,,,,,,,,,,,,,,,
-Ormond Plantation Plaza,29.968984,-90.374185,Buildings,,,,,,,,,,,,,,,,,,
-River Road Hahnville,29.964584,-90.405482,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Sealy Business Center III,29.987577,-90.282631,Buildings,,,,,,,,,,,,,,,,,,
-Luling Bridge Warehouse,29.941263,-90.385932,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park,29.982866,-90.284555,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park,29.978904,-90.283884,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park,29.978899,-90.283927,Buildings,,,,,,,,,,,,,,,,,,
-River Road St. Rose,29.97435,-90.280794,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Business Center II,29.987642,-90.284201,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park,29.982617,-90.281077,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Two James Park,29.981355,-90.283636,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Two James Park,29.981335,-90.283636,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Two James Park,29.981351,-90.283626,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Westside II,29.981278,-90.285479,Buildings,,,,,,,,,,,,,,,,,,
-Longview Drive,29.951125,-90.377984,Buildings,,,,,,,,,,,,,,,,,,
-Airline Commerce Center,29.978114,-90.28112,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park,29.984077,-90.284596,Buildings,,,,,,,,,,,,,,,,,,
-Warehouse,29.987458,-90.418403,Buildings,,,,,,,,,,,,,,,,,,
-"150 Teal Street, Suite 100",29.982828,-90.282969,Buildings,,,,,,,,,,,,,,,,,,
-Luling Business Park and Enterprise Center,29.935313,-90.388391,Buildings,,,,,,,,,,,,,,,,,,
-11130 River Road,29.95377,-90.310395,Buildings,,,,,,,,,,,,,,,,,,
-150 James Dr. East Suite 110,29.981958,-90.281364,Buildings,,,,,,,,,,,,,,,,,,
-Airline Commerce Center-53K SF,29.977507,-90.282311,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Flex Space,29.982319,-90.283107,Buildings,,,,,,,,,,,,,,,,,,
-James Business Park Flex Space,29.982318,-90.283724,Buildings,,,,,,,,,,,,,,,,,,
-Hahnville Office Building,29.962049,-90.405582,Buildings,,,,,,,,,,,,,,,,,,
-Destrehan River Road Storefront,29.940679,-90.352549,Buildings,,,,,,,,,,,,,,,,,,
-12361 Hwy 90 (former Mimosa Veterinary Hospital),29.91127,-90.352093,Buildings,,,,,,,,,,,,,,,,,,
-162 Riverbend Business Park-27K SF,29.969583,-90.295846,Buildings,,,,,,,,,,,,,,,,,,
-One James Business Park,29.980279,-90.283691,Buildings,,,,,,,,,,,,,,,,,,
-115 Canvasback-James Business Park Flex Space,29.986707,-90.283313,Buildings,,,,,,,,,,,,,,,,,,
-One American Place Office Luling,29.940703,-90.383664,Buildings,,,,,,,,,,,,,,,,,,
-Luling Warehouse,29.940041,-90.383974,Buildings,,,,,,,,,,,,,,,,,,
-Boutte Office/Retail Strip Center,29.903752,-90.378704,Buildings,,,,,,,,,,,,,,,,,,
-Norco Office,30.005987,-90.410614,Buildings,,,,,,,,,,,,,,,,,,
-111 Riverbend,29.968183,-90.297408,Buildings,,,,,,,,,,,,,,,,,,
-Former Pepsi Bottling Plant,30.065522,-90.565861,Buildings,,,,,,,,,,,,,,,,,,
-"3735 W. Airline Highway | Reserve, Louisiana 70084",30.076146,-90.56034,Buildings,,,,,,,,,,,,,,,,,,
-Belle Terre Plaza,30.075624,-90.500163,Buildings,,,,,,,,,,,,,,,,,,
-669 Belle Terre Blvd Office Space,30.092784,-90.505281,Buildings,,,,,,,,,,,,,,,,,,
-1905 W Airline Hwy. Mixed Use Building,30.073412,-90.503778,Buildings,,,,,,,,,,,,,,,,,,
-LaPlace Value-Add Shopping Center,30.083835,-90.503196,Buildings,,,,,,,,,,,,,,,,,,
-Two Building Industrial Property,30.0787,-90.523752,Buildings,,,,,,,,,,,,,,,,,,
-456 West 5th Street LaPlace,30.069656,-90.496253,Buildings,,,,,,,,,,,,,,,,,,
-Martco OSB LeMoyen Mill,30.784655,-92.03527,Buildings,,,,,,,,,,,,,,,,,,
-118 N Main St,30.534431,-92.081099,Buildings,,,,,,,,,,,,,,,,,,
-ACG Building,30.534672,-92.091162,Buildings,,,,,,,,,,,,,,,,,,
-Dixie Storage - 4-A,30.540914,-92.02261,Buildings,,,,,,,,,,,,,,,,,,
-Dixie Storage - 4-B,30.540914,-92.02261,Buildings,,,,,,,,,,,,,,,,,,
-1703 Rees St,30.287084,-91.909432,Buildings,,,,,,,,,,,,,,,,,,
-1012 Guidry Rd,30.307225,-91.838334,Buildings,,,,,,,,,,,,,,,,,,
-Martin Mills/Champion Resources,30.155228,-91.818686,Buildings,,,,,,,,,,,,,,,,,,
-St. Martinville Retail Box,30.14557,-91.821811,Buildings,,,,,,,,,,,,,,,,,,
-1320 Petroleum Pkwy,30.075311,-91.934682,Buildings,,,,,,,,,,,,,,,,,,
-1471 Old Spanish Trail Hwy,30.093015,-91.907859,Buildings,,,,,,,,,,,,,,,,,,
-1062 Aillet Rd Broussard,30.077324,-91.945967,Buildings,,,,,,,,,,,,,,,,,,
-1063 Petroleum Parkway,30.081091,-91.925755,Buildings,,,,,,,,,,,,,,,,,,
-1186 Petroleum Pkwy,30.082745,-91.932274,Buildings,,,,,,,,,,,,,,,,,,
-St. Mary Plaza,29.681933,-91.271685,Buildings,,,,,,,,,,,,,,,,,,
-Port of West St. Mary's Baldwin Campus - Building 1,29.826364,-91.539898,Buildings,,,,,,,,,,,,,,,,,,
-Port of West St. Mary's Baldwin Campus - Building 2,29.826364,-91.539898,Buildings,,,,,,,,,,,,,,,,,,
-Port of West St. Marys Baldwin Campus - Building 3,29.826364,-91.539898,Buildings,,,,,,,,,,,,,,,,,,
-"9,600 sq ft Industrial site",30.503144,-90.195496,Buildings,,,,,,,,,,,,,,,,,,
-"HWY 25 COVINGTON, LA",null,null,Buildings,,,,,,,,,,,,,,,,,,
-"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.285018,-89.738139,Buildings,,,,,,,,,,,,,,,,,,
-400 Garrett Road,30.251212,-89.763429,Buildings,,,,,,,,,,,,,,,,,,
-"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.284995,-89.738165,Buildings,,,,,,,,,,,,,,,,,,
-"2nd Floor, Suite 200",30.432984,-90.087077,Buildings,,,,,,,,,,,,,,,,,,
-"3rd Floor, Suite 300",30.432984,-90.087077,Buildings,,,,,,,,,,,,,,,,,,
-Retail Suite For Lease 1600 W Causeway Suites 4 & 5,30.391901,-90.101886,Buildings,,,,,,,,,,,,,,,,,,
-Krentel Road Corporate Office and Warehouse,30.35553,-89.92004,Buildings,,,,,,,,,,,,,,,,,,
-Prime Hwy 1085 Industrial,30.466395,-90.193825,Buildings,,,,,,,,,,,,,,,,,,
-Colony Square,30.481521,-90.465374,Buildings,,,,,,,,,,,,,,,,,,
-I-12 Event Center,30.480674,-90.443558,Buildings,,,,,,,,,,,,,,,,,,
-I-12 Event Center Parcel B,30.480386,-90.443098,Buildings,,,,,,,,,,,,,,,,,,
-I-12 Event Center Parcel C,30.480548,-90.441092,Buildings,,,,,,,,,,,,,,,,,,
-"210 Hewitt Rd. Hammond, LA",30.490368,-90.459121,Buildings,,,,,,,,,,,,,,,,,,
-1517 W Thomas St.,30.500432,-90.477506,Buildings,,,,,,,,,,,,,,,,,,
-Spacious Showroom & Warehouse,30.510214,-90.431257,Buildings,,,,,,,,,,,,,,,,,,
-Alack Building For Sale or Lease,30.507536,-90.436009,Buildings,,,,,,,,,,,,,,,,,,
-"Warehouse with cold storage, loading docks, office space: Old Covington Hwy, Hammond, LA",30.493292,-90.424087,Buildings,,,,,,,,,,,,,,,,,,
-Downtown Hammond Commercial Building 408 W  Thomas St.,30.503336,-90.465237,Buildings,,,,,,,,,,,,,,,,,,
-"10,000 SF Building Tensas Parish",32.069817,-91.254476,Buildings,,,,,,,,,,,,,,,,,,
-"5,487 SF Office Building off Hwy 311 in Houma",29.595592,-90.754969,Buildings,,,,,,,,,,,,,,,,,,
-Bright Speed Admin building,32.899344,-92.244138,Buildings,,,,,,,,,,,,,,,,,,
-Tiffany Plaza,29.975346,-92.103909,Buildings,,,,,,,,,,,,,,,,,,
-Spec Building #3 (Trane) off Hwy 371,32.954839,-93.458389,Buildings,,,,,,,,,,,,,,,,,,
-Former GP Mill - T&P Property,32.968362,-93.459447,Buildings,,,,,,,,,,,,,,,,,,
-Lot #17 - North Webster Parish Ind. Park Subd.,32.956113,-93.46098,Buildings,,,,,,,,,,,,,,,,,,
-Patrick Property,32.909988,-91.363606,Buildings,,,,,,,,,,,,,,,,,,
-Epps Industrial Park,32.597887,-91.482674,Buildings,,,,,,,,,,,,,,,,,,
-"150,000 SF building Oak Grove (40,000 concrete slab on back)",32.86441,-91.391607,Buildings,,,,,,,,,,,,,,,,,,
-"40,000 sq building Oak Grove, La",32.832762,-91.395753,Buildings,,,,,,,,,,,,,,,,,,
-Prosperity St Building,30.771594,-91.382424,Buildings,,,,,,,,,,,,,,,,,,
+Name,Lat,Lon,Type
+Louisiana State University (LSU),30.4133,-91.18,Educational
+Tulane University,29.9407,-90.1203,Educational
+University of Louisiana at Lafayette,30.2144,-92.0194,Educational
+Loyola University New Orleans,29.9348,-90.1215,Educational
+Southern University and A&M College,30.5255,-91.1911,Educational
+University of New Orleans (UNO),30.0271,-90.0673,Educational
+Louisiana Tech University,32.5292,-92.6517,Educational
+Southeastern Louisiana University,30.5144,-90.466,Educational
+McNeese State University,30.1787,-93.2163,Educational
+Nicholls State University,29.7944,-90.8038,Educational
+Northwestern State University,31.7505,-93.097,Educational
+Grambling State University,32.5186,-92.7153,Educational
+Xavier University of Louisiana,29.9622,-90.1064,Educational
+Dillard University,30.0068,-90.07,Educational
+Our Lady of the Lake Regional Medical Center,30.4024,-91.107,Medical
+Ochsner Medical Center - New Orleans,29.9634,-90.1328,Medical
+Willis-Knighton Medical Center,32.4862,-93.7845,Medical
+LSU Health Shreveport,32.4925,-93.7544,Medical
+Baton Rouge General Medical Center,30.3957,-91.0823,Medical
+Lafayette General Medical Center,30.2111,-92.025,Medical
+Rapides Regional Medical Center,31.309,-92.4461,Medical
+St. Tammany Health System,30.4792,-90.1118,Medical
+Lake Charles Memorial Hospital,30.1989,-93.212,Medical
+University Medical Center New Orleans,29.9575,-90.0792,Medical
+Port of South Louisiana,30.046,-90.505,Logistics
+Port of New Orleans,29.932,-90.06,Logistics
+Port of Greater Baton Rouge,30.44,-91.2,Logistics
+Port of Lake Charles,30.2,-93.25,Logistics
+Chennault International Airport,30.2125,-93.1483,Logistics
+Louis Armstrong New Orleans Int'l (MSY),29.9911,-90.2592,Logistics
+Baton Rouge Metropolitan Airport (BTR),30.5332,-91.1496,Logistics
+Shreveport Regional Airport (SHV),32.4468,-93.8236,Logistics
+Alexandria International Airport (AEX),31.3274,-92.5485,Logistics
+Lafayette Regional Airport (LFT),30.2053,-91.9876,Logistics
+Barksdale Air Force Base,32.5011,-93.6628,Industrial/Corporate
+Fort Johnson (formerly Fort Polk),31.0483,-93.2119,Industrial/Corporate
+CenturyLink Headquarters,32.5181,-92.0305,Industrial/Corporate
+Entergy Louisiana,30.4583,-91.1403,Industrial/Corporate
+Globalstar Headquarters,30.4215,-90.0415,Industrial/Corporate
+Stine Home & Yard Corporate,30.2285,-93.3361,Industrial/Corporate
+Standard Coffee Service Co.,29.965,-90.101,Industrial/Corporate
+Zatarain's Headquarters,29.907,-90.015,Industrial/Corporate
+Community Coffee Company,30.4507,-91.134,Industrial/Corporate
+Raising Cane's Headquarters,30.4485,-91.1882,Industrial/Corporate
+Waitr (ASAP) Headquarters,30.2241,-92.0198,Industrial/Corporate
+Tabasco (McIlhenny Co),29.985,-91.908,Industrial/Corporate
+Nucor Steel Louisiana,30.0811,-90.9324,Industrial/Corporate
+BASF Geismar,30.2111,-91.0234,Industrial/Corporate
+Dow Chemical Louisiana,30.312,-91.2541,Industrial/Corporate
+ExxonMobil Baton Rouge,30.4851,-91.1764,Industrial/Corporate
+Shell Norco,29.9986,-90.4131,Industrial/Corporate
+Marathon Petroleum Garyville,30.0531,-90.6251,Industrial/Corporate
+Cornerstone Chemical,29.9283,-90.2014,Industrial/Corporate
+Valero St. Charles,29.988,-90.4452,Industrial/Corporate
+CF Industries Donaldsonville,30.113,-90.985,Industrial/Corporate
+Sasol Lake Charles,30.2394,-93.2841,Industrial/Corporate
+Westlake Chemical,30.2255,-93.3102,Industrial/Corporate
+Honeywell Geismar,30.2055,-91.0183,Industrial/Corporate
+Pinnacle Entertainment,29.987,-90.013,Industrial/Corporate
+L'Auberge Casino Baton Rouge,30.3421,-91.1852,Industrial/Corporate
+Golden Nugget Lake Charles,30.2085,-93.2681,Industrial/Corporate
+Horseshoe Bossier City,32.5164,-93.7389,Industrial/Corporate
+Margaritaville Resort Casino,32.5211,-93.7385,Industrial/Corporate
+National WWII Museum,29.943,-90.07,Industrial/Corporate
+Louisiana State Capitol,30.4571,-91.1874,Industrial/Corporate
+Shaw Center for the Arts,30.4475,-91.1895,Industrial/Corporate
+New Orleans Museum of Art (NOMA),30.0031,-90.0933,Industrial/Corporate
+Sci-Port Discovery Center,32.5144,-93.7432,Industrial/Corporate
+LSU AgCenter,30.4121,-91.1782,Educational
+Pennington Biomedical Research,30.3951,-91.1121,Medical
+Mary Bird Perkins Cancer Center,30.3995,-91.1015,Medical
+Children's Hospital New Orleans,29.9168,-90.1311,Medical
+Shriners Children's Shreveport,32.4891,-93.7552,Medical
+St. Jude Affiliate Clinic (Shreveport),32.492,-93.754,Medical
+LSU Shreveport (LSUS),32.4225,-93.7042,Educational
+Grambling State Univ. - Monroe Tech,32.5111,-92.115,Educational
+River Parishes Community College,30.1471,-90.9152,Educational
+Fletcher Technical Community College,29.6133,-90.7103,Educational
+Baton Rouge Community College,30.456,-91.144,Educational
+Delgado Community College,29.9861,-90.1032,Educational
+Bossier Parish Community College,32.5312,-93.6685,Educational
+Louisiana Delta Community College,32.5355,-92.057,Educational
+Northshore Technical Community College,30.4894,-90.0761,Educational
+Nunez Community College,29.9472,-89.92,Educational
+South Louisiana Community College,30.2163,-92.046,Educational
+SOWELA Technical Community College,30.2105,-93.184,Educational
+Central Louisiana Technical College,31.314,-92.458,Educational
+Louisiana School for Math Science and Arts,31.7485,-93.0965,Educational
+Holy Cross University,29.9231,-89.998,Educational
+Louisiana College (Pineville),31.3283,-92.4111,Educational
+Centenary College of Louisiana,32.4851,-93.7335,Educational
+University of Holy Cross (NOLA),29.9221,-89.9991,Educational
+FranU (Franciscan Missionaries),30.4022,-91.1065,Educational
+LSU Health New Orleans,29.9548,-90.0795,Medical
+Tulane Medical Center,29.9565,-90.0754,Medical
+Our Lady of Lourdes Regional Medical,30.1585,-92.0232,Medical
+Women's & Children's Hospital,30.1545,-92.0321,Medical
+Lakeview Regional Medical Center,30.4154,-90.1112,Medical
+East Jefferson General Hospital,30.0105,-90.1542,Medical
+West Jefferson Medical Center,29.9048,-90.1065,Medical
+Slidell Memorial Hospital,30.2764,-89.7712,Medical
+North Oaks Medical Center,30.5231,-90.4632,Medical
+Lane Regional Medical Center,30.6675,-91.1542,Medical
+Terrebonne General Health System,29.5934,-90.7241,Medical
+Thibodaux Regional Health System,29.7921,-90.8252,Medical
+CHRISTUS Shreveport-Bossier,32.4385,-93.705,Medical
+CHRISTUS St. Frances Cabrini,31.3021,-92.4712,Medical
+Glenwood Regional Medical Center,32.5085,-92.1645,Medical
+St. Francis Medical Center (Monroe),32.5011,-92.1182,Medical
+Northern Louisiana Medical Center,32.5392,-92.6285,Medical
+Pointe Coupee General Hospital,30.6385,-91.4421,Medical
+Riverland Medical Center,31.5711,-91.5032,Medical
+Minden Medical Center,32.6181,-93.2845,Medical
+Jennings American Legion Hospital,30.2185,-92.6582,Medical
+Abbeville General Hospital,29.9711,-92.1315,Medical
+Iberia Medical Center,30.0055,-91.8152,Medical
+Franklin Foundation Hospital,29.7911,-91.5032,Medical
+Teche Regional Medical Center,29.6991,-91.1985,Medical
+Leonard J. Chabert Medical Center,29.5632,-90.7103,Medical
+Lady of the Sea General Hospital,29.3582,-90.2841,Medical
+South Cameron Memorial Hospital,29.7951,-93.1342,Medical
+Beauregard Health System,30.8411,-93.2842,Medical
+Byrd Regional Hospital,31.1421,-93.2632,Medical
+Sabine Medical Center,31.5742,-93.4851,Medical
+DeSoto Regional Health System,32.1481,-93.7142,Medical
+Springhill Medical Center,32.9911,-93.4582,Medical
+Coushatta Health Care Center,32.0211,-93.3421,Medical
+Winn Parish Medical Center,31.9211,-92.6321,Medical
+Jackson Parish Hospital,32.2411,-92.7142,Medical
+Hardtner Medical Center,31.8411,-92.2842,Medical
+LaSalle General Hospital,31.6711,-92.1242,Medical
+Caldwell Memorial Hospital,32.1051,-92.0321,Medical
+Franklin Medical Center (Winnsboro),32.1642,-91.7142,Medical
+Richardson Medical Center,32.4211,-91.7642,Medical
+Madison Parish Hospital,32.3781,-91.1852,Medical
+East Carroll Parish Hospital,32.8841,-91.1921,Medical
+West Carroll Health Systems,32.8851,-91.6432,Medical
+Morehouse General Hospital,32.7781,-91.9051,Medical
+Union General Hospital,32.8051,-92.4042,Medical
+Bunkie General Hospital,30.9542,-92.1852,Medical
+Avoyelles Hospital,31.1211,-92.0632,Medical
+Savoy Medical Center,30.6321,-92.4042,Medical
+Opelousas General Health System,30.5342,-92.0811,Medical
+Mercy Regional Medical Center,30.6881,-92.2742,Medical
+Acadia General Hospital,30.2142,-92.3782,Medical
+Our Lady of Angels (Bogalusa),30.7742,-89.8512,Medical
+Riverside Medical Center (Franklinton),30.8411,-90.1482,Medical
+Hood Memorial Hospital,30.7081,-90.5052,Medical
+St. Helena Parish Hospital,30.8242,-90.6742,Medical
+Crowley Parish Seat,30.2111,-92.3744,Government
+Oberlin Parish Seat,30.6206,-92.855,Government
+Donaldsonville Parish Seat,30.1106,-90.9936,Government
+Napoleonville Parish Seat,29.9377,-91.0232,Government
+Marksville Parish Seat,31.1275,-92.0669,Government
+DeRidder Parish Seat,30.8464,-93.2891,Government
+Arcadia Parish Seat,32.5519,-92.9222,Government
+Benton Parish Seat,32.6934,-93.678,Government
+Shreveport Parish Seat,32.5149,-93.7479,Government
+Lake Charles Parish Seat,30.2241,-93.2174,Government
+Columbia Parish Seat,32.1036,-92.0781,Government
+Cameron Parish Seat,29.7971,-93.3255,Government
+Harrisonburg Parish Seat,31.7709,-91.8153,Government
+Homer Parish Seat,32.7913,-93.0556,Government
+Vidalia Parish Seat,31.567,-91.4297,Government
+Mansfield Parish Seat,32.0375,-93.7028,Government
+Baton Rouge Parish Seat,30.4507,-91.1882,Government
+Lake Providence Parish Seat,32.8055,-91.1736,Government
+Clinton Parish Seat,30.8664,-91.0169,Government
+Ville Platte Parish Seat,30.6891,-92.2781,Government
+Winnsboro Parish Seat,32.1634,-91.7206,Government
+Colfax Parish Seat,31.517,-92.7111,Government
+New Iberia Parish Seat,30.0035,-91.8187,Government
+Plaquemine Parish Seat,30.2891,-91.2344,Government
+Jonesboro Parish Seat,32.2386,-92.7153,Government
+Gretna Parish Seat,29.9147,-90.0554,Government
+Jennings Parish Seat,30.2226,-92.6562,Government
+Lafayette Parish Seat,30.2241,-92.0198,Government
+Thibodaux Parish Seat,29.7958,-90.8231,Government
+Jena Parish Seat,31.6883,-92.1286,Government
+Ruston Parish Seat,32.5232,-92.6379,Government
+Livingston Parish Seat,30.5019,-90.7483,Government
+Tallulah Parish Seat,32.4089,-91.1869,Government
+Bastrop Parish Seat,32.7761,-91.8825,Government
+Natchitoches Parish Seat,31.7607,-93.0863,Government
+New Orleans Parish Seat,29.9511,-90.0715,Government
+Monroe Parish Seat,32.5093,-92.1193,Government
+Pointe a la Hache Parish Seat,29.5804,-89.7915,Government
+New Roads Parish Seat,30.6953,-91.4411,Government
+Alexandria Parish Seat,31.3113,-92.4451,Government
+Coushatta Parish Seat,32.0107,-93.3389,Government
+Rayville Parish Seat,32.4764,-91.7583,Government
+Many Parish Seat,31.5071,-93.4841,Government
+Chalmette Parish Seat,29.9427,-89.9634,Government
+Hahnville Parish Seat,29.9669,-90.4109,Government
+Greensburg Parish Seat,30.8291,-90.6732,Government
+Convent Parish Seat,30.0161,-90.8267,Government
+Edgard Parish Seat,30.0436,-90.5539,Government
+Opelousas Parish Seat,30.5344,-92.0811,Government
+St. Martinville Parish Seat,30.1241,-91.7303,Government
+Franklin Parish Seat,29.7911,-91.5032,Government
+Covington Parish Seat,30.4755,-90.1009,Government
+Amite Parish Seat,30.7277,-90.5126,Government
+St. Joseph Parish Seat,31.9161,-91.2336,Government
+Houma Parish Seat,29.5958,-90.7195,Government
+Farmerville Parish Seat,32.7741,-92.4036,Government
+Abbeville Parish Seat,29.9744,-92.1342,Government
+Leesville Parish Seat,31.1435,-93.2618,Government
+Franklinton Parish Seat,30.8475,-90.1481,Government
+Minden Parish Seat,32.6154,-93.2857,Government
+Port Allen Parish Seat,30.4531,-91.2098,Government
+Oak Grove Parish Seat,32.8614,-91.3897,Government
+St. Francisville Parish Seat,30.7335,-91.3855,Government
+Winnfield Parish Seat,31.9255,-92.6417,Government
+Abbeville Chris Crusta Memorial Airport,29.9757,-92.0841,Logistics
+Esler Regional Airport,31.3951,-92.2965,Logistics
+Arcadia-Bienville Parish Airport,32.4741,-92.9866,Logistics
+George R Carr Memorial Air Field,30.8142,-89.8732,Logistics
+Bunkie Municipal Airport,30.9511,-92.1642,Logistics
+Caldwell Parish Airport,32.1581,-92.0441,Logistics
+The Red River Airport,32.0471,-93.3081,Logistics
+St Tammany Regional Airport,30.4355,-90.0415,Logistics
+Le Gros Memorial Airport,30.2281,-92.2851,Logistics
+De Quincy Industrial Airpark,30.4385,-93.4341,Logistics
+Beauregard Regional Airport,30.8321,-93.3391,Logistics
+Delhi Municipal Airport,32.4381,-91.5032,Logistics
+Eunice Airport,30.4751,-92.4241,Logistics
+Union Parish Airport,32.8051,-92.4542,Logistics
+South Lafourche Leonard Miller Jr. Airport,29.4441,-90.2642,Logistics
+Louisiana Regional Airport,30.1651,-90.8931,Logistics
+Hammond Northshore Regional Airport,30.5211,-90.4161,Logistics
+Homer Municipal Airport,32.7481,-93.0451,Logistics
+Houma-Terrebonne Airport,29.5641,-90.6651,Logistics
+Feliciana Airpark,30.8031,-91.2181,Logistics
+Le Maire Memorial Airport,29.9542,-91.6841,Logistics
+Jena Airport,31.6831,-92.1642,Logistics
+Jennings Airport,30.2451,-92.6741,Logistics
+Jonesboro Airport,32.2541,-92.7441,Logistics
+Jonesville Airport,31.6381,-91.8341,Logistics
+Bluebird Hill Airport,32.3321,-93.8542,Logistics
+Monroe Regional Airport,32.5111,-92.0371,Logistics
+Byerley Airport,32.8151,-91.1942,Logistics
+Hart Airport,31.5451,-93.5142,Logistics
+Marksville Municipal Airport,31.0941,-92.0542,Logistics
+Minden Airport,32.6451,-93.2981,Logistics
+Lakefront Airport,30.0425,-90.0285,Logistics
+Kelly-Dumas Airport,32.8551,-91.4142,Logistics
+Allen Parish Airport,30.6051,-92.8841,Logistics
+St Landry Parish Airport,30.5541,-92.0242,Logistics
+Harry P Williams Memorial Airport,29.7151,-91.3381,Logistics
+Pineville Municipal Airport,31.3251,-92.4042,Logistics
+Pollock Municipal Airport,31.5251,-92.4142,Logistics
+John H Hooks Jr Memorial Airport,32.4841,-91.7342,Logistics
+Slidell Airport,30.3451,-89.8242,Logistics
+Springhill Airport,32.9941,-93.4742,Logistics
+Tensas Parish Airport,31.9341,-91.2142,Logistics
+Southland Field Airport,30.1341,-93.3842,Logistics
+Vicksburg Tallulah Regional Airport,32.3551,-91.0342,Logistics
+Thibodaux Municipal Airport,29.7441,-90.8142,Logistics
+Vivian Airport,32.8751,-93.9842,Logistics
+Welsh Airport,30.2341,-92.8142,Logistics
+David G Joyce Airport,31.9541,-92.6242,Logistics
+Innis Community Health Center,30.7321,-91.7042,Medical
+St. Martin Hospital,30.1242,-91.7342,Medical
+Overton Brooks VA Medical Center,32.4841,-93.7342,Medical
+Lallie Kemp Regional Medical Center,30.5942,-90.5042,Medical
+Ochsner St. Anne Hospital,29.8042,-90.8342,Medical
+Baton Rouge General - Bluebonnet,30.3851,-91.0942,Medical
+Hardtner Medical Center (Urania),31.8641,-92.2942,Medical
+Natchitoches Regional Medical Center,31.7441,-93.0842,Medical
+West Carroll Memorial Hospital,32.8641,-91.3942,Medical
+Sheriffƒ??s HQ - East Baton Rouge,30.4141,-91.1342,Government
+Shreveport City Hall,32.5121,-93.7542,Government
+Lafayette City Hall,30.2281,-92.0142,Government
+Monroe City Hall,32.5021,-92.1142,Government
+Lake Charles City Hall,30.2121,-93.2242,Government
+Alexandria City Hall,31.3121,-92.4442,Government
+Bossier City Municipal Complex,32.5121,-93.7142,Government
+Houma Municipal Center,29.5921,-90.7242,Government
+New Iberia City Hall,30.0021,-91.8142,Government
+Slidell City Council,30.2721,-89.7842,Government
+Ruston Municipal Building,32.5241,-92.6342,Government
+Sulphur City Hall,30.2321,-93.3442,Government
+Hammond City Council,30.5041,-90.4642,Government
+Opelousas City Hall,30.5341,-92.0842,Government
+Morgan City Municipal Auditorium,29.7021,-91.2042,Government
+West Monroe City Hall,32.5121,-92.1742,Government
+Bastrop City Hall,32.7721,-91.9042,Government
+Thibodaux City Hall,29.7921,-90.8242,Government
+Minden City Hall,32.6121,-93.2842,Government
+Jennings City Hall,30.2221,-92.6542,Government
+DeRidder City Hall,30.8421,-93.2842,Government
+Abbeville City Hall,29.9721,-92.1342,Government
+Natchitoches City Hall,31.7621,-93.0842,Government
+Covington City Hall,30.4721,-90.1042,Government
+Mandeville City Hall,30.3621,-90.0642,Government
+Bogalusa City Hall,30.7721,-89.8542,Government
+Eunice City Hall,30.4921,-92.4142,Government
+Crowley City Hall,30.2121,-92.3742,Government
+Harmon South,30.231147,-92.436782,Land
+Duson Northeast Interchange,30.253855,-92.190605,Land
+Hwy 13 Frontage,30.299365,-92.394675,Land
+St. Raphael Dr,30.422401,-92.195313,Land
+Freeland Site,30.221473,-92.428995,Land
+Cedar St. Site,30.20864,-92.353411,Land
+Jeffers Property,30.249437,-92.395996,Land
+Egan Site,30.235317,-92.528752,Land
+Iota Site,30.325578,-92.512681,Land
+Lafourche Site,30.407733,-92.583031,Land
+Branch St. Site,30.22258,-92.282312,Land
+South Basile Property,30.471715,-92.532177,Land
+Refinery Rd Property,30.464158,-92.532141,Land
+Hwy 90 Rayne Property,30.230103,-92.278515,Land
+Lawland Commercial Park,30.234383,-92.391128,Land
+Interstate 10 West Frontage Land,30.238017,-92.374369,Land
+Bratton Family Farms,30.239613,-92.372168,Land
+Rare Opportunity - Historic 60 Acre Crowley Site,30.228539,-92.36642,Land
+Foster Site,30.224329,-92.357853,Land
+Allen Parish Airport,30.741578,-92.689489,Land
+Allen Parish Business & Industrial Park Site,30.805609,-92.674721,Land
+East Industrial Park,30.807705,-92.644536,Land
+Old Hardwood Mill,30.813988,-92.675512,Land
+Chachere Site,30.505303,-92.834252,Land
+Allen Industrial Site,30.806968,-92.675995,Land
+West Oberlin Site,30.63044,-92.785466,Land
+Monceaux Property,30.629637,-92.764775,Land
+Riverhouse Properties,30.623933,-92.779277,Land
+Allen Parish Airport Property,30.760355,-92.68945,Land
+Town of Oberlin Site,30.628444,-92.774115,Land
+Home Depot Anchored Retail Development,30.208828,-90.943729,Land
+Gateway II Site,30.232427,-91.026885,Land
+Schexnayder Site,30.079978,-90.971755,Land
+Britco Site,30.21438,-90.886724,Land
+152 Acres Vacant Land - Geismar,30.171914,-90.993496,Land
+River-Plex Mega-Park of Louisiana,30.148453,-91.049707,Land
+Hardtimes Plantation,30.136534,-90.998677,Land
+Foti Highway 3120 N,30.09774,-90.942256,Land
+Foti Highway 70,30.09203,-90.936329,Land
+Copperhead Industrial,30.236516,-91.019354,Land
+Foti Highway 18,30.102008,-90.946793,Land
+Burnside Industrial Parcel II,30.145831,-90.910663,Land
+Mon Desire,30.109443,-90.927329,Land
+Ascension Commerce Center II,30.223059,-90.975311,Land
+Rivermark 185 Industrial and Logistics Park,30.220051,-90.993752,Land
+IMTT-Geismar North,30.214562,-91.039068,Land
+Pinnacle Properties,30.217748,-90.996035,Land
+"Souvenir, Inc.",30.105121,-91.035342,Land
+40 Acre Site in Donaldsonville,30.104556,-91.022745,Land
+Over 7 Acres of Prime Airline Frontage in Ascension,30.283174,-90.952351,Land
+Potential Commercial/Light Industrial Site,30.229881,-90.994024,Land
+Magnolia Ridge Logistics Park,30.218358,-90.977833,Land
+Geismar Storage,30.235013,-91.022656,Land
+W. Edenborne Pkwy Industrial Land,30.190559,-90.947048,Land
+Highway 70 Industrial Land,30.153361,-90.871212,Land
+Bunkie Industrial Park - Powered by CLECO,30.946391,-92.198047,Land
+Avoyelles Parish Port - 195 AC Site,30.955384,-91.813734,Land
+Avoyelles Parish Port - 890 Acres,30.957856,-91.818109,Land
+Beauregard Airport Industrial Site,30.82041,-93.360942,Land
+DeRidder Industrial Park Site #1,30.872752,-93.28252,Land
+CIP Inc,32.22576,-93.154815,Land
+Plain Dealing Industrial Park,32.915368,-93.698018,Land
+Scopini Island Property,32.384998,-93.645216,Land
+Commerce Industrial Park,32.556006,-93.653324,Land
+Grand Cypress,32.558698,-93.509926,Land
+Shreveport Airport Aeropark Site,32.447406,-93.817694,Land
+Shreveport Airport Warehouse District Site,32.447433,-93.839764,Land
+Ward II Industrial Park,32.838586,-93.959019,Land
+North Whittington Property,32.383735,-93.652752,Land
+Ron Bean Property,32.371364,-93.643239,Land
+Shreve Park Industrial Campus,32.420052,-93.841768,Land
+Caddo Industrial Park,32.411776,-93.904755,Land
+North Shreveport Industrial Park,32.558468,-93.85282,Land
+West Shreveport Industrial Park - Lot 1 (16 acres),32.440731,-93.912977,Land
+West Shreveport Industrial Park - Lot 2 (14 acres),32.422632,-93.902105,Land
+West Shreveport Industrial Park - Lot 3 (11 acres),32.436972,-93.918104,Land
+LA Hwy 1/Leonard Road,32.382592,-93.680447,Land
+"West 70th St. and Buncombe Rd., NWC -- 97 +/- Acres For Sale",32.444829,-93.849333,Land
+"7100 Block of Greenwood Rd., 11.25 +/- Acres For Sale",32.449764,-93.89543,Land
+O'Neal Kouns,32.400922,-93.792194,Land
+Cupples West,32.363979,-93.651051,Land
+Cupples-LRF,32.359502,-93.655094,Land
+Tensas Delta North,32.354759,-93.630291,Land
+Sorensen 110W,32.343245,-93.659687,Land
+Robson Farms,32.351844,-93.641562,Land
+MFE Mega,32.33462,-93.648611,Land
+MFE 30 SW,32.316728,-93.649615,Land
+MFE 110 East,32.32219,-93.649021,Land
+South Bossier Development Opportunity,32.389847,-93.609896,Land
+LRF Property,32.357165,-93.658474,Land
+Former Libbey Glass Plant,32.468425,-93.799385,Land
+Chennault Site # 8,30.213092,-93.157654,Land
+Chennault Site #6,30.206512,-93.14573,Land
+Chennault Site #3,30.195416,-93.142661,Land
+Chennault Site #2,30.201154,-93.149218,Land
+Chennault Site #4,30.197808,-93.13196,Land
+Chennault Site #5,30.214274,-93.140913,Land
+DeQuincy Industrial Park,30.436117,-93.466018,Land
+Industrial Park East - PLC Tract 175,30.217521,-93.133381,Land
+Lincoln  Road - PLC Tract 400,30.105376,-93.240001,Land
+Chennault Site 2-2A,30.201128,-93.149099,Land
+Port of Vinton Lot 6,30.141831,-93.566583,Land
+Ellender Site,30.187402,-93.348792,Land
+Calcasieu Industrial Park,30.213161,-93.339021,Land
+Iowa I-10 80 Acres with additional 26 acres adjoining all have NO Zoning!,30.248,-93.000846,Land
+Iowa I-10 26 Acres with additional 80 acres adjoining also with NO ZONING!,30.248021,-93.006965,Land
+Lake Charles Regional Airport Site #1,30.131054,-93.218275,Land
+Lake Charles Regional Airport -- 69.2 Acres,30.121592,-93.215515,Land
+Lake Charles Regional Airport -- 58.9 Acres,30.114643,-93.215374,Land
+Horseman's Business Park Phase I,30.228432,-93.125457,Land
+Horseman's Business Park Phase II,30.225116,-93.12465,Land
+Ryan St. at I-10 W Off-ramp,30.23693,-93.216417,Land
+56 Acres on Power Center Pkwy.,30.190747,-93.171637,Land
+11 Acres of Mixed Use on East McNeese Street,30.177176,-93.193048,Land
+96 Acres on Tom Hebert Road,30.120471,-93.183305,Land
+Port of Vinton Lot 12,30.165443,-93.562371,Land
+Port of Vinton Lot 11,30.157937,-93.557809,Land
+Port of Vinton Lot 10,30.157993,-93.564611,Land
+Port of Vinton Lot 7,30.152118,-93.564345,Land
+I-10 Frontage in Sulphur,30.218861,-93.321788,Land
+West Cal Port,30.064428,-93.352958,Land
+1323 Mossville Way,30.248127,-93.327094,Land
+Louisiana Multimodal Terminal,30.188491,-93.138231,Land
+Queenan Industrial Park,30.202638,-93.318695,Land
+4300 Houston River Road,30.283584,-93.314247,Land
+Old DeQuincy Sale Barn,30.431687,-93.430379,Land
+Goodman Road Site,30.261095,-93.155094,Land
+Louisiana Tank Yard,30.129031,-93.280604,Land
+Tom Hebert Road Rail Site,30.123631,-93.184441,Land
+Cypress Bend Property,30.247175,-93.015383,Land
+7020 U.S. Hwy. 90,30.235173,-93.098811,Land
+Vision Industrial Site,30.453466,-93.392455,Land
+Charvais Industrial Site,30.159957,-93.357143,Land
+Bayou D'Inde Road Site,30.199898,-93.324375,Land
+Drew Light Industrial Site,30.13593,-93.203019,Land
+Opelousas St. at I-10 Interchange,30.241271,-93.13149,Land
+114 S. Cities Service Highway,30.22631,-93.326221,Land
+Chennault Site #1,30.208084,-93.155447,Land
+Calcasieu I-10 Site,30.18882,-93.521273,Land
+Pine Shadows Development Site,30.254796,-93.162418,Land
+I-10 Iowa Tract 50,30.247929,-93.00243,Land
+I-10 Iowa Tract 26,30.248015,-93.00705,Land
+Arena Road & Interstate 10 Acerage,30.211935,-93.386538,Land
+Calcasieu I-10 Mega Site,30.185899,-93.509896,Land
+Chloe Corporate Center,30.241965,-93.122462,Land
+4400 Hwy. 27 in Sulphur,30.184835,-93.378228,Land
+Southwest Iowa Site,30.22411,-93.02621,Land
+Holmwood Development Property,30.122343,-93.10384,Land
+Bell City Property,30.135186,-93.019873,Land
+East Edgerly Site,30.234856,-93.495253,Land
+West Edgerly Site,30.234475,-93.525293,Land
+Nalmar Landing Site,30.224266,-93.249606,Land
+PLC Tract 475,30.113357,-93.305709,Land
+Lake Charles Regional 168-Acre Site,30.136386,-93.225566,Land
+Johnny Breaux Road Site,30.1747,-93.555913,Land
+Port of Columbia,32.185943,-92.103926,Land
+Mudd Property on Ship Channel,29.778301,-93.35405,Land
+Jordan Oil Company Dock,29.932315,-93.076529,Land
+"Cameron Parish Port, Harbor & Terminal District",29.797001,-93.326645,Land
+Cameron Prairie Industrial Park,29.992751,-93.092105,Land
+Hackett's Corner Industrial Site,30.012807,-93.085016,Land
+Horseshoe Bend Industrial Site,30.030783,-93.084306,Land
+Pine Pasture Properties,30.015663,-93.057109,Land
+Mallard Lane Development Site,29.809719,-93.161618,Land
+Camcorp Site,29.787768,-93.157292,Land
+St. Johns Island Site,29.830212,-93.355844,Land
+"Whitehall Industrial Site (1,238 Acres / 520 Acres Certified)",31.549822,-91.480108,Land
+Vidalia Port Commission-Slack-Water Slip,31.537876,-91.485347,Land
+Vidalia Port Commission-Access Road Plat,31.542498,-91.487775,Land
+DeSoto Parish Industrial Park,32.08007,-93.770174,Land
+LSU Innovation Park,30.360056,-91.146023,Land
+Sullivan Site,30.481377,-91.015406,Land
+Highway 64-McHugh Road Site,30.653362,-91.137183,Land
+Baringer Park Site,30.360391,-91.018258,Land
+Land Available For Sale or Lease,30.383295,-91.052725,Land
+"18605 Highland Rd, Baton Rouge, LA 70809",30.35314,-91.023738,Land
+"8-Unit office Building - 5235 Florida Blvd., Baton Rouge",30.451637,-91.136215,Land
+Highland Rd Commercial Land For Sale,30.378349,-91.138172,Land
+I-10/Pecue Lane Interchange,30.365107,-91.041771,Land
+3.59 Acres for Sale on Plank Rd.,30.50487,-91.152978,Land
+14841 Greenwell Springs,30.519039,-91.026042,Land
+Hobgood Site,30.544548,-91.128772,Land
+Aviation Business Park,30.537359,-91.149134,Land
+DiVincenti Road,30.543137,-91.141979,Land
+Zachary Retail Parcel For Sale 5 Acres,30.649723,-91.116642,Land
+Bluebonnet Blvd Retail Parcel 2.1 Acres,30.416107,-91.073112,Land
+"1.26 Acre Lot Jefferson Hwy Baton Rouge, LA. 70809",30.412362,-91.082431,Land
+Port of Lake Providence,32.759415,-91.18199,Land
+Lake Providence Port Commission,32.746296,-91.168171,Land
+"47-acre Commerical site Lake Providence, La",32.810876,-91.169657,Land
+"72-acre Industrial site Lake providence, La",32.737575,-91.241977,Land
+"Greenbriar Mega site (Epps, La)",32.57281,-91.362924,Land
+Record Industrial Park,30.853803,-91.046354,Land
+Evangeline Ward One Industrial Park Expansion,30.718266,-92.268723,Land
+West Eunice Site,30.484294,-92.530346,Land
+Meche Property,30.748721,-92.214282,Land
+Winnsboro Industrial Park,32.2032,-91.723674,Land
+Winnsboro Industrial Park #2,32.196641,-91.725712,Land
+Baskin Property,32.24675,-91.746349,Land
+Franklin Parish Industrial Site 420 acres,32.339096,-91.529972,Land
+"Crowville, LA 40-acre Site",32.245085,-91.734857,Land
+Franklin Parish 60-acre site (subdividable/ two 30-acre parcels),32.272412,-91.59021,Land
+6-acre Site Franklin Parish,32.169204,-91.722977,Land
+"193 acres available in Winnsboro, La (4 parcels)",32.245789,-91.705801,Land
+Montgomery Industrial Site,31.681275,-92.894583,Land
+Port of Iberia NE Site,29.945518,-91.831594,Land
+Acadiana Regional Airport Site P-1,30.039133,-91.879696,Land
+Acadiana Regional Airport Site P-3,30.05472,-91.880958,Land
+Acadiana Regional Airport Site P-5,30.019047,-91.88395,Land
+Port of Iberia - North Site,29.951286,-91.837255,Land
+Acadiana Regional Airport - New Site,30.032848,-91.857848,Land
+Iberia Hwy 674,29.975541,-91.779643,Land
+Antook - 75 Acre Tract,30.042223,-91.866207,Land
+Coteau Road - Keller Williams,30.059876,-91.887732,Land
+Acadiana Regional Airport Site P2,30.04561,-91.877845,Land
+Gulf Coast Land Group Admiral Doyle Drive Property,30.042188,-91.86611,Land
+Adm Doyle Acres,29.98114,-91.806522,Land
+Progress Point,30.005624,-91.878219,Land
+Howard Segura Rd Site,30.004004,-91.886967,Land
+Coastal Timbers Site,30.022207,-91.81988,Land
+Acadiana Regional Airport P3 Site,30.054877,-91.881135,Land
+Admiral Doyle East Site,30.033655,-91.856841,Land
+Admiral Doyle Dr. West Site,30.030398,-91.860149,Land
+10.77 Acres W Admiral Doyle For Sale,30.050135,-91.873264,Land
+Acadiana Regional Airport - A3,30.02533,-91.894649,Land
+Iberville Industrial & Technology Park,30.310673,-91.276065,Land
+Kinder Morgan St. Gabriel Terminal,30.222956,-91.124613,Land
+3000 Acres Sunshine,30.297562,-91.145893,Land
+Grace Farms East,30.409718,-91.497851,Land
+Grace Farms West,30.412866,-91.512299,Land
+Carville Riverfront Development,30.226276,-91.111708,Land
+Claiborne Site,30.192304,-91.073729,Land
+Belle Grove Site,30.180475,-91.10909,Land
+Willow Glen Terminal Site,30.281585,-91.11469,Land
+Point Clair 95,30.224888,-91.121482,Land
+Allemania River Road,30.269297,-91.161465,Land
+U.S. 167 Commercial Acreage,32.250912,-92.721976,Land
+Churchill Technology & Business Park (480 total acres/25 Acres Certified),29.885723,-90.182145,Land
+Cornerstone Energy Park,29.95246,-90.268154,Land
+WB 5,29.932235,-90.053852,Land
+Avondale Global Gateway,29.923496,-90.184548,Land
+Available Land With Marine Access at IMTT-Avondale,29.914341,-90.197132,Land
+C-2 Zoned Land Off Highway 90,29.963541,-90.152118,Land
+Bucktown Oversized Lot for Sale,30.018465,-90.124797,Land
+S & B Properties,30.241013,-92.643289,Land
+Broussard Property,30.235847,-92.676408,Land
+CALCAM LLC,30.234563,-92.946175,Land
+T.O. Allen Industrial Park North,30.234561,-92.974279,Land
+"OBrien Air, Inc Property",30.233786,-92.931882,Land
+Sabbaghian Property,30.244734,-92.684698,Land
+Downes Development LLC/Harris-Downes Properties LLC,30.241421,-92.648269,Land
+Trahan Management Property,30.237958,-92.634878,Land
+T.O. Allen Industrial Park South,30.225051,-92.960149,Land
+Camara Property,30.234634,-92.890223,Land
+Welsh Airport Property,30.244519,-92.832467,Land
+Rail Logix - Lacassine Complex,30.240764,-92.947298,Land
+"North American Land Company, LLC",30.244703,-92.958217,Land
+REDUCED Price - 33 Acre Site on I-10 Frontage Rd.,30.244837,-92.953163,Land
+Benoit LA-26,30.089311,-92.673281,Land
+Old Castle,30.482655,-92.683528,Land
+Harris Downes Property,30.241928,-92.653876,Land
+Hwy. 395 Site,30.24219,-92.735934,Land
+101 Calcasieu Avenue,30.077975,-92.671027,Land
+88-Acre Development,30.242034,-92.925959,Land
+Guinn SilverWood Property,30.187676,-92.601795,Land
+Logan Property,30.24203,-92.966551,Land
+2150 Youngsville Hwy 89,30.124526,-91.988383,Land
+1 Alcide Dominique Drive,30.24895628,-92.03968048,Land
+Cameron St  and  Ambassador Caffery Pkwy,30.23378332,-92.06088066,Land
+500 Old Spanish,30.231609,-92.106897,Land
+Northpark Certified Site,30.269101,-92.039388,Land
+3100 Ridge Rd.,30.177388,-92.184672,Land
+16.9 Acres on Commission Blvd. Rail Access.,30.164386,-91.99198,Land
+Fredette Property,30.299023,-92.013622,Land
+Garber Industrial Park,30.164695,-91.964153,Land
+I-90 Tract Broussard,30.082399,-91.946287,Land
+Northpark Technology Center,30.271355,-92.039581,Land
+Girouard Site,30.149218,-91.945881,Land
+Hero's Point,30.256168,-92.040184,Land
+1 N Bernard Rd,30.163444,-91.967078,Land
+Martial Farms,30.124741,-91.937254,Land
+AC Commercial Site,30.124281,-91.954011,Land
+South Morgan Site,30.133892,-91.967592,Land
+Loul's Landing,30.127222,-91.946278,Land
+Country View on Ambassador Caffery Pwky. (28+ acres),30.135318,-91.971556,Land
+Ambassador Commons Zone,30.114201,-91.947038,Land
+Lucile's Commerce Plaza,30.138275,-91.947712,Land
+LA-89/ Albertson Pkwy Property,30.143674,-91.990084,Land
+St. Julien Park Frontage Site,30.134486,-91.933838,Land
+Maxie and Vida Girouard Site,30.152158,-91.950839,Land
+2826 Bonin Road,30.10228,-92.00765,Land
+100 Centre Sarcelle Blvd,30.107327,-92.01712,Land
+2215 E Milton Ave,30.110633,-92.031485,Land
+900 BLK Larriviere RD,30.081834,-91.974915,Land
+2400 BLK Chemin Metairie PKWY,30.088956,-92.004536,Land
+2400 Blk Chemin Metairie Rd Lot 3,30.089724,-92.003581,Land
+2400 Blk Chemin Metairie Rd Lot 1,30.089786,-92.004824,Land
+2400 Blk Chemin Metairie Rd Lot 2,30.089687,-92.004212,Land
+2400 Blk Chemin Metairie Rd Lot 4,30.088433,-92.004695,Land
+3038 Chemin Metairie Pkwy,30.083637,-91.982445,Land
+2024 Chemin Metairie PKWY,30.096073,-92.016744,Land
+2510 Youngsville Hwy,30.116885,-91.991142,Land
+2300 Youngsville HWY,30.120804,-91.99001,Land
+1900 BLK Chemin Metairie PKWY,30.095558,-92.01342,Land
+700 BLK SAVOY RD,30.095458,-92.009387,Land
+700 BLK Iberia ST,30.101135,-92.00685,Land
+Rue Bon Secours,30.252646,-92.117625,Land
+405 Rue Bon Secours,30.252459,-92.119679,Land
+615 Lafayette St,30.106998,-91.990994,Land
+103 W Main St,30.14796,-91.964674,Land
+102 & 200 Block Albertson Pkwy,30.143729,-91.990195,Land
+Country View Phase 2 Site,30.136668,-91.974577,Land
+Country View on Ambassador Caffery,30.135302,-91.971572,Land
+Morgan Broadview Site,30.131818,-91.967724,Land
+6922 Ambassador Caffery Pkwy,30.133211,-91.974522,Land
+Acadian Hills,30.257255,-92.02632,Land
+Enterprise Industrial Park,29.605294,-90.486784,Land
+5-Cher's,29.47326,-90.323894,Land
+Polmer Bros - LA Hwy 316 - 236 Acres,29.676987,-90.712469,Land
+30 Acre Tract on Hwy 20,29.899184,-90.736761,Land
+Lockport Rouse's Outparcel,29.642648,-90.525307,Land
+South Lafourche Airport North,29.440233,-90.271759,Land
+South Lafourche Airport South,29.428212,-90.271773,Land
+1.9 acres on N Canal for Sale,29.80092,-90.816622,Land
+McLeod Site,29.648492,-90.511954,Land
+Valentine Industrial Site,29.607388,-90.464596,Land
+Lockport Rouses Market Outparcels for Lease,29.642628,-90.525449,Land
+Olla Industrial Park,31.89267,-92.258607,Land
+RUSTON INTERSTATE DEVELOPMENT,32.53866,-92.63513,Land
+I-20 Frontage Commercial Site,32.543026,-92.603668,Land
+City of Ruston Industrial Park,32.530443,-92.59492,Land
+Ruston Former Airport,32.513917,-92.628884,Land
+Simsboro West,32.543449,-92.806793,Land
+I-20 Business & Technology Park Site,32.538084,-92.609999,Land
+Tarbutton at Hwy 150,32.531748,-92.676306,Land
+Grambling State University West Campus,32.534544,-92.743964,Land
+City of Ruston - 6+ acres,32.510071,-92.628332,Land
+City of Ruston - 25+ acres,32.514766,-92.628073,Land
+Holden Industrial Park,30.508175,-90.646075,Land
+Denkmann,30.466998,-90.791653,Land
+South Livingston,30.468233,-90.750003,Land
+Land on Buddy Hood Rd & I12,30.476903,-90.647843,Land
+A Hartman Ln,30.471856,-90.8576,Land
+25.85 Acres in Livingston,30.472694,-90.752089,Land
+North Satsuma,30.480879,-90.786303,Land
+Colyell,30.459772,-90.758259,Land
+MCM Site,30.508229,-90.649439,Land
+Hornsby,30.506846,-90.825158,Land
+Gilmore Property,30.469343,-90.632384,Land
+J3 Investments - Satsuma,30.48223,-90.809405,Land
+33.42 Acres Hwy 190,30.495614,-90.834167,Land
+56 Acres - Hwy 190 and Satsuma Rd.,30.501268,-90.799204,Land
+300 Acres off North Doyle Rd.,30.508411,-90.713727,Land
+Lee Martin Rd. & Hwy 190,30.509041,-90.786787,Land
+Henry Ballard Rd.,30.526205,-90.644069,Land
+"12.26 AC. Florida Blvd., Holden, La",30.502046,-90.650497,Land
+6.53 Ac. Interstate Frontage and Additional Adj. acreage available!,30.47182,-90.857669,Land
+"0.7 Acres Juban Road, Denham Springs",30.478944,-90.919224,Land
+Coker Vail Rd,30.484534,-90.623127,Land
+Juban Rd Land for Sale,30.471462,-90.913694,Land
+Wal-Mart Out Parcel Sale or Build to Suit,30.471991,-90.95613,Land
+0.69 Acres Walker South Road; Adjacent lot available,30.465093,-90.861831,Land
+"Terral Farms, Inc",32.480331,-91.127435,Land
+Madison Parish Port,32.495274,-91.122781,Land
+City of Tallulah Industrial Park,32.399026,-91.220552,Land
+Coulter Industrial Park,32.751931,-91.889023,Land
+Mer Rouge Site,32.762762,-91.796909,Land
+Morehouse Airport,32.756595,-91.879172,Land
+Bastrop Vision Property,32.771779,-91.870913,Land
+"Bennett 300 ( Collinston , La)",32.651414,-91.894963,Land
+"Morehouse Intermodal Industrial 50-acre site (Prime location Bastrop, La)",32.760606,-91.862617,Land
+Natchitoches Parish Port,31.846794,-93.069462,Land
+Natchitoches Industrial Park,31.708601,-93.069679,Land
+Natchitoches Industrial Park III,31.717017,-93.083072,Land
+Natchitoches Business Park I,31.73057,-93.079163,Land
+Natchitoches Business Park II,31.728224,-93.0821,Land
+Highway 478 Development Tract,31.658902,-93.107041,Land
+NSU North Business Park,31.75362,-93.101286,Land
+3101 Patterson Street,29.945689,-90.023999,Land
+3666 France Road,29.995058,-90.026086,Land
+4501 North Miro Street,29.976332,-90.025764,Land
+4490 Florida Avenue,29.981258,-90.024471,Land
+3900 Jourdan Road,30.001914,-90.023074,Land
+Almonaster Avenue CSX Property,30.004351,-90.001728,Land
+Paterson North,30.020023,-90.02491,Land
+7300 Jourdan Road,30.024071,-90.030593,Land
+3410 Jourdan Road,29.995303,-90.020122,Land
+4.6 Acres off Bullard Ave,30.043146,-89.955639,Land
+"Propel Park @ NASA MAF | Premier Class A Industrial Park | Up to 800,000 SF",30.017254,-89.922051,Land
+4325 France Road (Formally Trinity Yachts),30.011892,-90.029916,Land
+Prime 2.17-Acre Industrial Parcel  Almonaster Ave & Grant St,30.012125,-89.949457,Land
+4.5 Acres for Lease on Old Gentilly Road,30.014182,-89.976313,Land
+Charleston Industrial Park,32.424538,-92.08583,Land
+Pecanland Industrial Park,32.505588,-91.96459,Land
+Petty Company South,32.498744,-91.996484,Land
+Petty Company North,32.520796,-91.98663,Land
+Monroe Air Industrial Park,32.509458,-92.058478,Land
+I 20/Millhaven,32.484855,-91.998444,Land
+Calhoun Technology Park South Site,32.510671,-92.345551,Land
+Monroe Airport Site3,32.502372,-92.033547,Land
+Monroe Airport - Site1,32.522135,-92.036321,Land
+Monroe Airport Site2,32.507489,-92.065953,Land
+Tower Boardmoor Medical Corridor Site (Biomedical Research and Innovation Park),32.531833,-92.096525,Land
+Calhoun Technology Park North Site,32.516874,-92.345126,Land
+Highland Park Mixed-Use Development Site,32.525419,-92.146704,Land
+Sterlington River Site,32.686361,-92.089072,Land
+58.25 Acre Site Richwood Louisiana,32.438927,-92.075162,Land
+"West Monroe, LA 10-acre Business Site",32.503462,-92.186352,Land
+"West Monroe, LA Industrial 50 acre site",32.497712,-92.174896,Land
+"64 acres Monroe, La site (HWY- 139)",32.601054,-91.96182,Land
+"West Monroe, La (Well Road WEST) 10 acres site",32.502083,-92.189926,Land
+"West Monroe, La (WELL ROAD EAST) site 14.5-acre site",32.502057,-92.186336,Land
+"25-acre West Monroe, La Light Industrial Site.",32.500541,-92.181433,Land
+Goshen Gardens- Monroe La 60-acre site,32.486541,-92.051137,Land
+Millhaven Estates (251 acres total),32.522145,-91.998154,Land
+North 20 Monroe Light industrial site (13 acres adjacent to Amazon),32.493056,-92.021942,Land
+North Ouachita Industrial (Prime location on HWY 165 N),32.629007,-92.067421,Land
+South Monroe Industrial Park (Prime location),32.485748,-92.008567,Land
+0.7 acres West Monroe (on Cypress frontage),32.515379,-92.172826,Land
+Pecanland 144 acre site,32.514771,-91.958608,Land
+Sterlington Industrial Site (75 acres),32.686316,-92.062373,Land
+Victory Tower and Village (Multi-parcel lots),32.591279,-92.071078,Land
+HWY 594 PROPERTY,32.504695,-91.998638,Land
+Port Nickel - Mississippi Riverfront Heavy Industrial Tract w/ Ship Dock & Rail,29.858778,-89.968015,Land
+NOLA Terminal,29.635283,-89.942762,Land
+Port Eads Marina and Docking Facility,29.015349,-89.168927,Land
+Port Sulphur 39,29.472353,-89.687532,Land
+Mississippi River Land for Sale or Lease,29.627105,-89.926339,Land
+Venice Port Complex Marine Terminal,29.269201,-89.352872,Land
+Port of Pointe Coupee Industrial Park,31.000651,-91.717468,Land
+Kent Site,30.822179,-91.656139,Land
+Pointe Coupee Power Park,30.664762,-91.34604,Land
+New Roads Industrial Park,30.700577,-91.469656,Land
+Angel Ranch Site,30.732995,-91.41561,Land
+Moseley North Site,30.719798,-91.366918,Land
+Woodley Site,30.542588,-91.559923,Land
+Shuler Road Site,31.369138,-92.593204,Land
+England Airpark E1 Heavy Industrial Site,31.342281,-92.528997,Land
+England Airpark Heavy Industrial Site W1,31.328415,-92.559957,Land
+England Heavy Industrial E2,31.333126,-92.530268,Land
+England Heavy Industrial Site E3,31.33039,-92.527786,Land
+Central Louisiana Regional Port ISR 45,31.332589,-92.463006,Land
+"7510 Hwy 28, Alexandria, LA",31.299468,-92.526586,Land
+Central Louisiana Region Port Industrial Site,31.333568,-92.463345,Land
+Rapides Station Distribution Site,31.362152,-92.599098,Land
+Third Street Industrial Site,31.326802,-92.463454,Land
+1904 Third Street,31.303845,-92.440324,Land
+West Calhoun Drive - Parcel L,31.346806,-92.52527,Land
+Red River Parish Port Site,31.958514,-93.340533,Land
+Franklin 425 Property,32.444293,-91.753514,Land
+Rayville Industrial Park,32.476118,-91.774595,Land
+Delhi #1,32.450431,-91.507308,Land
+Delhi #2,32.438702,-91.50188,Land
+Delhi - BT Site,32.452758,-91.5093,Land
+Rayville I-20 Boles,32.462956,-91.780137,Land
+Bee Bayou Site,32.467755,-91.687744,Land
+Holly Ridge East Site,32.461317,-91.620807,Land
+Holly Ridge West Site,32.462765,-91.635977,Land
+North Dunn 180,32.473857,-91.582897,Land
+"360 acres in Richland Parish, Louisiana near Meta site",32.468909,-91.711507,Land
+427 acres Richland Parish Site (adjacent to Meta site),32.482533,-91.620422,Land
+Bee Bayou East (Richland Parish),32.467303,-91.675238,Land
+Bee Bayou West (Richland Parish),32.468594,-91.700056,Land
+Bee Bayou South (Richland Parish),32.461934,-91.67265,Land
+"0 Highway 17, Delhi, LA 71232",32.428392,-91.491862,Land
+77 acres PRIME location Richland Parish (adjacent to META),32.487847,-91.639988,Land
+178 acres Richland Parish (Adjacent to META) PRIME,32.532965,-91.649498,Land
+"I- 20 Mega Site (1,050 acres Rayville, La)",32.445523,-91.711181,Land
+"Prime 60 acres (Richland Parish, LA)",32.459069,-91.699679,Land
+Sanders 120 (120 acres near META data center),32.498649,-91.676773,Land
+Paris Road Ground Lease,29.945982,-89.962707,Land
+Taft Industrial Park,29.986489,-90.418752,Land
+"Esperanza Land, LLC Site 3",29.935183,-90.38646,Land
+"Esperanza Investments, LLC Site 1",29.92563,-90.40555,Land
+Pelican Occidental,29.971745,-90.434842,Land
+St. Charles Industrial Park,29.968619,-90.422331,Land
+St. Charles/Jefferson Boundary,29.975348,-90.280842,Land
+James Business Park,29.979608,-90.28137,Land
+Chevron,29.862216,-90.453718,Land
+Authement Property,29.89027,-90.404541,Land
+St. Charles Plaza,29.908014,-90.363886,Land
+Lauve/Hull - U.S. Highway 90,29.891065,-90.399243,Land
+15442 U.S. Highway 90 Paradis,29.874583,-90.441289,Land
+Ray Hymel Property,29.97715,-90.42899,Land
+US Highway 90 (next to Mini-Storage),29.890378,-90.397708,Land
+US 90 Youngs/Hicks Heirs (next to Jake's Towing),29.890861,-90.401729,Land
+Tinney,29.895192,-90.394111,Land
+James Business Park (Sq. 4 Lot 3),29.980525,-90.284741,Land
+James Business Park (Sq. 4 Lot 4),29.981114,-90.284722,Land
+James Business Park (Sq. 4 Lot 5),29.981628,-90.284684,Land
+Airline Drive (10111 Airline Drive),29.977224,-90.284291,Land
+Carte Land (US Highway 90 Paradis),29.878991,-90.43185,Land
+LA 306 (One Mille LLC),29.863469,-90.430363,Land
+LA635 & US Highway 90 (Dufrene),29.85309,-90.450903,Land
+US 90 Paradis,29.874811,-90.440792,Land
+River Road (LA18) Hahnville,29.961519,-90.404586,Land
+Darensbsbourg,29.991767,-90.494864,Land
+"Esperanza Land, LLC Site 2",29.939093,-90.384779,Land
+"Esperanza Land, LLC Site 4",29.934419,-90.389307,Land
+"Esperanza Investments, LLC Site 2",29.940507,-90.380445,Land
+Vial Property (Cornerstone),29.953101,-90.41964,Land
+SoLaPort,29.973302,-90.436955,Land
+15305 U.S. Highway 90 Paradis,29.875656,-90.436581,Land
+421 Almedia Road,29.968648,-90.307251,Land
+Esperanza Business Park,29.932754,-90.394968,Land
+US 90 (Maryland Drive),29.908513,-90.361047,Land
+LA3127 & LA3141,29.994425,-90.497449,Land
+Ashton Commercial,29.935422,-90.374853,Land
+Esperanza Business Park,29.927366,-90.388133,Land
+Airline Drive (10175 East St. Rose),29.976825,-90.285882,Land
+Esperanza Business Park Lot 9-A,29.928426,-90.38916,Land
+13517 U.S. Highway 90 Boutte,29.899555,-90.388651,Land
+Riverbend Business Park (Behind 10446 River Road on Delta Drive),29.970877,-90.293913,Land
+"US Highway 90, Des Allemands",29.837552,-90.453654,Land
+St. Rose Industrial Batture,29.968707,-90.290099,Land
+"15376 Highway 90, Paradis",29.875333,-90.439641,Land
+Available Land With Marine Access at IMTT-St. Rose,29.959934,-90.335754,Land
+10436 Airline Hwy. St. Rose,29.975257,-90.302561,Land
+14600 Hwy. 90-Bent's Property,29.883548,-90.426925,Land
+James Business Park-2.38 ac.,29.981053,-90.284676,Land
+Available Land With Marine Access at IMTT-St. Rose,29.939472,-90.333042,Land
+Available Land With Marine Access at IMTT-St. Rose,29.947097,-90.334319,Land
+Destrehan Business Campus,29.949828,-90.366637,Land
+IMTT Luling,29.923042,-90.330383,Land
+Des Allemands Hwy. 90 Retail Site,29.825689,-90.46474,Land
+"St. Charles Intermodal | 1,165 Acres Greenfield Site with Deepwater Capacity on Mississippi River",30.011727,-90.491638,Land
+West Alpha Drive Phase II,29.951953,-90.366308,Land
+Singleton Farm Site,30.831327,-90.580794,Land
+Residential Subdivision Near I-55,30.739948,-90.612679,Land
+Ancient Domain,30.099362,-90.878649,Land
+Balot & Whitehall,30.076636,-90.885341,Land
+Shady Grove,30.076022,-90.826893,Land
+Welham,30.026068,-90.793663,Land
+Savannah,30.046532,-90.887182,Land
+Minnie & St. Louis,30.041507,-90.907566,Land
+St. Alice,30.043523,-90.903639,Land
+Elina (Upper),30.054973,-90.932704,Land
+Zeringue/St. Emma,29.969683,-90.851091,Land
+Succeed Property,30.006402,-90.687355,Land
+Rich Bend,29.969006,-90.821051,Land
+Dunhill,30.099083,-90.9215,Land
+Louisiana Sugar Refinery Site A,30.049945,-90.677121,Land
+Elina (Lower),30.052955,-90.929254,Land
+PSL St. James Property,29.985227,-90.685841,Land
+Bessie-K,29.977546,-90.78816,Land
+Whiterose,30.012852,-90.60171,Land
+Hope,30.050274,-90.626202,Land
+Goodwill,30.012107,-90.678133,Land
+Belle Terre Commercial Property,30.093053,-90.503729,Land
+Phase 1 Belle Terre Blvd.,30.098086,-90.505056,Land
+Lot 13 Belle Terre Commercial Property,30.099604,-90.504907,Land
+Belle Terre Blvd. Commercial Property,30.102227,-90.501089,Land
+Lots Belle Terre Commercial,30.095131,-90.50584,Land
+Woodland Drive Property,30.091628,-90.458328,Land
+Globalplex Parcel F,30.062217,-90.568907,Land
+Willow Bend - Deep Draft Riverfront Development Land - Heavy Industrial Opportunity,30.027783,-90.610853,Land
+4265 West Airline Highway,30.074007,-90.580496,Land
+4121 West Airline Highway,30.074009,-90.575483,Land
+Industrial Land in Reserve,30.074043,-90.575378,Land
+Corner of Hwy. 51 & Woodland Drive,30.08556,-90.449025,Land
+Hwy 51 & I-10,30.088334,-90.44625,Land
+Across from 221 East Airline Hwy (Airline Motors),30.064175,-90.478493,Land
+"435 Belle Terre Blvd., Lot 741A-1",30.084936,-90.503343,Land
+452 Belle Terre Blvd,30.085527,-90.502204,Land
+430 Belle Terre Blvd,30.084785,-90.502192,Land
+314 Belle Terre Blvd,30.080665,-90.501481,Land
+279 Belle Terre Blvd +,30.079406,-90.502355,Land
+Belle Point 2 West Airline Highway,30.078771,-90.528021,Land
+Belle Pointe PLT/West Airline Hwy.,30.078147,-90.521498,Land
+West Airline across from New 51,30.066991,-90.482677,Land
+Industrial Land off of West 19th Street,30.070008,-90.5807,Land
+West 10th Street Reserve,30.068535,-90.561822,Land
+Terre Haute Development,30.08214,-90.589328,Land
+Globalplex Parcel E,30.062077,-90.570804,Land
+Across the Airline from ESJ High School,30.074625,-90.531408,Land
+3735 W Airline Hwy Reserve,30.075893,-90.560193,Land
+Port of South Louisiana Globalplex Parcel J,30.05681,-90.568004,Land
+Globalplex Parcel G,30.062215,-90.565479,Land
+Globalplex Parcel H,30.05802,-90.570756,Land
+Gold River Industrial Mega Site | 985 Acres Deep Draft Hydrogen Served Land,30.032354,-90.525326,Land
+"27 Acres, Hwy-51, C-3 Zoning",30.071359,-90.479686,Land
+High Traffic Retail Spaces @ Airline & Belle Terre Blvd,30.074333,-90.501226,Land
+"St. John Intermodal (1,250 acre Mississippi River Deep Draft Intermodal Site)",30.032527,-90.655131,Land
+St. Landry Parish ED North,30.59049,-92.030382,Land
+Port Barre Industrial Park - Central Site,30.544259,-91.951384,Land
+MRF Sunset Site,30.421757,-92.059399,Land
+Blue Andrus Property,30.4305,-92.060779,Land
+Port Barre Industrial Park - East Site,30.54535,-91.943909,Land
+Daly Farms Site,30.42366,-92.099529,Land
+Opelousas Downtown Development District Site,30.52848,-92.067803,Land
+AKDN_RR Site,30.55315,-92.087143,Land
+Astros - 238 Napoleon Avenue,30.415001,-92.082936,Land
+Commercial Park East Phase 2,30.297227,-91.89223,Land
+Schaefer Industrial Park,30.076263,-91.92696,Land
+Hwy 182 Industrial Park,30.106238,-91.93555,Land
+Knott/Zimmerman Property,30.318134,-91.835933,Land
+Champagne Property,30.301628,-91.887355,Land
+Breaux Bridge I-10 Site,30.291586,-91.923334,Land
+TBD North Barn Road,30.324669,-91.810196,Land
+North Schaefer Site,30.078588,-91.925388,Land
+South Schaefer Site,30.07403,-91.927664,Land
+Mouton Site,30.098932,-91.936585,Land
+Williams Memorial Airport Business Park,29.706051,-91.336355,Land
+Port of West St. Mary,29.778524,-91.743052,Land
+Hwy 317 South,29.725018,-91.44164,Land
+Coastal Land Company Site - Port of West St. Mary,29.772981,-91.751812,Land
+US 90 COMMERCIAL ACREAGE FRANKLIN LA,29.800026,-91.53191,Land
+NORTHWEST BLVD COMMERCIAL ACREAGE FRANKLIN LA,29.801652,-91.530071,Land
+St. Joe Brick Site-Powered by CLECO,30.349,-89.748626,Land
+The Lakes at Madison Park,30.457102,-90.185954,Land
+Nor du Lac West,30.455861,-90.152556,Land
+Fremaux Park - Up to 43 Acres,30.268302,-89.764871,Land
+Johnny F. Smith Memorial Business Park - Phase II,30.321707,-89.773986,Land
+"Old Spanish Trail/Pinehurst 17 acres ""Reduced""",30.244794,-89.755523,Land
+Chemical Road Industrial Site Parcel B,30.56298,-89.884168,Land
+Chemical Road Vacant Land,30.572007,-89.881026,Land
+Collins Blvd Commercial Site,30.493734,-90.097037,Land
+Bilten Park (Salmen Estate 6000+ Acres),30.349365,-89.864179,Land
+144.56 Acres For Sale - Journey Rd,30.361768,-89.834465,Land
+400+/- Acres,30.346509,-89.832532,Land
+40 Acres - Slidell,30.349227,-89.903325,Land
+I-12 & Hwy 434,30.34972,-89.923994,Land
+TJ Smith Industrial Site,30.338367,-89.807017,Land
+Gulf South Commerce Park,30.399085,-90.007609,Land
+"HWY 25, COVINGTON LA",30.523692,-90.123195,Land
+3 Acre Commercial,30.2898,-89.732681,Land
+Fremaux Park - Up to 44 Acres,30.258725,-89.766829,Land
+Port of Slidell,30.270762,-89.798231,Land
+Lacombe Business Park,30.349477,-89.92934,Land
+Hwy 59 & I-12 Development Site,30.413647,-90.044228,Land
+Versailles Business Center,30.435277,-90.088793,Land
+LA-3241 Development Opportunity,30.600891,-89.900564,Land
+Waldheim Industrial Site,30.563265,-90.000449,Land
+Port Manchac Industrial Site,30.315404,-90.404997,Land
+Airport Plaza on Pride Drive - LED Certified Site  20.03 Acres,30.523515,-90.430396,Land
+1010 E Thomas Lot,30.506517,-90.449696,Land
+12.02 acres on CM Fagan Dr,30.480779,-90.465283,Land
+Hwy 22 5.84 Acres,30.43983,-90.405304,Land
+Hwy 22 22.09 Acres,30.440011,-90.40705,Land
+80 acres Airport Road / I-12,30.481292,-90.396584,Land
+Farris Property -- 35.39 Acres,30.498846,-90.489041,Land
++/- 8 Acres Hwy 190 and Booker Rd,30.511325,-90.409547,Land
+Conrad Anderson - LED Certified Site - 40 Acres,30.539364,-90.421199,Land
++/- 7.6 Acres Club Deluxe Rd & I-12,30.477726,-90.462097,Land
+Tower Drive,30.51137,-90.440456,Land
+27.75 Acres on LA 40--West of I-55 & Amite City,30.641502,-90.53732,Land
+9.08 Acres located on East Hwy 190. 400 Foot Railroad frontage. 300 Foot frontage on U.S. 190,30.510899,-90.432285,Land
+Airport Judge Leon Ford Dr,30.518694,-90.421594,Land
+Airport Site 6,30.513541,-90.41299,Land
+Airport East Property Site 11,30.521384,-90.407677,Land
+Independence Industrial Park,30.647434,-90.501833,Land
+1.2+/- Acres I-12 & S Airport Rd - Lot 14-B,30.480293,-90.413736,Land
+800-Foot Railroad Spur on 17.59 Acres with 34K SF Warehouse,30.713237,-90.507449,Land
+2.6 +/- Acres S. Airport Rd.,30.482634,-90.41609,Land
+892 FEET FRONTING U.S. 51 in Town of Tickfaw  7.14 ACRES,30.566726,-90.481742,Land
+"1,312 FEET ADJACENT TO RAILROAD in Tickfaw.  8.8 Acres",30.565927,-90.480393,Land
+Fronts Hwy 51 in Tickfaw.  6.55 Acres,30.563486,-90.480776,Land
+14 Acre Site - Pumpkin Center,30.486874,-90.543706,Land
+I-12 Industrial Site---258 Acre LED Certified Site--Development Ready,30.50114,-90.254228,Land
+Cross Point North Commercial Park  (13.17 Acres),30.484892,-90.544692,Land
+3.79 AC. with 234.57 feet frontage on LA 16. Less than  Mile West of Exit # 46 on I-55. Commercial/Retail or Industrial.,30.727579,-90.540496,Land
+INDUSTRIAL DEVELOPMENT SITE FOR SALE,30.475185,-90.333035,Land
+64 +/- Acres  Mile South of I-12 Exit 40 on Veteran's Ave--Prime Retail/Medical/Commercial Development Opportunity,30.470097,-90.453443,Land
+Jamestown Business Park,30.507474,-90.404481,Land
+Cross Point South Commercial Park (18.8 Acres),30.482122,-90.544633,Land
+I-55 Frontage--29-Acres on  I-55 Exit #36. (I-55 Ramp Frontage)  S.E Quadrant I-55 & LA-442,30.574989,-90.501686,Land
+"23.25 Acres within Hammond city limits, convenient to interstate, rail, air and water, 706 ft. frontage Hwy 190, 863 ft. frontage on Railway",30.510742,-90.434551,Land
+20.2 Ac. with Interstate Visibility,30.524422,-90.502331,Land
+11.36 Ac Interstate Visibility with Additional adjacent 20.2 Acres,30.524592,-90.502726,Land
+"5.05 Acres Bauerle Road, Hammond, LA",30.485385,-90.465058,Land
+"Veterans Ave, Hammond, LA",30.461195,-90.45845,Land
+BELLE DR,30.462588,-90.459689,Land
+".5 ac Corner Lot in Downtown Hammond, LA",30.50132,-90.458445,Land
+3.47 Acres | Ponchatoula Pavilion,30.439758,-90.463891,Land
+I-12 Event Center Parcel A,30.480818,-90.445593,Land
+South Tract Industrial Complex,30.504541,-90.418904,Land
+2100 N. Morrison Blvd,30.520157,-90.48216,Land
+University Vacant Land,30.520104,-90.48807,Land
+"8.91 ACRES HAMMOND, LA",30.507725,-90.434784,Land
+I-55 Development Opportunity,30.521283,-90.50616,Land
+23.25 AC 1915 E U.S. 190 Hwy Hammond,30.510734,-90.43449,Land
+Kentwood Sand & Gravel Land,30.942548,-90.499972,Land
+42763 +/- La Hwy 445 (2.723AC),30.474775,-90.329787,Land
+36.443 Acres | River Rd. Hammond,30.517577,-90.384434,Land
+7.694 Acres | SW I-55 Service Rd.,30.434355,-90.458848,Land
+Interstate Commerce Park - 46 Acres - NW Corner of I-55 & LA-442 - Exit #36,30.580534,-90.507861,Land
+I-55 & Hwy 1048 Development Opportunity,30.77818,-90.530433,Land
+22+ Acres Pumpkin Center Intersection!,30.478002,-90.536892,Land
+"5.4 AC Interstate 12 & LA-445, Ponchatoula, LA 70454",30.478315,-90.331549,Land
+78 AC.  Tract that includes a 20 AC. LED Certified Site. Light & Heavy Industrial Zoned.,30.522803,-90.429463,Land
+Tensas Business Park,31.961922,-91.271115,Land
+Rebecca North Development Park,29.690215,-90.821615,Land
+Port of Terrebonne - 44 acres,29.564154,-90.697644,Land
+Polmer Bros - Main Project Rd - 727 Acres,29.751387,-90.839693,Land
+Polmer Bros - LA Hwy 20 292 Acres,29.752045,-90.808402,Land
+Polmer Bros - Broadway/Horseshoe 30 Acres,29.747734,-90.817456,Land
+Rebecca South Development Park,29.678902,-90.825154,Land
+75-acre Development Site at Houma-Terrebonne Airport,29.57097,-90.674084,Land
+5.5 Acre Dividable Hard Lit Corner on MLK in Houma,29.621034,-90.760623,Land
+"25 Acre Dividable, Hard Lit Corner on MLK in Houma",29.618661,-90.760554,Land
+3.9 Acre Retail Site on MLK in Houma,29.617201,-90.756413,Land
+Three 10+ acre lots at the corner of Hwy 182 and Coteau Rd in Houma,29.6346,-90.703907,Land
+180 acres at Port of Terrebonne,29.562609,-90.694191,Land
+Port of Terrebonne Tract 1,29.571034,-90.697905,Land
+Port of Terrebonne Tract 2 .4 acres,29.571958,-90.696421,Land
+Port of Terrebonne - Tract 3 7.5 acres,29.57027,-90.699383,Land
+Port of Terrebonne Tract 4 - 8 acres,29.565136,-90.699486,Land
+VACANT LAND 23.58-acre site Terrebonne Parish,29.645832,-90.738206,Land
+Bernice Industrial Park,32.839559,-92.653331,Land
+Union Parish Southeast,32.73502,-92.139921,Land
+Deere Park,30.034138,-92.120239,Land
+Port of Vermilion,29.894139,-92.118536,Land
+Abbeville South Site,29.968655,-92.10854,Land
+Neame Industrial Site,30.977429,-93.282893,Land
+Franklinton Industrial Park,30.841899,-90.123961,Land
+City Limits Road Development Site,30.805188,-89.842209,Land
+NWPID - Site #2 - 23+ acres,32.955937,-93.46202,Land
+NWPID - Site #3 - 16+ acres,32.953094,-93.454541,Land
+NWPID - Site #5 - 15+acres,32.942684,-93.455475,Land
+NWPID -  Site #1 - 60acres - Certified Site,32.961097,-93.451065,Land
+NWPID - Site #6 - 12+ acres,32.940531,-93.455065,Land
+NWPID Site # 7 - 12+ Acres,32.95641,-93.457369,Land
+Industrial Drive Minden Webster Site,32.589889,-93.276483,Land
+Kitchco Ryans Way,32.587928,-93.256325,Land
+Camp Minden,32.558724,-93.393916,Land
+South Webster Parish Industrial District,32.559955,-93.294473,Land
+Sun Plus Development,30.426958,-91.230635,Land
+"320 Acre Site (Epps, La)",32.561664,-91.591734,Land
+Oliveaux,30.761238,-91.304165,Land
+Garan Building,30.40697,-92.203094,Buildings
+Industrial Drive Rayne,30.234847,-92.305324,Buildings
+Crowley-Rayne Hwy,30.230735,-92.31301,Buildings
+The Boulevard,30.2503,-92.271374,Buildings
+600 N G Ave,30.216326,-92.372978,Buildings
+"Warehouse-Office on 19.04 Acres near Donaldsonville, La",30.101724,-91.020397,Buildings
+New Grocery Anchored Retail in Gonzales,30.243566,-90.919816,Buildings
+8500 Sq Ft Warehouse/Office in Donaldsonville,30.099858,-91.015063,Buildings
+Columns on the River - Donaldsonville,30.105635,-90.986337,Buildings
+"Former Louisiana Binding Services, Inc. Building",30.873394,-93.281085,Buildings
+Westside Office Park,30.848036,-93.303766,Buildings
+Former Ampacet Warehouse Building,30.869771,-93.282191,Buildings
+VIVIAN MARINE,32.861438,-93.985915,Buildings
+HEXION OILFIELD SERVICES - PORT OF CADDO-BOSSIER,32.367244,-93.640866,Buildings
+Shreveport Business Park - Building C,32.427032,-93.919492,Buildings
+Shreveport Business Park - Building A,32.427032,-93.919492,Buildings
+LTRi - Louisiana Tech Research Institute,32.539517,-93.64382,Buildings
+6339 Opelousas Street,30.239139,-93.114477,Buildings
+Industrial Storage Services Building,30.210781,-93.341463,Buildings
+309 N. Huntington Street,30.240038,-93.37771,Buildings
+Industrial Property on Joe Ledoux Road,30.093684,-93.281567,Buildings
+LAKE CHARLES INDUSTRIAL FACILITY,30.218664,-93.215688,Buildings
+Southern Storage Warehouse,30.234188,-93.175691,Buildings
+Cameron Fisheries Building,29.797926,-93.330544,Buildings
+Mainstay SuitesSportsmans Lodge for Sale!,29.994231,-93.356624,Buildings
+Acadian Centre,30.422253,-91.150314,Buildings
+CitiPlace Centre I,30.422233,-91.128049,Buildings
+CitiPlace Centre II,30.423772,-91.124768,Buildings
+CitiPlace Centre III,30.424006,-91.127026,Buildings
+Corporate Atrium,30.423903,-91.133308,Buildings
+Sherwood Oaks Office Park,30.413842,-91.052571,Buildings
+9489 Interline,30.423547,-91.079536,Buildings
+"6,000 sf Warehouse For Lease Dock High Baton Rouge",30.473096,-91.051146,Buildings
+12555 Ronaldson Rd,30.560964,-91.180655,Buildings
+"LSU Innovation Park , Bldg 3000",30.360244,-91.13984,Buildings
+"LSU Innovation, Bldg 3100",30.358953,-91.141274,Buildings
+"LSU Innovation, Bldg 3005",30.35991,-91.139345,Buildings
+Neighborhood Market For Sale,30.462435,-91.042889,Buildings
+Air Cargo Building 2,30.529743,-91.156482,Buildings
+Baton Rouge Flex Space with Interstate Visibility,30.431219,-91.047843,Buildings
+Lake Providence Building #1,32.866399,-91.225682,Buildings
+Terral Norris Building,32.795404,-91.177783,Buildings
+Lake Providence Port Commission-H&W Warehouses,32.866057,-91.225714,Buildings
+"25,000 sf building Epps, La",32.597933,-91.484253,Buildings
+Chauncey Pitre Barn,30.694551,-92.335917,Buildings
+"1524 HOSPITAL AVE FRANKLIN, LA",29.804057,-91.498287,Buildings
+"44,720 sq Franklin Parish Warehouse (3 Available)",32.201882,-91.728999,Buildings
+"82,000 SF building (Gilbert, La) (62,000 climate controlled)",32.015918,-91.65088,Buildings
+Business Opportunity,30.029256,-91.853413,Buildings
+3508 Curtis Lane,29.967895,-91.846715,Buildings
+615 North Landry Drive,30.02057,-91.82029,Buildings
+Jeanerette Industrial Building,29.909004,-91.663218,Buildings
+"400 Edwards Avenue, New Orleans, LA 70123",29.947102,-90.190711,Buildings
+Ridgewood Main Campus Building,29.976669,-90.172775,Buildings
+RIdgewood Gym Building,29.976193,-90.172895,Buildings
+Prime Veterans Blvd Investment Property for Sale,30.007079,-90.236689,Buildings
+East Jefferson Office Space,29.955905,-90.187555,Buildings
+Prime Redevelopment and Investment Opportunity on Airline Drive,29.980016,-90.240258,Buildings
+10-unit Multi-family Property in Bridge City,29.931575,-90.163013,Buildings
+3939 Houma Blvd Building 4 Suite 216,30.011819,-90.180026,Buildings
+The Best Full Service Office Rate in Metairie CBD,30.007966,-90.154013,Buildings
+405 N Causeway and 122 Sierra in Metairie for Sale or Lease,29.977685,-90.155796,Buildings
+Medical Arts Plaza,30.237863,-92.661828,Buildings
+625 Hector Connoly Road,30.321904,-92.018131,Buildings
+1016 SW Evangeline Thruway,30.220714,-92.009761,Buildings
+1229 NW Evangeline Thruway,30.239238,-92.015409,Buildings
+Aviation/Aerospace Manufacturing & Final Assembly facility,30.205383,-91.997773,Buildings
+State of the Art Office/Flex Building and Expansion Acreage,30.126912,-91.939555,Buildings
+State of the Art Office/Flex Building with 13.49 acres for Expansion,30.126085,-91.938772,Buildings
+Commercial Building/Office Space for Sale,30.13769,-91.955004,Buildings
+Regional Distribution Center,30.273444,-92.044597,Buildings
+Dock-high warehouse for Sale,30.232891,-92.043418,Buildings
+Industrial Facility 100 South Bernard Road,30.160174,-91.972585,Buildings
+2nd floor of former Sears Box,30.172679,-92.075197,Buildings
+Industrial: Warehouse/Distribution,30.257237,-92.026143,Buildings
+Valley Ranch Industrial Park - Two Buildings,30.131593,-91.938818,Buildings
+"15,300 SF Office Building",29.571024,-90.372218,Buildings
+Industrial Cold Storage,29.378637,-90.264312,Buildings
+"Valentine Paper Mill (43 Acres, 18 Buildings)",29.595266,-90.464245,Buildings
+South Lafourche Nursing & Rehab Center,29.550159,-90.341473,Buildings
+Galliano Housing Units,29.408493,-90.29479,Buildings
+Industrial Complex - Warehouse and Office Space,29.476873,-90.322308,Buildings
+Ruston Steam Plant,32.528991,-92.612574,Buildings
+Ruston Industrial Building,32.510063,-92.629219,Buildings
+Range Ave Retail For Lease  ste D,30.478939,-90.956388,Buildings
+609 Centerville St. Single Tenant NNN Industrial Investment,30.487419,-90.946059,Buildings
+28145 Walker South Rd,30.475097,-90.864671,Buildings
+Retail Suite For Lease,30.450817,-90.959629,Buildings
+Multi-Family Trailer Park For Sale,30.491517,-90.92612,Buildings
+Denham Springs Retail for Lease 1F,30.475797,-90.955008,Buildings
+Denham Springs Retail for Lease 2F,30.475797,-90.955008,Buildings
+Bastrop Warehouse and Office Space,32.753042,-91.886307,Buildings
+"13,888 sqft Building & 4 acres Land for Sale in Bastrop, La.",32.731467,-91.923059,Buildings
+"Propel Park | Premier Class A Industrial Space | Up to 800,000 SF",30.017249,-89.922054,Buildings
+MIXED-USE PROPERTY ON MAGAZINESTREET,29.921629,-90.120525,Buildings
+OFFICE/WAREHOUSE IN MIDCITY NEW ORLEANS,29.977092,-90.109391,Buildings
+New Construction Retail/Office in New Orleans,29.968506,-90.104462,Buildings
+Modern Historic Office Building Bywater New Orleans,29.962076,-90.04243,Buildings
+MID-CITY OFFICE/RETAIL BLDG. FOR SALE,29.966964,-90.086684,Buildings
+TWO CANAL STREET BUILDINGS FOR SALE,29.970296,-90.095154,Buildings
+Mid-city Commercial/Residential for Sale,29.97018,-90.095451,Buildings
+ULM Facilities Corp (Prof Pharm),32.525688,-92.072639,Buildings
+ULM Pharmacy Building,32.532604,-92.097896,Buildings
+Plug and Play Call Center,32.523711,-92.103198,Buildings
+"Former Data, Storage & Distribution Center",32.523711,-92.103198,Buildings
+"43,348 SF Ready Call Center",32.523711,-92.103198,Buildings
+"250,000sq Warehouse Monroe, LA (Jackson St.)",32.480645,-92.108345,Buildings
+Clarke Williams Innovation Campus,32.590541,-92.067104,Buildings
+"17,000 SF Warehouse and Office Space - Sterlington, LA",32.689108,-92.066927,Buildings
+"Versatile 37,000 SF Facility in Prime North Monroe Location  Ideal for Commercial or Industrial Use",32.536904,-92.103296,Buildings
+"12,000 sq Building Monroe, La",32.430534,-92.090673,Buildings
+"West Monroe, La Warehouse (20,000 sq) available",32.503009,-92.173228,Buildings
+"46,000 SF Warehouse (Monroe, La)",32.512166,-92.050589,Buildings
+"Industrial Complex in Belle Chasse, LA",29.834774,-90.000934,Buildings
+Building 1500 England Airpark,31.327387,-92.529045,Buildings
+Building 806 England Airpark,31.327269,-92.536728,Buildings
+Building 1213 England Airpark,31.32864,-92.53428,Buildings
+Building 2107,31.321087,-92.534736,Buildings
+Building 2533,31.322904,-92.531761,Buildings
+Building 3505,31.323638,-92.525952,Buildings
+Building 2102,31.321042,-92.536992,Buildings
+Building #2327 England Airpark,31.330225,-92.529522,Buildings
+Building #1718 England Airpark,31.331852,-92.533995,Buildings
+England Airpark Hospital Building,31.321187,-92.527464,Buildings
+Alexandria Bonded Warehouse Service Inc. - Warehouse,31.258784,-92.437436,Buildings
+"Class A Office Space in Alexandria, LA",31.310409,-92.44295,Buildings
+2510 & 2426 Broadway,31.289454,-92.440181,Buildings
+1501 Wimbledon Blvd,31.276723,-92.476211,Buildings
+1421 Wimbledon Blvd,31.276832,-92.474516,Buildings
+"Delhi, La Light Industrial Warehouse (64,572 sf)",32.459114,-91.500011,Buildings
+"Rayville North Warehouse (56,100 SF)",32.489066,-91.757325,Buildings
+Chalmette Updated Office/ Warehouse for Lease,29.952199,-89.980414,Buildings
+New Modern Office Building for Sale,29.952267,-89.980564,Buildings
+RETAIL CENTER ANDQSR SITE FOR LEASE,29.956456,-89.988629,Buildings
+James Business Park Five James Park,29.98006,-90.285506,Buildings
+James Business Park Five James Park,29.980136,-90.285468,Buildings
+James Business Park St. Charles I,29.984405,-90.285555,Buildings
+James Business Park St. Charles II,29.981886,-90.281009,Buildings
+Boutte Warehouse,29.901263,-90.390263,Buildings
+Plantation Business Campus (Suite 102),29.945121,-90.35996,Buildings
+Destrehan Flex Space,29.94537,-90.359298,Buildings
+Village Shopping Center,29.903543,-90.381999,Buildings
+Winnwood Shopping Center,29.919225,-90.374593,Buildings
+One American Place,29.94088,-90.383218,Buildings
+James Business Park Westside I,29.980115,-90.285508,Buildings
+James Business Park Service Center 23,29.982251,-90.28271,Buildings
+James Business Park Westside II,29.980781,-90.285258,Buildings
+James Business Park Westside II,29.981227,-90.285519,Buildings
+"150 Teal Street, Suite 180",29.982828,-90.282969,Buildings
+James Business Park Sealy Business Center I,29.986756,-90.283886,Buildings
+Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings
+Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings
+River Road Norco,29.996771,-90.41276,Buildings
+Paul Maillard Doctors Office,29.929495,-90.367654,Buildings
+Ormond Square,29.969572,-90.376759,Buildings
+River Road Medical Clinic,29.940646,-90.352564,Buildings
+River Road Hahnville,29.977202,-90.407378,Buildings
+James Business Park Westside II,29.98131,-90.285483,Buildings
+James Business Park Service Center 21,29.98226,-90.284154,Buildings
+Village Square Shopping Center,29.928091,-90.368384,Buildings
+Red Church Center,29.951177,-90.378855,Buildings
+Ormond Plantation Plaza,29.968984,-90.374185,Buildings
+River Road Hahnville,29.964584,-90.405482,Buildings
+James Business Park Sealy Business Center III,29.987577,-90.282631,Buildings
+Luling Bridge Warehouse,29.941263,-90.385932,Buildings
+James Business Park,29.982866,-90.284555,Buildings
+James Business Park,29.978904,-90.283884,Buildings
+James Business Park,29.978899,-90.283927,Buildings
+River Road St. Rose,29.97435,-90.280794,Buildings
+James Business Park Business Center II,29.987642,-90.284201,Buildings
+James Business Park,29.982617,-90.281077,Buildings
+James Business Park Two James Park,29.981355,-90.283636,Buildings
+James Business Park Two James Park,29.981335,-90.283636,Buildings
+James Business Park Two James Park,29.981351,-90.283626,Buildings
+James Business Park Westside II,29.981278,-90.285479,Buildings
+Longview Drive,29.951125,-90.377984,Buildings
+Airline Commerce Center,29.978114,-90.28112,Buildings
+James Business Park,29.984077,-90.284596,Buildings
+Warehouse,29.987458,-90.418403,Buildings
+"150 Teal Street, Suite 100",29.982828,-90.282969,Buildings
+Luling Business Park and Enterprise Center,29.935313,-90.388391,Buildings
+11130 River Road,29.95377,-90.310395,Buildings
+150 James Dr. East Suite 110,29.981958,-90.281364,Buildings
+Airline Commerce Center-53K SF,29.977507,-90.282311,Buildings
+James Business Park Flex Space,29.982319,-90.283107,Buildings
+James Business Park Flex Space,29.982318,-90.283724,Buildings
+Hahnville Office Building,29.962049,-90.405582,Buildings
+Destrehan River Road Storefront,29.940679,-90.352549,Buildings
+12361 Hwy 90 (former Mimosa Veterinary Hospital),29.91127,-90.352093,Buildings
+162 Riverbend Business Park-27K SF,29.969583,-90.295846,Buildings
+One James Business Park,29.980279,-90.283691,Buildings
+115 Canvasback-James Business Park Flex Space,29.986707,-90.283313,Buildings
+One American Place Office Luling,29.940703,-90.383664,Buildings
+Luling Warehouse,29.940041,-90.383974,Buildings
+Boutte Office/Retail Strip Center,29.903752,-90.378704,Buildings
+Norco Office,30.005987,-90.410614,Buildings
+111 Riverbend,29.968183,-90.297408,Buildings
+Former Pepsi Bottling Plant,30.065522,-90.565861,Buildings
+"3735 W. Airline Highway | Reserve, Louisiana 70084",30.076146,-90.56034,Buildings
+Belle Terre Plaza,30.075624,-90.500163,Buildings
+669 Belle Terre Blvd Office Space,30.092784,-90.505281,Buildings
+1905 W Airline Hwy. Mixed Use Building,30.073412,-90.503778,Buildings
+LaPlace Value-Add Shopping Center,30.083835,-90.503196,Buildings
+Two Building Industrial Property,30.0787,-90.523752,Buildings
+456 West 5th Street LaPlace,30.069656,-90.496253,Buildings
+Martco OSB LeMoyen Mill,30.784655,-92.03527,Buildings
+118 N Main St,30.534431,-92.081099,Buildings
+ACG Building,30.534672,-92.091162,Buildings
+Dixie Storage - 4-A,30.540914,-92.02261,Buildings
+Dixie Storage - 4-B,30.540914,-92.02261,Buildings
+1703 Rees St,30.287084,-91.909432,Buildings
+1012 Guidry Rd,30.307225,-91.838334,Buildings
+Martin Mills/Champion Resources,30.155228,-91.818686,Buildings
+St. Martinville Retail Box,30.14557,-91.821811,Buildings
+1320 Petroleum Pkwy,30.075311,-91.934682,Buildings
+1471 Old Spanish Trail Hwy,30.093015,-91.907859,Buildings
+1062 Aillet Rd Broussard,30.077324,-91.945967,Buildings
+1063 Petroleum Parkway,30.081091,-91.925755,Buildings
+1186 Petroleum Pkwy,30.082745,-91.932274,Buildings
+St. Mary Plaza,29.681933,-91.271685,Buildings
+Port of West St. Mary's Baldwin Campus - Building 1,29.826364,-91.539898,Buildings
+Port of West St. Mary's Baldwin Campus - Building 2,29.826364,-91.539898,Buildings
+Port of West St. Marys Baldwin Campus - Building 3,29.826364,-91.539898,Buildings
+"9,600 sq ft Industrial site",30.503144,-90.195496,Buildings
+"HWY 25 COVINGTON, LA",null,null,Buildings
+"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.285018,-89.738139,Buildings
+400 Garrett Road,30.251212,-89.763429,Buildings
+"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.284995,-89.738165,Buildings
+"2nd Floor, Suite 200",30.432984,-90.087077,Buildings
+"3rd Floor, Suite 300",30.432984,-90.087077,Buildings
+Retail Suite For Lease 1600 W Causeway Suites 4 & 5,30.391901,-90.101886,Buildings
+Krentel Road Corporate Office and Warehouse,30.35553,-89.92004,Buildings
+Prime Hwy 1085 Industrial,30.466395,-90.193825,Buildings
+Colony Square,30.481521,-90.465374,Buildings
+I-12 Event Center,30.480674,-90.443558,Buildings
+I-12 Event Center Parcel B,30.480386,-90.443098,Buildings
+I-12 Event Center Parcel C,30.480548,-90.441092,Buildings
+"210 Hewitt Rd. Hammond, LA",30.490368,-90.459121,Buildings
+1517 W Thomas St.,30.500432,-90.477506,Buildings
+Spacious Showroom & Warehouse,30.510214,-90.431257,Buildings
+Alack Building For Sale or Lease,30.507536,-90.436009,Buildings
+"Warehouse with cold storage, loading docks, office space: Old Covington Hwy, Hammond, LA",30.493292,-90.424087,Buildings
+Downtown Hammond Commercial Building 408 W  Thomas St.,30.503336,-90.465237,Buildings
+"10,000 SF Building Tensas Parish",32.069817,-91.254476,Buildings
+"5,487 SF Office Building off Hwy 311 in Houma",29.595592,-90.754969,Buildings
+Bright Speed Admin building,32.899344,-92.244138,Buildings
+Tiffany Plaza,29.975346,-92.103909,Buildings
+Spec Building #3 (Trane) off Hwy 371,32.954839,-93.458389,Buildings
+Former GP Mill - T&P Property,32.968362,-93.459447,Buildings
+Lot #17 - North Webster Parish Ind. Park Subd.,32.956113,-93.46098,Buildings
+Patrick Property,32.909988,-91.363606,Buildings
+Epps Industrial Park,32.597887,-91.482674,Buildings
+"150,000 SF building Oak Grove (40,000 concrete slab on back)",32.86441,-91.391607,Buildings
+"40,000 sq building Oak Grove, La",32.832762,-91.395753,Buildings
+Prosperity St Building,30.771594,-91.382424,Buildings
