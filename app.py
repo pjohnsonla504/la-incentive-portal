@@ -35,7 +35,7 @@ st.markdown("""
         border: 1px solid #1e293b; 
     }
     
-    /* Custom Indicator Cards for the 2x2 Profile */
+    /* 2x2 Indicator Cards */
     .indicator-box {
         border-radius: 4px;
         padding: 12px;
@@ -95,30 +95,20 @@ def load_data():
         a = pd.read_csv("la_anchors.csv", encoding='cp1252')
     a.columns = a.columns.str.strip().str.lower()
     
-    # Tract Key Alignment
     f_match = [c for c in df.columns if 'FIP' in c or 'digit' in c]
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
     df['map_status'] = np.where(df['5-year ACS Eligiblity'].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']), 1, 0)
 
-    # GeoJSON with proper sequencing to prevent KeyError
     with open("tl_2025_22_tract.json") as f: gj = json.load(f)
     centers = {}
     for feat in gj['features']:
         p = feat['properties']
-        # Extract and set the match key first
-        raw_id = str(p.get('GEOID', ''))
-        gid = raw_id.split('.')[0][-11:].zfill(11)
+        gid = str(p.get('GEOID', '')).split('.')[0][-11:].zfill(11)
         feat['properties']['GEOID_MATCH'] = gid
-        
-        # Build center coordinates if available
-        lat = p.get('INTPTLAT')
-        lon = p.get('INTPTLON')
+        lat, lon = p.get('INTPTLAT'), p.get('INTPTLON')
         if lat and lon:
-            centers[gid] = {
-                "lat": float(str(lat).replace('+', '')), 
-                "lon": float(str(lon).replace('+', ''))
-            }
+            centers[gid] = {"lat": float(str(lat).replace('+', '')), "lon": float(str(lon).replace('+', ''))}
 
     m_map = {
         "home": "Median Home Value", "dis": "Disability Population (%)",
@@ -130,7 +120,7 @@ def load_data():
 
 master_df, la_geojson, anchor_df, M_MAP, tract_centers = load_data()
 
-# --- 3. MAIN INTERFACE ---
+# --- 3. INTERFACE ---
 st.title(f"Strategic Portal: {st.session_state.get('a_val', 'Louisiana')}")
 
 col_map, col_side = st.columns([0.5, 0.5])
@@ -143,29 +133,28 @@ with col_side:
         row = match.iloc[0]
         st.markdown(f"<h3 style='color:#00ff88; margin-top:0;'>TRACT {sid} | {row.get('Parish')}</h3>", unsafe_allow_html=True)
         
-        # Helper for dynamic indicator styling
         def get_ind_html(label, value_str):
-            is_yes = 'yes' in value_str.lower() or 'urban' in value_str.lower() or 'rural' in value_str.lower()
-            # Logic for urban/rural specific splits
-            if "Urban" in label: is_yes = 'urban' in value_str.lower()
-            if "Rural" in label: is_yes = 'rural' in value_str.lower()
+            is_yes = False
+            if "Urban" in label: is_yes = 'urban' in str(value_str).lower()
+            elif "Rural" in label: is_yes = 'rural' in str(value_str).lower()
+            else: is_yes = 'yes' in str(value_str).lower()
             
-            css_class = "status-yes" if is_yes else "status-no"
-            val_class = "val-yes" if is_yes else "val-no"
-            text = "YES" if is_yes else "NO"
-            return f"<div class='indicator-box {css_class}'><div class='indicator-label'>{label}</div><div class='indicator-value {val_class}'>{text}</div></div>"
+            css = "status-yes" if is_yes else "status-no"
+            val_css = "val-yes" if is_yes else "val-no"
+            txt = "YES" if is_yes else "NO"
+            return f"<div class='indicator-box {css}'><div class='indicator-label'>{label}</div><div class='indicator-value {val_css}'>{txt}</div></div>"
 
-        # --- 2x2 INDICATOR SET ---
-        ind_l, ind_r = st.columns(2)
-        metro_val = str(row.get('Rural or Urban', ''))
-        with ind_l:
-            st.markdown(get_ind_html("Metro (Urban)", metro_val), unsafe_allow_html=True)
-            st.markdown(get_ind_html("Rural", metro_val), unsafe_allow_html=True)
-        with ind_r:
-            st.markdown(get_ind_html("NMTC Eligible", str(row.get('NMTC Eligible', ''))), unsafe_allow_html=True)
-            st.markdown(get_ind_html("NMTC Deeply Distressed", str(row.get('NMTC Distressed', ''))), unsafe_allow_html=True)
+        # 2x2 Indicators
+        i_l, i_r = st.columns(2)
+        m_val = row.get('Rural or Urban', '')
+        with i_l:
+            st.markdown(get_ind_html("Metro (Urban)", m_val), unsafe_allow_html=True)
+            st.markdown(get_ind_html("Rural", m_val), unsafe_allow_html=True)
+        with i_r:
+            st.markdown(get_ind_html("NMTC Eligible", row.get('NMTC Eligible', '')), unsafe_allow_html=True)
+            st.markdown(get_ind_html("NMTC Deeply Distressed", row.get('NMTC Distressed', '')), unsafe_allow_html=True)
 
-        # --- 8 DEMOGRAPHIC CARDS ---
+        # 8 Demographic Cards
         m_cols = st.columns(4)
         m_cols[0].metric("Median Home", safe_num(row.get(M_MAP["home"]), True))
         m_cols[1].metric("Disability", safe_num(row.get(M_MAP["dis"])))
@@ -178,21 +167,20 @@ with col_side:
         m_cols[2].metric("Bachelor's+", safe_num(row.get(M_MAP["bach"])))
         m_cols[3].metric("Broadband", safe_num(row.get(M_MAP["web"])))
 
-        # --- 5 NEAREST ANCHORS TABLE ---
-        st.markdown("<p style='font-size:0.8rem; font-weight:bold; margin-top:15px; color:#ffffff;'>TOP 5 PROXIMITY ANCHORS</p>", unsafe_allow_html=True)
+        # Anchor Table
+        st.markdown("<p style='font-size:0.8rem; font-weight:bold; margin-top:15px; color:#ffffff;'>NEAREST ANCHOR ASSETS</p>", unsafe_allow_html=True)
         t_pos = tract_centers.get(sid)
         if t_pos:
             a_dist = anchor_df.copy()
             a_dist['d'] = a_dist.apply(lambda x: calculate_distance(t_pos['lat'], t_pos['lon'], x['lat'], x['lon']), axis=1)
             top5 = a_dist.sort_values('d').head(5)
-            
-            table_html = "<table class='anchor-table'><tr><th>DISTANCE</th><th>NAME</th><th>TYPE</th></tr>"
+            table_html = "<table class='anchor-table'><tr><th>DIST</th><th>NAME</th><th>TYPE</th></tr>"
             for _, a in top5.iterrows():
                 table_html += f"<tr><td>{a['d']:.1f} mi</td><td>{a['name'].upper()}</td><td>{str(a.get('type','N/A')).upper()}</td></tr>"
             table_html += "</table>"
             st.markdown(table_html, unsafe_allow_html=True)
     else:
-        st.info("AWAITING SECTOR SELECTION FROM MAP")
+        st.info("SELECT A SECTOR ON THE MAP")
 
 with col_map:
     fig = go.Figure()
@@ -200,6 +188,21 @@ with col_map:
         geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
         featureidkey="properties.GEOID_MATCH",
         colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0, 255, 136, 0.4)"]],
-        showscale=False, marker_line_width=0.3, marker_line_color="#1e293b"
+        showscale=False, marker_line_width=0.3
     ))
-    fig.add_trace(go.
+    fig.add_trace(go.Scattermapbox(
+        lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
+        marker=dict(size=10, color='white', symbol='diamond'),
+        text=anchor_df['name'], hoverinfo='text'
+    ))
+    fig.update_layout(
+        mapbox=dict(style="carto-darkmatter", center={"lat": 31.0, "lon": -92.0}, zoom=6.2),
+        height=750, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+    )
+    select_data = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+    if select_data and select_data.get("selection") and select_data["selection"].get("points"):
+        st.session_state["selected_tract"] = str(select_data["selection"]["points"][0].get("location")).zfill(11)
+
+# --- 4. FORM ---
+st.divider()
+if not match.empty:
