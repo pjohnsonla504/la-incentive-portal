@@ -70,7 +70,6 @@ def load_data():
         a = pd.read_csv("la_anchors.csv", encoding='cp1252')
     a.columns = a.columns.str.strip().str.lower()
     
-    # GEOID Matching
     f_match = [c for c in df.columns if 'FIP' in c or 'digit' in c]
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
@@ -112,9 +111,8 @@ with col_side:
     if not match.empty:
         row = match.iloc[0]
         st.markdown(f"<h3 style='color:#4ade80; margin-bottom:0;'>TRACT: {sid}</h3>", unsafe_allow_html=True)
-        st.markdown(f"<p style='color:#94a3b8;'><b>PARISH:</b> {row.get('Parish')} | <b>REGION:</b> {row.get('Region', 'Louisiana')}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#94a3b8; margin-bottom:15px;'><b>PARISH:</b> {row.get('Parish')} | <b>REGION:</b> {row.get('Region', 'Louisiana')}</p>", unsafe_allow_html=True)
         
-        # 2x2 Indicators Logic
         def draw_ind(label, val):
             val_clean = str(val).lower()
             if "Metro (Urban)" in label: is_yes = 'metropolitan' in val_clean
@@ -124,8 +122,8 @@ with col_side:
             cls, txt = ("status-yes", "YES") if is_yes else ("status-no", "NO")
             return f"<div class='indicator-box {cls}'><div class='indicator-label'>{label}</div><div class='indicator-value'>{txt}</div></div>"
 
+        # 2x2 Indicators
         i1, i2 = st.columns(2)
-        # Targeted Metro Status Column
         mv = row.get('Metro Status (Metropolitan/Rural)', '')
         with i1:
             st.markdown(draw_ind("Metro (Urban)", mv), unsafe_allow_html=True)
@@ -134,16 +132,17 @@ with col_side:
             st.markdown(draw_ind("NMTC Eligible", row.get('NMTC Eligible', '')), unsafe_allow_html=True)
             st.markdown(draw_ind("NMTC Deeply Distressed", row.get('NMTC Distressed', '')), unsafe_allow_html=True)
 
-        # 8 Metrics
+        # 8 Demographic Metrics
         m_map = {"home": "Median Home Value", "dis": "Disability Population (%)", "pop65": "Population 65 years and over", "labor": "Labor Force Participation (%)", "unemp": "Unemployment Rate (%)", "hs": "HS Degree or More (%)", "bach": "Bachelor's Degree or More (%)", "web": "Broadband Internet (%)"}
         for i in range(0, 8, 4):
             cols = st.columns(4)
             keys = list(m_map.keys())[i:i+4]
             for j, k in enumerate(keys):
-                cols[j].metric(m_map[k].split('(')[0], safe_num(row.get(m_map[k]), "Home" in m_map[k]))
+                label = m_map[k].split('(')[0]
+                cols[j].metric(label, safe_num(row.get(m_map[k]), "Home" in m_map[k]))
 
-        # Nearest Anchors Table
-        st.markdown("<p style='font-weight:bold; margin-top:15px; color:#ffffff;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
+        # Nearest Anchors
+        st.markdown("<p style='font-weight:bold; margin-top:20px; color:#ffffff;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
         t_pos = tract_centers.get(sid)
         if t_pos:
             a_dist = anchor_df.copy()
@@ -154,6 +153,43 @@ with col_side:
                 tbl += f"<tr><td>{a['d']:.1f} mi</td><td>{a['name'].upper()}</td><td>{str(a.get('type','N/A')).upper()}</td></tr>"
             st.markdown(tbl + "</table>", unsafe_allow_html=True)
     else:
-        st.info("Select a tract on the map to view data profile.")
+        st.info("Select a tract on the map to view the strategic profile.")
 
 with col_map:
+    show_anchors = st.toggle("Show Anchors", value=False, help="Toggle off to make tract selection easier")
+    
+    fig = go.Figure()
+    # TRACT POLYGONS
+    fig.add_trace(go.Choroplethmapbox(
+        geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
+        featureidkey="properties.GEOID_MATCH",
+        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(74, 222, 128, 0.4)"]],
+        showscale=False, marker_line_width=0.5, marker_line_color="#1e293b"
+    ))
+    
+    # ANCHOR POINTS
+    if show_anchors:
+        fig.add_trace(go.Scattermapbox(
+            lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
+            marker=dict(size=6, color='#ffffff', opacity=0.7),
+            text=anchor_df['name'], hoverinfo='text'
+        ))
+
+    fig.update_layout(
+        mapbox=dict(style="carto-darkmatter", center={"lat": 31.0, "lon": -91.8}, zoom=6.0),
+        height=750, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+    )
+    
+    ev = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+    if ev and ev.get("selection") and ev["selection"].get("points"):
+        sel = ev["selection"]["points"][0]
+        if "location" in sel:
+            st.session_state["selected_tract"] = str(sel["location"]).zfill(11)
+
+# --- 5. FORM ---
+st.divider()
+if not match.empty:
+    st.subheader("STRATEGIC RECOMMENDATION")
+    just = st.text_area("Justification:", height=100)
+    if st.button("EXECUTE NOMINATION", type="primary"):
+        st.success(f"Tract {sid} successfully nominated.")
