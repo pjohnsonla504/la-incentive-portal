@@ -198,4 +198,34 @@ with profile_col:
         r6.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>Bach+</div><div class='metric-value'>{f_val(cols['bach'])}</div></div>", unsafe_allow_html=True)
         try:
             bp = float(str(row.get(cols['base'])).replace(',',''))
-            r65 = float(
+            r65 = float(str(row.get("Population 65 years and over")).replace(',',''))
+            r7.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>Total Pop</div><div class='metric-value'>{bp:,.0f}</div></div>", unsafe_allow_html=True)
+            r8.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>65+ %</div><div class='metric-value'>{(r65/bp)*100:,.1f}%</div></div>", unsafe_allow_html=True)
+        except:
+            r7.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>Pop</div><div class='metric-value'>N/A</div></div>", unsafe_allow_html=True)
+            r8.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>65+</div><div class='metric-value'>N/A</div></div>", unsafe_allow_html=True)
+
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_df = anchor_df.copy()
+            a_df['dist'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
+            t7 = a_df.sort_values('dist').head(4)
+            st.table(t7[['name', 'type', 'dist']].rename(columns={'name': 'Anchor', 'type': 'Type', 'dist': 'Mi'}))
+
+        if st.button("NOMINATE FOR 2026 PORTFOLIO", type="primary", use_container_width=True):
+            st.session_state.recom_count += 1
+            st.rerun()
+    else:
+        st.markdown("<div style='padding: 150px 20px; text-align: center; background: #161b28; border: 1px dashed #2d3748; color:#64748b; border-radius:4px;'>Select an eligible (green) tract on the map to load the demographic profile.</div>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# --- FOOTER PROGRESS ---
+st.markdown(f"""
+    <div class='progress-footer'>
+        <div style='font-weight: 800; font-size: 0.75rem;'>2026 TARGET PORTFOLIO PROGRESS: {st.session_state.recom_count} / 150</div>
+        <div style='flex-grow: 1; height: 3px; background: #1e293b; margin: 0 30px; position: relative;'>
+            <div style='width: {min((st.session_state.recom_count/150)*100, 100)}%; background: #4ade80; height: 100%;'></div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
