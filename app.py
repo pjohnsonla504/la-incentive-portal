@@ -16,26 +16,34 @@ except Exception as e:
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "selected_tract": None})
 
-# Haversine formula for distance calculation
 def calculate_distance(lat1, lon1, lat2, lon2):
     try:
-        r = 3958.8 # Miles
+        r = 3958.8 
         phi1, phi2 = np.radians(lat1), np.radians(lat2)
         dphi, dlambda = np.radians(lat2 - lat1), np.radians(lon2 - lon1)
         a = np.sin(dphi/2)**2 + np.cos(phi1)*np.cos(phi2)*np.sin(dlambda/2)**2
         return r * 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
     except: return 999.9
 
-# --- 2. DATA LOADING ---
+# --- 2. DATA LOADING & FUZZY HEADER MATCHING ---
 @st.cache_data(ttl=60)
 def load_data():
+    # Load Master
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
-    df.columns = df.columns.str.strip()
+    df.columns = df.columns.str.strip() # Clean invisible spaces
     
-    # Standardize GEOID
-    geoid_header = "Geography11-digit FIPCode"
-    df['GEOID_KEY'] = df[geoid_header].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
+    # DYNAMIC GEOID FINDER: Look for specific string, then fuzzy, then fallback to Column 1 (B)
+    geoid_target = "Geography11-digit FIPCode"
+    if geoid_target in df.columns:
+        geoid_col = geoid_target
+    else:
+        # Fuzzy match for 'FIP' or 'digit' in headers
+        fuzzy_match = [c for c in df.columns if 'FIP' in c or 'digit' in c]
+        geoid_col = fuzzy_match[0] if fuzzy_match else df.columns[1]
     
+    df['GEOID_KEY'] = df[geoid_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
+    
+    # Demographic Mapping
     m_map = {
         "pop": "Estimate!!Total!!Population for whom poverty status is determined",
         "pop65": "Population 65 years and over",
@@ -50,7 +58,7 @@ def load_data():
         "dis": "Disability Population (%)"
     }
 
-    # Load Boundaries & Extract Centers for distance math
+    # Boundaries & Centroids from GeoJSON
     with open("tl_2025_22_tract.json") as f: 
         g = json.load(f)
     
@@ -58,7 +66,7 @@ def load_data():
     for feature in g['features']:
         gid = str(feature['properties'].get('GEOID', '')).split('.')[0][-11:].zfill(11)
         feature['properties']['GEOID_MATCH'] = gid
-        # Extract lat/lon from GeoJSON properties (INTPTLAT/INTPTLON are standard in TIGER files)
+        # Most TIGER GeoJSONs use INTPTLAT/INTPTLON
         try:
             centers[gid] = {
                 "lat": float(feature['properties'].get('INTPTLAT', 0)),
@@ -66,7 +74,7 @@ def load_data():
             }
         except: pass
 
-    # Load Anchors
+    # Anchors
     try:
         a = pd.read_csv("la_anchors.csv")
         a.columns = a.columns.str.strip()
@@ -76,13 +84,29 @@ def load_data():
 
 master_df, la_geojson, anchor_df, M_MAP, tract_centers = load_data()
 
-# --- 3. AUTHENTICATION (Omitted for brevity) ---
+# --- 3. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
     st.title("🔐 Louisiana OZ 2.0 Access")
-    # ... (Login Logic)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        with st.form("login"):
+            u, p = st.text_input("User").strip(), st.text_input("Pass", type="password").strip()
+            if st.form_submit_button("Login"):
+                user_db = conn.read(worksheet="Users", ttl=0)
+                user_db.columns = user_db.columns.str.strip()
+                match = user_db[(user_db['Username'].astype(str) == u) & (user_db['Password'].astype(str) == p)]
+                if not match.empty:
+                    st.session_state.update({
+                        "authenticated": True, "username": u, 
+                        "role": str(match.iloc[0]['Role']), 
+                        "a_type": str(match.iloc[0]['Assigned_Type']), 
+                        "a_val": str(match.iloc[0]['Assigned_Value'])
+                    })
+                    st.rerun()
+                else: st.error("Invalid credentials.")
     st.stop()
 
-# --- 4. DATA PROCESSING ---
+# --- 4. REGIONAL FILTERING ---
 u_df = master_df.copy()
 if st.session_state["role"].lower() != "admin" and st.session_state["a_val"].lower() != "all":
     u_df = u_df[u_df[st.session_state["a_type"]] == st.session_state["a_val"]]
@@ -93,12 +117,6 @@ u_df['map_status'] = np.where(
     "Eligible", "Ineligible"
 )
 
-# Tracker
-try:
-    current_sheet = conn.read(worksheet="Sheet1", ttl=0)
-    user_count = len(current_sheet[current_sheet['User'] == st.session_state["username"]])
-except: user_count = 0; current_sheet = pd.DataFrame()
-
 # --- 5. INTERFACE ---
 st.title(f"📍 OZ 2.0 Strategic Planner: {st.session_state['a_val']}")
 st.divider()
@@ -106,7 +124,7 @@ st.divider()
 col_map, col_data = st.columns([0.6, 0.4])
 
 with col_map:
-    
+    # Map Visualization
     fig = px.choropleth_mapbox(
         u_df, geojson=la_geojson, locations="GEOID_KEY", featureidkey="properties.GEOID_MATCH",
         color="map_status", 
@@ -127,7 +145,8 @@ with col_map:
     selected = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     
     if selected and selected.get("selection") and selected["selection"].get("points"):
-        st.session_state["selected_tract"] = str(selected["selection"]["points"][0].get("location")).split('.')[0].zfill(11)
+        raw_sel = str(selected["selection"]["points"][0].get("location")).split('.')[0].zfill(11)
+        st.session_state["selected_tract"] = raw_sel
 
 with col_data:
     sid = st.session_state["selected_tract"]
@@ -135,47 +154,40 @@ with col_data:
     
     if not match.empty:
         row = match.iloc[0]
-        st.subheader(f"Tract: {sid}")
+        st.subheader(f"Tract Profile: {sid}")
         
-        # --- Metrics ---
-        st.markdown("##### 📊 Demographics")
+        # Demographics
+        st.markdown("##### 📊 Census Data")
         m1, m2 = st.columns(2)
         with m1:
-            st.metric("Population", row.get(M_MAP["pop"]))
-            st.metric("Pop. 65+", row.get(M_MAP["pop65"]))
-            st.metric("Poverty %", row.get(M_MAP["poverty"]))
+            st.metric("Total Population", row.get(M_MAP["pop"], "N/A"))
+            st.metric("Poverty %", row.get(M_MAP["poverty"], "N/A"))
+            st.metric("Unemployment", row.get(M_MAP["unemp"], "N/A"))
         with m2:
-            st.metric("Med. Income", row.get(M_MAP["income"]))
-            st.metric("Med. Home", row.get(M_MAP["home"]))
-            st.metric("Broadband %", row.get(M_MAP["web"]))
+            st.metric("Med. Family Income", row.get(M_MAP["income"], "N/A"))
+            st.metric("Pop. 65+", row.get(M_MAP["pop65"], "N/A"))
+            st.metric("Broadband %", row.get(M_MAP["web"], "N/A"))
 
-        # --- ⚓ ANCHOR CALCULATION (USING GEOJSON CENTERS) ---
+        # Nearest Anchors
         st.divider()
-        st.markdown("##### ⚓ 5 Nearest Anchor Assets")
-        
+        st.markdown("##### ⚓ Nearest Anchor Assets")
         t_coord = tract_centers.get(sid)
         if t_coord and not anchor_df.empty:
-            # Create a copy to avoid settings warnings
             local_anchors = anchor_df.copy()
             local_anchors['dist'] = local_anchors.apply(
                 lambda x: calculate_distance(t_coord['lat'], t_coord['lon'], x['lat'], x['lon']), axis=1
             )
             nearest = local_anchors.sort_values('dist').head(5)
-            
-            # Display as Metric Cards or Table
             for _, a in nearest.iterrows():
-                col_a, col_b = st.columns([0.7, 0.3])
-                col_a.markdown(f"**{a['name']}** \n*{a['type']}*")
-                col_b.metric("Dist", f"{a['dist']:.1f}mi")
+                st.write(f"**{a['name']}** ({a.get('type', 'Anchor')}) — `{a['dist']:.1f} miles`")
         else:
-            st.warning("Coordinates not found in GeoJSON properties for this tract.")
+            st.caption("Coordinate data for this tract is missing in GeoJSON.")
 
-        # --- Submission ---
+        # Submission
         st.divider()
         st.markdown("##### ✍️ Submission")
         note = st.text_area("Justification")
         if st.button("Submit Recommendation", type="primary"):
-            # (Submission logic)
             st.success("Tract Recorded")
     else:
-        st.info("Click a highlighted tract on the map.")
+        st.info("Click a Green tract on the map to see details.")
