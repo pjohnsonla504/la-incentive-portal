@@ -12,25 +12,24 @@ st.markdown("""
     <style>
     .stApp { background-color: #0f172a; color: #f1f5f9; }
     
-    /* Profile Header Styling */
     .profile-header { background-color: #1e293b; padding: 15px; border-radius: 8px; border-left: 5px solid #4ade80; margin-bottom: 20px; }
     .header-item { display: inline-block; margin-right: 30px; }
     .header-label { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; display: block; }
     .header-value { color: #ffffff; font-size: 1.2rem; font-weight: 800; }
 
-    /* Progress Bar Customization */
     .stProgress > div > div > div > div { background-color: #4ade80; }
     
-    /* Metric & Indicator Boxes */
-    [data-testid="stMetricLabel"] { color: #ffffff !important; font-weight: 700; font-size: 0.95rem !important; }
-    [data-testid="stMetricValue"] { color: #4ade80 !important; font-size: 1.7rem !important; font-weight: 800; }
-    .stMetric { background-color: #1e293b; border-radius: 8px; border: 1px solid #334155; padding: 15px; }
+    [data-testid="stMetricLabel"] { color: #ffffff !important; font-weight: 700; font-size: 0.85rem !important; }
+    [data-testid="stMetricValue"] { color: #4ade80 !important; font-size: 1.5rem !important; font-weight: 800; }
+    .stMetric { background-color: #1e293b; border-radius: 8px; border: 1px solid #334155; padding: 12px; }
     
     .indicator-box { border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 12px; border: 1px solid #475569; }
     .status-yes { background-color: rgba(74, 222, 128, 0.25); border-color: #4ade80; }
     .status-no { background-color: #1e293b; border-color: #334155; opacity: 0.5; }
-    .indicator-label { font-size: 0.85rem; color: #ffffff; text-transform: uppercase; font-weight: 800; }
-    .indicator-value { font-size: 1.2rem; font-weight: 900; color: #ffffff; }
+    .indicator-label { font-size: 0.75rem; color: #ffffff; text-transform: uppercase; font-weight: 800; }
+    .indicator-value { font-size: 1.1rem; font-weight: 900; color: #ffffff; }
+    
+    .section-label { color: #94a3b8; font-size: 0.85rem; font-weight: 800; margin-top: 15px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #334155; padding-bottom: 5px; }
     
     .anchor-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
     .anchor-table th { text-align: left; color: #cbd5e1; border-bottom: 2px solid #4ade80; padding: 10px; }
@@ -94,7 +93,7 @@ with col_map:
         mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
         height=950, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
-    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map_v51")
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map_v53")
     if map_event and "selection" in map_event and map_event["selection"]["points"]:
         new_sid = str(map_event["selection"]["points"][0]["location"]).zfill(11)
         if st.session_state.selected_tract != new_sid:
@@ -102,17 +101,15 @@ with col_map:
             st.rerun()
 
 with col_side:
-    # 5a. Progress Bar
     st.markdown("<p style='font-weight:700; margin-bottom:5px;'>NOMINATION TARGET PROGRESS (Goal: 150)</p>", unsafe_allow_html=True)
-    progress_val = min(st.session_state.recom_count / 150, 1.0)
-    st.progress(progress_val)
+    st.progress(min(st.session_state.recom_count / 150, 1.0))
     
     sid = st.session_state.selected_tract
     match = master_df[master_df['GEOID_KEY'] == sid]
     
     if not match.empty:
         row = match.iloc[0]
-        # 5b. Horizontal Header
+        # Profile Header
         st.markdown(f"""
             <div class='profile-header'>
                 <div class='header-item'><span class='header-label'>Tract ID</span><span class='header-value'>{sid}</span></div>
@@ -121,30 +118,52 @@ with col_side:
             </div>
         """, unsafe_allow_html=True)
         
-        # 5c. Indicators
+        # Qualification Indicators
+        st.markdown("<div class='section-label'>Qualification Indicators</div>", unsafe_allow_html=True)
         i1, i2 = st.columns(2)
         mv = str(row.get('Metro Status (Metropolitan/Rural)', '')).lower()
         with i1:
             st.markdown(f"<div class='indicator-box {'status-yes' if 'metropolitan' in mv else 'status-no'}'><div class='indicator-label'>Metro (Urban)</div><div class='indicator-value'>{'YES' if 'metropolitan' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'rural' in mv else 'status-no'}'><div class='indicator-label'>Rural</div><div class='indicator-value'>{'YES' if 'rural' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'rural' in mv else 'status-no'}'><div class='indicator-label'>Rural Area</div><div class='indicator-value'>{'YES' if 'rural' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
         with i2:
             st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Eligible</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Deeply Distressed</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Distressed</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
 
-        # 5d. Demographic Metrics
-        m_map = {"Median Home Value": "home", "Disability Population (%)": "dis", "Population 65 years and over": "pop65", "Labor Force Participation (%)": "labor", "Unemployment Rate (%)": "unemp", "HS Degree or More (%)": "hs", "Bachelor's Degree or More (%)": "bach", "Broadband Internet (%)": "web"}
-        metrics_list = list(m_map.keys())
-        for i in range(0, 8, 4):
-            cols = st.columns(4)
-            for j, m_name in enumerate(metrics_list[i:i+4]):
-                val = row.get(m_name, "N/A")
-                try:
-                    f_val = f"${float(str(val).replace('$','').replace(',','')):,.0f}" if "Home" in m_name else f"{float(val):,.1f}%"
-                except: f_val = "N/A"
-                cols[j].metric(m_name.split('(')[0], f_val)
+        # Economic Health Metrics
+        st.markdown("<div class='section-label'>Economic Health</div>", unsafe_allow_html=True)
+        e1, e2, e3, e4 = st.columns(4)
+        def fmt(v, is_m=False):
+            try: return f"${float(str(v).replace('$','').replace(',','')):,.0f}" if is_m else f"{float(v):,.1f}%"
+            except: return "N/A"
+        
+        e1.metric("Median Home Value", fmt(row.get("Median Home Value"), True))
+        e2.metric("Labor Participation", fmt(row.get("Labor Force Participation (%)")))
+        e3.metric("Unemployment", fmt(row.get("Unemployment Rate (%)")))
+        e4.metric("Broadband Access", fmt(row.get("Broadband Internet (%)")))
 
-        # 5e. Assets
-        st.markdown("<p style='font-weight:800; margin-top:20px; color:#ffffff;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
+        # Human Capital (Reorganized with Calculation)
+        st.markdown("<div class='section-label'>Human Capital & Demographics</div>", unsafe_allow_html=True)
+        h1, h2, h3, h4 = st.columns(4)
+        
+        # Calculation for Pop 65%
+        try:
+            total_pop = float(str(row.get("Total Population")).replace(",",""))
+            raw_65 = float(str(row.get("Population 65 years and over")).replace(",",""))
+            pct_65 = (raw_65 / total_pop) * 100
+            
+            pop_display = f"{total_pop:,.0f}"
+            elderly_display = f"{pct_65:,.1f}%"
+        except:
+            pop_display = "N/A"
+            elderly_display = "N/A"
+
+        h1.metric("Total Population", pop_display)
+        h2.metric("Elderly (65+ %)", elderly_display)
+        h3.metric("HS Grad+", fmt(row.get("HS Degree or More (%)")))
+        h4.metric("Bachelor's+", fmt(row.get("Bachelor's Degree or More (%)")))
+
+        # Asset Proximity
+        st.markdown("<div class='section-label'>Asset Proximity</div>", unsafe_allow_html=True)
         t_pos = tract_centers.get(sid)
         if t_pos:
             a_df = anchor_df.copy()
@@ -155,10 +174,10 @@ with col_side:
                 tbl += f"<tr><td>{a['d']:.1f}m</td><td>{a['name'][:30].upper()}</td><td>{str(a.get('type','')).upper()}</td></tr>"
             st.markdown(tbl + "</table>", unsafe_allow_html=True)
 
-        # 5f. Nomination
+        # Nomination Form
         st.divider()
         st.subheader("STRATEGIC NOMINATION")
-        cat = st.selectbox("Category", ["Energy Transition", "Cybersecurity", "Critical Mfg", "Defense Tech"])
+        cat = st.selectbox("Investment Category", ["Energy Transition", "Cybersecurity", "Critical Mfg", "Defense Tech"])
         just = st.text_area("Justification (Required)")
         if st.button("EXECUTE NOMINATION", type="primary"):
             if just:
