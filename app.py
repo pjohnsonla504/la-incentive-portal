@@ -11,14 +11,20 @@ st.set_page_config(page_title="OZ 2.0 | Strategic Portal", layout="wide")
 st.markdown("""
     <style>
     .stApp { background-color: #0f172a; color: #f1f5f9; }
+    
+    /* Perfect Information Sizing for Right Panel */
     [data-testid="stMetricLabel"] { color: #ffffff !important; font-weight: 700; font-size: 1rem !important; }
     [data-testid="stMetricValue"] { color: #4ade80 !important; font-size: 1.8rem !important; font-weight: 800; }
     .stMetric { background-color: #1e293b; border-radius: 8px; border: 1px solid #334155; padding: 15px; }
+    
+    /* 2x2 Indicators */
     .indicator-box { border-radius: 8px; padding: 18px; text-align: center; margin-bottom: 15px; border: 1px solid #475569; }
     .status-yes { background-color: rgba(74, 222, 128, 0.25); border-color: #4ade80; }
     .status-no { background-color: #1e293b; border-color: #334155; opacity: 0.5; }
     .indicator-label { font-size: 0.95rem; color: #ffffff; text-transform: uppercase; font-weight: 800; margin-bottom: 5px; }
     .indicator-value { font-size: 1.4rem; font-weight: 900; color: #ffffff; }
+    
+    /* Tables & Text */
     .stMarkdown p, .stMarkdown li { font-size: 1.1rem !important; line-height: 1.6; }
     h3 { font-size: 1.8rem !important; font-weight: 800 !important; }
     .counter-pill { background: #4ade80; color: #0f172a; padding: 10px 25px; border-radius: 30px; font-weight: 900; font-size: 1.1rem; }
@@ -28,11 +34,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. DATA LOAD ---
+# --- 2. DATA UTILITIES ---
 @st.cache_data(ttl=60)
 def load_data():
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
     df.columns = df.columns.str.strip()
+    
     try:
         a = pd.read_csv("la_anchors.csv")
     except:
@@ -42,6 +49,8 @@ def load_data():
     f_match = [c for c in df.columns if 'FIP' in c or 'digit' in c]
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
+    
+    # Selection criteria (Tracks highlighted green)
     df['is_eligible'] = df['5-year ACS Eligiblity'].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y'])
     df['map_status'] = np.where(df['is_eligible'], 1, 0)
 
@@ -58,7 +67,7 @@ def load_data():
 
 master_df, la_geojson, anchor_df, tract_centers = load_data()
 
-# --- 3. SESSION ---
+# --- 3. PERSISTENT STATE ---
 if "recom_count" not in st.session_state:
     st.session_state.recom_count = 0
 if "selected_tract" not in st.session_state:
@@ -84,13 +93,18 @@ with col_map:
     ))
     fig.update_layout(
         mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
-        height=950, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+        height=950, margin={"r":0,"t":0,"l":0,"b":0},
+        clickmode='event+select'
     )
     
-    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map")
+    # THE KEY HERE: Store map selection directly to session state
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="main_portal_map")
     
     if map_event and "selection" in map_event and map_event["selection"]["points"]:
-        st.session_state.selected_tract = str(map_event["selection"]["points"][0]["location"]).zfill(11)
+        new_selection = str(map_event["selection"]["points"][0]["location"]).zfill(11)
+        if st.session_state.selected_tract != new_selection:
+            st.session_state.selected_tract = new_selection
+            st.rerun()
 
 with col_side:
     sid = st.session_state.selected_tract
@@ -100,3 +114,58 @@ with col_side:
         row = match.iloc[0]
         st.markdown(f"<h3 style='color:#4ade80;'>TRACT: {sid}</h3>", unsafe_allow_html=True)
         st.markdown(f"<p style='color:#94a3b8;'>PARISH: {row.get('Parish')} | REGION: {row.get('Region', 'LA')}</p>", unsafe_allow_html=True)
+        
+        # Metro/Rural Metric Cards
+        i1, i2 = st.columns(2)
+        mv = str(row.get('Metro Status (Metropolitan/Rural)', '')).lower()
+        with i1:
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'metropolitan' in mv else 'status-no'}'><div class='indicator-label'>Metro (Urban)</div><div class='indicator-value'>{'YES' if 'metropolitan' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'rural' in mv else 'status-no'}'><div class='indicator-label'>Rural</div><div class='indicator-value'>{'YES' if 'rural' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
+        with i2:
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Eligible</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Deeply Distressed</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
+
+        # Demographic Metro Metrics
+        m_map = {"Median Home Value": "home", "Disability Population (%)": "dis", "Population 65 years and over": "pop65", "Labor Force Participation (%)": "labor", "Unemployment Rate (%)": "unemp", "HS Degree or More (%)": "hs", "Bachelor's Degree or More (%)": "bach", "Broadband Internet (%)": "web"}
+        metrics_list = list(m_map.keys())
+        for i in range(0, 8, 4):
+            cols = st.columns(4)
+            for j, m_name in enumerate(metrics_list[i:i+4]):
+                val = row.get(m_name, "N/A")
+                try:
+                    # Formatting logic for money vs percent
+                    f_val = f"${float(str(val).replace('$','').replace(',','')):,.0f}" if "Home" in m_name else f"{float(val):,.1f}%"
+                except: f_val = "N/A"
+                cols[j].metric(m_name.split('(')[0], f_val)
+
+        # Asset List
+        st.markdown("<p style='font-weight:800; margin-top:20px; color:#ffffff;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_df = anchor_df.copy()
+            a_df['d'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
+            t5 = a_df.sort_values('d').head(5)
+            tbl = "<table class='anchor-table'><tr><th>DIST</th><th>NAME</th><th>TYPE</th></tr>"
+            for _, a in t5.iterrows():
+                tbl += f"<tr><td>{a['d']:.1f}m</td><td>{a['name'][:30].upper()}</td><td>{str(a.get('type','')).upper()}</td></tr>"
+            st.markdown(tbl + "</table>", unsafe_allow_html=True)
+
+        # Category Selection & Justification Box
+        st.divider()
+        st.subheader("STRATEGIC NOMINATION")
+        cat = st.selectbox("Investment Category", ["Energy Transition", "Cybersecurity", "Critical Manufacturing", "Defense Tech", "Healthcare Infrastructure"])
+        just = st.text_area("Justification for Recommendation (Required)", height=100)
+        if st.button("EXECUTE NOMINATION", type="primary"):
+            if just:
+                st.session_state.recom_count += 1
+                st.success(f"Tract {sid} has been successfully nominated for {cat}.")
+                st.balloons()
+            else:
+                st.error("Please provide a justification before submitting.")
+    else:
+        st.info("Select a green-highlighted Opportunity Zone on the map to view the strategic tract profile.")
+
+# --- 6. DIRECTORY ---
+st.divider()
+st.subheader("📍 ELIGIBLE TRACTS DIRECTORY")
+st.dataframe(master_df[master_df['is_eligible'] == True][['GEOID_KEY', 'Parish', 'Region', 'Metro Status (Metropolitan/Rural)']], use_container_width=True, hide_index=True)
