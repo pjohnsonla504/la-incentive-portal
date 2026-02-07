@@ -74,8 +74,8 @@ if check_password():
         # ATTEMPT STABLE GEOJSON
         geojson = None
         urls = [
-            "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json", # Backup State check
-            "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
+            "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json",
+            "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/la_louisiana_census_tracts.json"
         ]
         
         for url in urls:
@@ -86,15 +86,22 @@ if check_password():
                     break
             except:
                 continue
-            
-        master = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
-        anchors = pd.read_csv("la_anchors.csv")
+
+        # ENCODING FIX FOR CSV FILES
+        def read_csv_safe(filename):
+            try:
+                return pd.read_csv(filename, encoding='utf-8')
+            except UnicodeDecodeError:
+                return pd.read_csv(filename, encoding='latin1')
+
+        master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
+        anchors = read_csv_safe("la_anchors.csv")
         
-        # JOIN KEY FIX: Handle both 11-digit FIP and 11-digit FIPS column names
+        # JOIN KEY FIX
         fips_col = '11-digit FIP' if '11-digit FIP' in master.columns else '11-digit FIPS'
         master['geoid_str'] = master[fips_col].apply(lambda x: str(int(float(x))) if pd.notnull(x) else "").str.zfill(11)
         
-        # ELIGIBILITY COLOR
+        # ELIGIBILITY COLOR (Green for Yes)
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['map_color'] = master[elig_col].apply(lambda x: 1 if str(x).strip().lower() in ['eligible', 'yes', '1'] else 0)
 
@@ -139,12 +146,11 @@ if check_password():
             fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=700)
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         else:
-            st.warning("🗺️ Map source currently unavailable. Using manual selector below.")
+            st.warning("🗺️ Map source currently unavailable. Using manual selector.")
             target_geoid = st.selectbox("Select Tract ID", master_df['geoid_str'].unique())
             selection = None
 
     with p_col:
-        # Resolve target ID
         current_id = "22071001700"
         if selection and selection.get("selection", {}).get("points"):
             current_id = str(selection["selection"]["points"][0]["location"])
@@ -165,7 +171,5 @@ if check_password():
                 st.markdown("<br><p style='font-size:0.8rem; font-weight:bold; color:#94a3b8;'>NEAREST ANCHORS</p>", unsafe_allow_html=True)
                 for _, a in anchors_df.sort_values('dist').head(6).iterrows():
                     st.markdown(f"<div class='anchor-pill'>✔ {a['Name']} ({a['dist']:.1f} mi)</div>", unsafe_allow_html=True)
-        else:
-            st.info("Select a tract to view specific indicators.")
 
     st.sidebar.button("Log Out", on_click=lambda: st.session_state.clear())
