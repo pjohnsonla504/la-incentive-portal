@@ -64,18 +64,13 @@ if check_password():
     @st.cache_data(ttl=3600)
     def load_assets():
         geojson = None
-        # Primary 2025 Source, Fallback to alternate
-        geo_urls = [
-            "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json",
-            "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
-        ]
-        for url in geo_urls:
-            try:
-                r = requests.get(url, timeout=10)
-                if r.status_code == 200:
-                    geojson = r.json()
-                    break
-            except: continue
+        # Primary 2025 Source (tl_2025_22_tract logic)
+        geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
+        try:
+            r = requests.get(geo_url, timeout=10)
+            if r.status_code == 200:
+                geojson = r.json()
+        except: pass
 
         def read_csv_safe(f):
             try: return pd.read_csv(f, encoding='utf-8')
@@ -84,10 +79,10 @@ if check_password():
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         anchors = read_csv_safe("la_anchors.csv")
         
-        # Clean FIPS - crucial for geoid matching
+        # Standardize FIPS
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
+        # ELIGIBILITY: Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['map_color'] = master[elig_col].apply(lambda x: 1 if str(x).strip().lower() in ['eligible', 'yes', '1'] else 0)
 
@@ -96,6 +91,7 @@ if check_password():
             for feature in geojson['features']:
                 geoid = str(feature['properties'].get('GEOID', feature.get('id')))
                 geom = feature['geometry']
+                # Get center for distance calculation
                 coords = np.array(geom['coordinates'][0] if geom['type'] == 'Polygon' else geom['coordinates'][0][0])
                 centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
             
@@ -103,7 +99,7 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- SECTION 1: HERO ---
+    # --- SECTION 1 ---
     st.markdown("""
         <div class='content-section'>
             <div class='section-num'>SECTION 1</div>
@@ -118,7 +114,7 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2: FRAMEWORK ---
+    # --- SECTION 2 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>30% Rural Step-Up</h3><p>Qualified Rural Opportunity Funds receive an enhanced 30% basis step-up, significantly increasing post-tax returns for projects outside major metropolitan hubs.</p></div>", unsafe_allow_html=True)
@@ -126,14 +122,14 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Hold your investment for 10 years to pay <b>zero</b> federal capital gains tax on the appreciation of the new OZ 2.0 asset.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 3: STRATEGIC JUSTIFICATION ---
+    # --- SECTION 3 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Data-Driven Justification</div>", unsafe_allow_html=True)
     u1, u2 = st.columns(2)
     with u1: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><h4>Healthcare & Institutional Hubs</h4><p>We target tracts adjacent to major medical and educational institutions, ensuring that new developments benefit from built-in foot traffic and workforce demand.</p></div>", unsafe_allow_html=True)
     with u2: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><h4>Industrial Revitalization</h4><p>Focusing on Louisiana's port and corridor tracts to capitalize on the 30% rural incentive for manufacturing and logistics facilities.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 4: INTERACTIVE MAP ---
+    # --- SECTION 4: MAP & BOUNDARIES ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 4</div><div class='section-title'>Strategic Tract Selection Tool</div>", unsafe_allow_html=True)
     
     if gj:
@@ -146,11 +142,14 @@ if check_password():
                 mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8},
                 opacity=0.6
             )
+            # Add boundary lines for all tracts
+            fig.update_traces(marker_line_width=0.5, marker_line_color="#334155")
+            
             fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=750)
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
 
         with p_col:
-            current_id = "22071001700" # Default selector
+            current_id = "22071001700" 
             if selection and selection.get("selection", {}).get("points"):
                 current_id = str(selection["selection"]["points"][0]["location"])
             
@@ -159,7 +158,6 @@ if check_password():
                 d = row.iloc[0]
                 st.markdown(f"<h3>Tract {current_id}</h3><p style='color:#4ade80; font-weight:800; font-size:1.1rem;'>{d.get('Parish', 'Louisiana').upper()} PARISH</p>", unsafe_allow_html=True)
                 
-                # Metrics from Master CSV
                 m1, m2 = st.columns(2)
                 with m1: st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 with m2: st.markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if d['map_color']==1 else 'NO'}</div><div class='metric-label'>OZ 2.0 Eligible</div></div>", unsafe_allow_html=True)
@@ -170,9 +168,7 @@ if check_password():
                     st.markdown("<br><p style='font-size:0.8rem; font-weight:900; color:#94a3b8; letter-spacing:0.1em;'>LOCAL ANCHORS</p>", unsafe_allow_html=True)
                     for _, a in anchors_df.sort_values('dist').head(6).iterrows():
                         st.markdown(f"<div class='anchor-pill'>✔ {a['Name']} ({a['dist']:.1f} mi)</div>", unsafe_allow_html=True)
-            else:
-                st.info("👈 Click a tract on the map to analyze eligibility and proximity metrics.")
     else:
-        st.error("⚠️ Map Layer Error: Could not reach the GeoJSON server. Please refresh the page.")
+        st.error("⚠️ Map Data Unavailable")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
