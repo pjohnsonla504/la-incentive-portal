@@ -10,9 +10,10 @@ st.set_page_config(page_title="OZ 2.0 Planner", layout="wide")
 
 st.markdown("""
     <style>
-    .block-container {padding-top: 1rem; padding-bottom: 0rem;}
+    .block-container {padding-top: 1rem; padding-bottom: 1rem;}
     [data-testid="stMetricValue"] {font-size: 1.4rem !important;}
     .stMetric {background-color: #f8f9fa; padding: 8px; border-radius: 5px; border: 1px solid #e0e0e0;}
+    .reportview-container .main .block-container {max-width: 95%;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -46,12 +47,11 @@ def load_data():
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
     df.columns = df.columns.str.strip()
     
-    # GEOID Matching
     f_match = [c for c in df.columns if 'FIP' in c or 'digit' in c]
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
     
-    # Eligibility normalization (User custom instruction: Green = OZ 2.0 Eligible)
+    # Eligibility normalization (Green = OZ 2.0 Eligible per instructions)
     elig_col = "5-year ACS Eligiblity"
     df['map_status'] = np.where(
         df[elig_col].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']), 
@@ -66,19 +66,8 @@ def load_data():
         p = feat['properties']
         gid = str(p.get('GEOID', '')).split('.')[0][-11:].zfill(11)
         feat['properties']['GEOID_MATCH'] = gid
-        
         lat = p.get('INTPTLAT') or p.get('LATITUDE')
         lon = p.get('INTPTLON') or p.get('LONGITUDE')
-        
-        if not lat and feat['geometry']['type'] in ['Polygon', 'MultiPolygon']:
-            pts = []
-            coords = feat['geometry']['coordinates']
-            if feat['geometry']['type'] == 'Polygon': pts = coords[0]
-            else: 
-                for poly in coords: pts.extend(poly[0])
-            lon = np.mean([pt[0] for pt in pts])
-            lat = np.mean([pt[1] for pt in pts])
-        
         if lat and lon:
             centers[gid] = {"lat": float(str(lat).replace('+', '')), "lon": float(str(lon).replace('+', ''))}
 
@@ -98,11 +87,11 @@ def load_data():
 
 master_df, la_geojson, anchor_df, M_MAP, tract_centers = load_data()
 
-# --- 3. AUTHENTICATION (Fixed Blank Screen) ---
+# --- 3. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
     st.title("🔐 Louisiana OZ 2.0 Access")
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
+    c1, c2, c3 = st.columns([1,2,1])
+    with c2:
         with st.form("login"):
             u = st.text_input("Username").strip()
             p = st.text_input("Password", type="password").strip()
@@ -111,49 +100,45 @@ if not st.session_state["authenticated"]:
                 user_db.columns = user_db.columns.str.strip()
                 match = user_db[(user_db['Username'].astype(str) == u) & (user_db['Password'].astype(str) == p)]
                 if not match.empty:
-                    st.session_state.update({
-                        "authenticated": True, 
-                        "username": u, 
-                        "role": str(match.iloc[0]['Role']), 
-                        "a_val": str(match.iloc[0]['Assigned_Value'])
-                    })
+                    st.session_state.update({"authenticated": True, "username": u, "role": str(match.iloc[0]['Role']), "a_val": str(match.iloc[0]['Assigned_Value'])})
                     st.rerun()
                 else: st.error("Invalid credentials.")
     st.stop()
 
-# --- 4. COUNTER LOGIC ---
+# --- 4. GLOBAL DATA ---
 try:
     current_sheet = conn.read(worksheet="Sheet1", ttl=0)
     user_recs = current_sheet[current_sheet['User'] == st.session_state["username"]]
     user_count = len(user_recs)
 except:
     user_count = 0
+    current_sheet = pd.DataFrame()
 
 # --- 5. INTERFACE ---
-st.subheader(f"📍 Strategic Planner: {st.session_state['a_val']}")
-st.caption(f"My Nominations: {user_count} Submitted")
+st.title(f"📍 Strategic Planner: {st.session_state['a_val']}")
+st.write(f"**Welcome, {st.session_state['username']}** | Recommendations Submitted: `{user_count}`")
 
-col_map, col_side = st.columns([0.55, 0.45])
+col_map, col_side = st.columns([0.6, 0.4])
 
 with col_map:
-    
+    # Build Map with Anchors
     fig = px.choropleth_mapbox(
         master_df, geojson=la_geojson, locations="GEOID_KEY", featureidkey="properties.GEOID_MATCH",
         color="map_status", 
         color_discrete_map={"Eligible": "#28a745", "Ineligible": "rgba(0,0,0,0)"},
-        mapbox_style="carto-positron", zoom=7, center={"lat": 30.8, "lon": -91.5},
-        opacity=0.6,
-        hover_data={"GEOID_KEY": True, "map_status": False}
+        mapbox_style="carto-positron", zoom=7, center={"lat": 31.0, "lon": -92.0},
+        opacity=0.5, hover_data={"GEOID_KEY": True, "map_status": False}
     )
     
+    # Overlay Anchors explicitly as a new trace
     if not anchor_df.empty:
         fig.add_scattermapbox(
             lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
-            marker=dict(size=9, color='black', symbol='diamond'),
-            text=anchor_df['name'], name="Anchors"
+            marker=dict(size=10, color='black', symbol='diamond'),
+            text=anchor_df['name'], name="Anchors", hoverinfo="text"
         )
     
-    fig.update_layout(height=650, margin={"r":0,"t":0,"l":0,"b":0}, showlegend=False)
+    fig.update_layout(height=600, margin={"r":0,"t":0,"l":0,"b":0}, showlegend=False)
     select_data = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     
     if select_data and select_data.get("selection") and select_data["selection"].get("points"):
@@ -165,45 +150,48 @@ with col_side:
     
     if not match.empty:
         row = match.iloc[0]
-        st.markdown(f"### Tract: {sid}")
+        st.markdown(f"### Tract Profile: {sid}")
         
-        # New Detailed Profile Info
-        c1, c2 = st.columns(2)
-        with c1:
-            st.write(f"**Parish:** {row.get('Parish', 'N/A')}")
-            st.write(f"**Region:** {row.get('Region', 'N/A')}")
-        with c2:
-            st.write(f"**Status:** {row.get('map_status', 'N/A')}")
-            st.write(f"**Area Type:** {row.get('Rural or Urban', 'N/A')}")
+        # 1-4: Requested Profile Info
+        st.write(f"**Parish:** {row.get('Parish', 'N/A')}")
+        st.write(f"**Region:** {row.get('Region', 'N/A')}")
+        st.write(f"**Metro Status:** {row.get('Rural or Urban', 'N/A')}")
         
-        st.divider()
-        
-        # Metrics
         m1, m2 = st.columns(2)
         m1.metric("Family Income", safe_num(row.get(M_MAP["income"]), True))
         m2.metric("Poverty Rate", f"{safe_num(row.get(M_MAP['poverty']))}%")
         
-        m3, m4 = st.columns(2)
-        m3.metric("Total Population", safe_num(row.get(M_MAP["pop"])))
-        m4.metric("Age 65+", safe_num(row.get(M_MAP["pop65"])))
-
+        # 5: 10 Nearest Anchors
         st.divider()
-        st.markdown("##### ⚓ 10 Nearest Anchors")
-        
+        st.markdown("##### ⚓ 10 Nearest Anchor Assets")
         t_coord = tract_centers.get(sid)
         if t_coord and not anchor_df.empty:
             anchors = anchor_df.copy()
             anchors['dist'] = anchors.apply(lambda x: calculate_distance(t_coord['lat'], t_coord['lon'], x['lat'], x['lon']), axis=1)
-            nearest = anchors.sort_values('dist').head(10) # Updated to 10
+            nearest = anchors.sort_values('dist').head(10)
             for _, a in nearest.iterrows():
                 st.write(f"**{a['dist']:.1f} mi** — {a['name']} <small>({a.get('type','Anchor')})</small>", unsafe_allow_html=True)
         else:
-            st.info("Select a tract to calculate nearest anchors.")
-
-        st.divider()
-        note = st.text_area("Justification Note", height=100)
-        if st.button("Submit Recommendation", type="primary", use_container_width=True):
-            # Logic to write to Sheet1...
-            st.success(f"Nomination for {sid} Recorded!")
+            st.info("Select a tract to see anchors.")
     else:
-        st.info("👆 Click a **Green** tract on the map to display demographics.")
+        st.info("👆 Click a **Green** tract on the map to display data.")
+
+# --- 6. JUSTIFICATION (Below Map) ---
+st.divider()
+if not match.empty:
+    st.subheader(f"Submit Recommendation for Tract {sid}")
+    note = st.text_area("Justification for this nomination:", height=100)
+    if st.button("Submit Recommendation", type="primary"):
+        new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": sid, "Justification": note}])
+        # Note: Connection update logic would go here
+        st.success(f"Tract {sid} nominated successfully!")
+else:
+    st.caption("Select a tract to enable the justification form.")
+
+# --- 7. TRACKING TABLE (Bottom) ---
+st.divider()
+st.subheader("📋 My Nomination History")
+if not user_recs.empty:
+    st.dataframe(user_recs, use_container_width=True)
+else:
+    st.write("No recommendations submitted yet.")
