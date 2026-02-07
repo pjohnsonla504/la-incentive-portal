@@ -133,3 +133,33 @@ with col_side:
                 cols[j].metric(m_map[k].split('(')[0], safe_num(row.get(m_map[k]), "Home" in m_map[k]))
 
         st.markdown("<p style='font-weight:800; margin-top:25px; color:#ffffff; font-size:1.2rem;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_dist = anchor_df.copy()
+            a_dist['d'] = a_dist.apply(lambda x: calculate_distance(t_pos['lat'], t_pos['lon'], x['lat'], x['lon']), axis=1)
+            t5 = a_dist.sort_values('d').head(5)
+            tbl = "<table class='anchor-table'><tr><th>DISTANCE</th><th>NAME</th><th>TYPE</th></tr>"
+            for _, a in t5.iterrows():
+                tbl += f"<tr><td><b>{a['d']:.1f} mi</b></td><td>{a['name'].upper()}</td><td>{str(a.get('type','N/A')).upper()}</td></tr>"
+            st.markdown(tbl + "</table>", unsafe_allow_html=True)
+    else:
+        st.info("Select a tract on the map to begin analysis.")
+
+with col_map:
+    # Increased map height from 750 to 900 to match the full height of metrics + assets
+    fig = go.Figure()
+    fig.add_trace(go.Choroplethmapbox(
+        geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
+        featureidkey="properties.GEOID_MATCH",
+        colorscale=[[0, "rgba(200,200,200,0.1)"], [1, "rgba(74, 222, 128, 0.65)"]],
+        showscale=False, marker_line_width=1, marker_line_color="#1e293b"
+    ))
+    
+    fig.update_layout(
+        mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
+        height=900, 
+        margin={"r":0,"t":0,"l":0,"b":0},
+        clickmode='event+select'
+    )
+    
+    st.plotly_chart(fig, use_container_width=True, on_select="rerun")
