@@ -11,8 +11,8 @@ st.set_page_config(page_title="OZ 2.0 Planner", layout="wide")
 st.markdown("""
     <style>
     .block-container {padding-top: 1rem; padding-bottom: 1rem;}
-    [data-testid="stMetricValue"] {font-size: 1.3rem !important;}
-    .stMetric {background-color: #f8f9fa; padding: 8px; border-radius: 5px; border: 1px solid #e0e0e0;}
+    [data-testid="stMetricValue"] {font-size: 1.2rem !important;}
+    .stMetric {background-color: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #e0e0e0;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -44,16 +44,14 @@ def safe_num(val, is_money=False):
 # --- 2. DATA LOADING ---
 @st.cache_data(ttl=60)
 def load_data():
-    # Primary Data
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
     df.columns = df.columns.str.strip()
     
-    # Anchors Data (THE FILE IN QUESTION)
+    # Anchors Data
     try:
         a = pd.read_csv("la_anchors.csv")
         a.columns = a.columns.str.strip()
-    except: 
-        st.warning("la_anchors.csv not found. Please ensure it is in your repository.")
+    except:
         a = pd.DataFrame(columns=['name', 'lat', 'lon', 'type'])
 
     # GEOID Matching
@@ -61,8 +59,8 @@ def load_data():
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
     
-    # Eligibility Colors
-    df['color'] = np.where(df['5-year ACS Eligiblity'].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']), "#28a745", "rgba(0,0,0,0)")
+    # Green = Eligible per instructions
+    df['map_status'] = np.where(df['5-year ACS Eligiblity'].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']), 1, 0)
 
     with open("tl_2025_22_tract.json") as f: gj = json.load(f)
     
@@ -79,7 +77,8 @@ def load_data():
         "pop": "Estimate!!Total!!Population for whom poverty status is determined",
         "income": "Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)",
         "poverty": "Estimate!!Percent below poverty level!!Population for whom poverty status is determined",
-        "pop65": "Population 65 years and over"
+        "pop65": "Population 65 years and over",
+        "web": "Broadband Internet (%)"
     }
     return df, gj, a, m_map, centers
 
@@ -89,7 +88,7 @@ master_df, la_geojson, anchor_df, M_MAP, tract_centers = load_data()
 if not st.session_state["authenticated"]:
     st.title("🔐 Louisiana OZ 2.0 Access")
     c1, c2, c3 = st.columns([1,2,1])
-    with col2 := c2:
+    with c2:
         with st.form("login"):
             u = st.text_input("Username").strip()
             p = st.text_input("Password", type="password").strip()
@@ -98,8 +97,13 @@ if not st.session_state["authenticated"]:
                 user_db.columns = user_db.columns.str.strip()
                 match = user_db[(user_db['Username'].astype(str) == u) & (user_db['Password'].astype(str) == p)]
                 if not match.empty:
-                    st.session_state.update({"authenticated": True, "username": u, "a_val": str(match.iloc[0]['Assigned_Value'])})
+                    st.session_state.update({
+                        "authenticated": True, 
+                        "username": u, 
+                        "a_val": str(match.iloc[0]['Assigned_Value'])
+                    })
                     st.rerun()
+                else: st.error("Invalid credentials.")
     st.stop()
 
 # --- 4. DATA COUNTER ---
@@ -111,40 +115,43 @@ except:
 
 # --- 5. INTERFACE ---
 st.title(f"📍 Strategic Planner: {st.session_state['a_val']}")
-st.write(f"**User:** {st.session_state['username']} | **Submitted:** {len(user_history)}")
+st.write(f"**Analyst:** {st.session_state['username']} | **Records:** {len(user_history)}")
 
-col_map, col_side = st.columns([0.6, 0.4])
+col_map, col_side = st.columns([0.55, 0.45])
 
 with col_map:
-    # Build Map with Graph Objects for Layer Priority
+    # Improved Layering for Anchors
     fig = go.Figure()
     
-    # Layer 1: Tracts
+    # Tract Layer (Eligible = Green, Ineligible = Transparent)
     fig.add_trace(go.Choroplethmapbox(
         geojson=la_geojson,
         locations=master_df['GEOID_KEY'],
-        z=np.ones(len(master_df)),
+        z=master_df['map_status'],
         featureidkey="properties.GEOID_MATCH",
-        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(40, 167, 69, 0.5)"]],
+        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(40, 167, 69, 0.6)"]],
         showscale=False,
         marker_line_width=0.5,
-        hovertext=master_df['GEOID_KEY']
+        marker_line_color="gray",
+        hovertext="Tract: " + master_df['GEOID_KEY']
     ))
     
-    # Layer 2: Anchors (Drawn LAST to be on TOP)
+    # Anchor Layer (Black Diamonds)
     if not anchor_df.empty:
         fig.add_trace(go.Scattermapbox(
             lat=anchor_df['lat'],
             lon=anchor_df['lon'],
             mode='markers',
-            marker=dict(size=12, color='black', symbol='diamond'),
+            marker=dict(size=10, color='black', symbol='diamond'),
             text=anchor_df['name'],
-            hoverinfo='text'
+            hoverinfo='text',
+            name="Anchor Assets"
         ))
     
     fig.update_layout(
         mapbox=dict(style="carto-positron", center={"lat": 30.8, "lon": -91.8}, zoom=7),
-        height=600, margin={"r":0,"t":0,"l":0,"b":0}
+        height=650, margin={"r":0,"t":0,"l":0,"b":0},
+        clickmode='event+select'
     )
     
     select_data = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
@@ -157,34 +164,50 @@ with col_side:
     
     if not match.empty:
         row = match.iloc[0]
-        st.markdown(f"### Tract Profile: {sid}")
-        st.write(f"**Parish:** {row.get('Parish', 'N/A')}")
-        st.write(f"**Region:** {row.get('Region', 'N/A')}")
-        st.write(f"**Metro Status:** {row.get('Rural or Urban', 'N/A')}")
+        st.markdown(f"### 📋 Profile: {sid}")
         
-        m1, m2 = st.columns(2)
-        m1.metric("Family Income", safe_num(row.get(M_MAP["income"]), True))
-        m2.metric("Poverty Rate", f"{safe_num(row.get(M_MAP['poverty']))}%")
+        # Profile Details
+        c1, c2 = st.columns(2)
+        c1.write(f"**Parish:** {row.get('Parish', 'N/A')}")
+        c1.write(f"**Region:** {row.get('Region', 'N/A')}")
+        c2.write(f"**Metro Status:** {row.get('Rural or Urban', 'N/A')}")
+        c2.write(f"**Eligibility:** Eligible" if row['map_status'] == 1 else "**Eligibility:** Ineligible")
         
         st.divider()
-        st.markdown("##### ⚓ 10 Nearest Anchors")
+        
+        # ALL DEMOGRAPHIC METRIC CARDS
+        m1, m2 = st.columns(2)
+        m1.metric("Med. Family Income", safe_num(row.get(M_MAP["income"]), True))
+        m2.metric("Poverty Rate", f"{safe_num(row.get(M_MAP['poverty']))}%")
+        
+        m3, m4 = st.columns(2)
+        m3.metric("Total Population", safe_num(row.get(M_MAP["pop"])))
+        m4.metric("Age 65+", safe_num(row.get(M_MAP["pop65"])))
+        
+        st.metric("Broadband Access", f"{safe_num(row.get(M_MAP['web']))}%")
+
+        st.divider()
+        st.markdown("##### ⚓ 10 Nearest Anchor Assets")
         t_coord = tract_centers.get(sid)
         if t_coord and not anchor_df.empty:
             a_copy = anchor_df.copy()
             a_copy['dist'] = a_copy.apply(lambda x: calculate_distance(t_coord['lat'], t_coord['lon'], x['lat'], x['lon']), axis=1)
             for _, a in a_copy.sort_values('dist').head(10).iterrows():
-                st.write(f"**{a['dist']:.1f} mi** — {a['name']}")
+                st.write(f"**{a['dist']:.1f} mi** — {a['name']} <small>({a.get('type','Anchor')})</small>", unsafe_allow_html=True)
     else:
-        st.info("Select an eligible tract to view details.")
+        st.info("👆 Click a **Green** tract on the map to view data.")
 
-# --- 6. JUSTIFICATION (Below Map) ---
+# --- 6. JUSTIFICATION & HISTORY (Bottom) ---
 st.divider()
 if not match.empty:
-    st.subheader(f"Nomination Form: {sid}")
-    note = st.text_area("Provide justification for this tract nomination:", height=80)
-    if st.button("Submit Nomination"):
-        st.success(f"Nomination for {sid} has been submitted!")
+    st.subheader(f"Nomination Form: Tract {sid}")
+    note = st.text_area("Justification for nomination:", height=100)
+    if st.button("Submit Recommendation", type="primary", use_container_width=True):
+        st.success(f"Tract {sid} has been nominated by {st.session_state['username']}.")
 
-# --- 7. HISTORY TABLE ---
+st.divider()
 st.subheader("📋 My Recommendation History")
-st.dataframe(user_history, use_container_width=True)
+if not user_history.empty:
+    st.dataframe(user_history, use_container_width=True)
+else:
+    st.caption("No submissions found for your account.")
