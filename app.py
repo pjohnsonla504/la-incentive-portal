@@ -18,30 +18,31 @@ st.markdown("""
     }
 
     /* Hero & Narrative Sections */
-    .hero-title { font-family: 'Playfair Display', serif; font-size: 4rem; font-weight: 900; line-height: 1; margin-bottom: 15px; }
-    .hero-subtitle { font-size: 1rem; color: #4ade80; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 30px; }
-    .content-section { padding: 60px 0; border-bottom: 1px solid #1e293b; max-width: 1100px; margin: 0 auto; }
-    .section-num { font-size: 0.9rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; }
-    .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -0.02em; }
-    .narrative-text { font-size: 1.1rem; line-height: 1.6; color: #94a3b8; margin-bottom: 20px; }
+    .hero-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 900; line-height: 1; margin-bottom: 15px; }
+    .hero-subtitle { font-size: 0.9rem; color: #4ade80; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 30px; }
+    .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; max-width: 1100px; margin: 0 auto; }
+    .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 5px; }
+    .section-title { font-size: 2rem; font-weight: 900; margin-bottom: 15px; letter-spacing: -0.02em; }
+    .narrative-text { font-size: 1rem; line-height: 1.6; color: #94a3b8; margin-bottom: 20px; }
     
     /* Section 4: Compact Portal Styles */
-    .portal-container { padding: 40px 20px; background: #0b0f19; }
-    .metric-card { background: #161b28; padding: 12px; border: 1px solid #2d3748; border-radius: 4px; }
-    .metric-label { font-size: 0.65rem; color: #4ade80; font-weight: 800; text-transform: uppercase; }
-    .metric-value { font-size: 1.3rem; font-weight: 900; color: #ffffff; }
+    .portal-container { padding: 20px; background: #0b0f19; border-top: 2px solid #1e293b; }
+    .metric-card { background: #161b28; padding: 10px; border: 1px solid #2d3748; border-radius: 4px; }
+    .metric-label { font-size: 0.6rem; color: #4ade80; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
+    .metric-value { font-size: 1.15rem; font-weight: 900; color: #ffffff; }
 
     /* Indicator Pills */
-    .indicator-pill { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: 800; font-size: 0.7rem; margin-right: 5px; border: 1px solid #2d3748; }
+    .indicator-pill { display: inline-block; padding: 3px 10px; border-radius: 4px; font-weight: 800; font-size: 0.65rem; margin-right: 4px; border: 1px solid #2d3748; }
     .active { background: #4ade80; color: #0b0f19; border-color: #4ade80; }
     .inactive { color: #475569; }
 
     /* Progress Footer */
-    .progress-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0b0f19; border-top: 1px solid #4ade80; padding: 12px 40px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; }
+    .progress-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0b0f19; border-top: 1px solid #4ade80; padding: 10px 40px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; }
     
     /* Tables */
-    .stTable { font-size: 0.75rem !important; }
-    thead tr th { background-color: #161b28 !important; color: #4ade80 !important; font-size: 0.65rem !important; }
+    .stTable { font-size: 0.7rem !important; margin-top: -10px; }
+    thead tr th { background-color: #161b28 !important; color: #4ade80 !important; font-size: 0.6rem !important; padding: 4px !important; }
+    tbody tr td { padding: 4px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -99,81 +100,46 @@ master_df, la_geojson, anchor_df, tract_centers, cols = load_data()
 if "recom_count" not in st.session_state: st.session_state.recom_count = 0
 if "selected_tract" not in st.session_state: st.session_state.selected_tract = None
 
-# --- 3. THE NARRATIVE FLOW ---
+# --- SECTION 1 & 2 (ABRIDGED FOR DISPLAY) ---
+st.markdown("<div class='content-section' style='padding-top:80px;'><div class='hero-subtitle'>American Dynamism</div><div class='hero-title'>Louisiana<br>Strategic Portals</div></div>", unsafe_allow_html=True)
 
-# SECTION 1: INTRODUCTION
-st.markdown("""
-<div class='content-section' style='padding-top:100px;'>
-    <div class='hero-subtitle'>American Dynamism</div>
-    <div class='hero-title'>Louisiana<br>Strategic Portals</div>
-    <div class='narrative-text'>
-        The 2026 Louisiana Opportunity Zone (OZ) 2.0 initiative is a catalyst for industrial resurgence. 
-        By identifying under-capitalized census tracts with high latent potential, we provide a 
-        standardized framework for institutional investment and regional growth.
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# SECTION 2: THE LOUISIANA OZ PROGRAM
-st.markdown(f"""
-<div class='content-section'>
-    <div class='section-num'>02</div>
-    <div class='section-title'>The Louisiana OZ Framework</div>
-    <div class='narrative-text'>
-        Designated by the State of Louisiana, Opportunity Zones provide tax incentives to investors who re-invest 
-        unrealized capital gains into "Opportunity Funds" dedicated to specialized census tracts.
-    </div>
-    <div style='display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;'>
-        <div class='metric-card'><div class='metric-label'>Step-Up In Basis</div><p style='font-size:0.8rem; color:#94a3b8;'>Capital gains taxes are reduced by up to 15% if the OZ investment is held for at least 7 years.</p></div>
-        <div class='metric-card'><div class='metric-label'>Permanent Exclusion</div><p style='font-size:0.8rem; color:#94a3b8;'>Any appreciation on the OZ investment itself is 100% tax-free if held for 10 years.</p></div>
-        <div class='metric-card'><div class='metric-label'>Community Reinvestment</div><p style='font-size:0.8rem; color:#94a3b8;'>Focus is shifted toward tracts that support manufacturing, logistics, and digital infrastructure.</p></div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# SECTION 3: DATA INTERPRETATION & EXAMPLES
+# SECTION 3: LEVERAGING STRATEGIC DATA
 st.markdown("""
 <div class='content-section'>
     <div class='section-num'>03</div>
     <div class='section-title'>Leveraging Strategic Data</div>
     <div class='narrative-text'>
-        To use this resource effectively, look for <b>statistical friction</b>: tracts where low socio-economic metrics 
-        are adjacent to high-value infrastructure assets.
+        To use this resource effectively, look for <b>statistical friction</b>: tracts where low socio-economic metrics are adjacent to high-value infrastructure assets. 
     </div>
 """)
 
-ex_c1, ex_c2 = st.columns(2)
-with ex_c1:
-    st.markdown("""
-    <div class='metric-card' style='border-top: 4px solid #4ade80;'>
-        <div class='metric-label'>Example A: High Industrial Readiness</div>
-        <p style='font-size:0.85rem; color:#cbd5e1; margin-top:10px;'>
-            <b>Data:</b> 35% Poverty | 12% Unemployment<br>
-            <b>Asset:</b> Port of South Louisiana (0.8 mi)<br>
-            <b>Justification:</b> This tract qualifies for "Deeply Distressed" status, maximizing grant eligibility, while the port proximity ensures immediate logistical utility for manufacturing.
-        </p>
+# Instruction Visual
+st.markdown("""
+<div style='background: #161b28; padding: 20px; border-radius: 8px; border: 1px solid #2d3748; margin-bottom: 25px;'>
+    <div style='display: grid; grid-template-columns: 1fr 0.2fr 1fr; align-items: center; text-align: center;'>
+        <div>
+            <div class='metric-label'>Step 1: Metric Identification</div>
+            <p style='font-size:0.85rem; color:#cbd5e1;'>Filter for <b>'Deeply Distressed'</b> status (<40% Poverty or high unemployment) to unlock maximum federal grant stacking.</p>
+        </div>
+        <div style='font-size: 2rem; color: #4ade80;'>+</div>
+        <div>
+            <div class='metric-label'>Step 2: Proximity Analysis</div>
+            <p style='font-size:0.85rem; color:#cbd5e1;'>Identify <b>Anchor Assets</b> (Ports, Universities, or Rail) within 5 miles to ensure industrial viability.</p>
+        </div>
     </div>
-    """, unsafe_allow_html=True)
-with ex_c2:
-    st.markdown("""
-    <div class='metric-card' style='border-top: 4px solid #4ade80;'>
-        <div class='metric-label'>Example B: Workforce Development</div>
-        <p style='font-size:0.85rem; color:#cbd5e1; margin-top:10px;'>
-            <b>Data:</b> 22% Poverty | 65% Labor Participation<br>
-            <b>Asset:</b> Louisiana Tech University (1.5 mi)<br>
-            <b>Justification:</b> High labor participation combined with university proximity suggests a "ready" workforce for R&D or tech-adjacent industries.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
+
+
+
 st.markdown("</div>", unsafe_allow_html=True)
 
-# SECTION 4: THE INTERACTIVE PORTAL (OPTIMIZED FOR 100% ZOOM)
+# SECTION 4: THE INTERACTIVE PORTAL
 st.markdown("<div class='portal-container'><div class='section-num'>04</div><div class='section-title'>Strategic Selection Tool</div>", unsafe_allow_html=True)
 
-map_col, profile_col = st.columns([0.4, 0.6], gap="small")
+map_col, profile_col = st.columns([0.42, 0.58], gap="small")
 
 with map_col:
-    # Tracks highlighted green are only those eligible for Opportunity Zone 2.0
     fig = go.Figure(go.Choroplethmapbox(
         geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_z'],
         featureidkey="properties.GEOID_MATCH",
@@ -181,8 +147,8 @@ with map_col:
         showscale=False, marker_line_width=0.2, marker_line_color="#2d3748"
     ))
     fig.update_layout(
-        mapbox=dict(style="carto-darkmatter", center={"lat": 30.8, "lon": -91.8}, zoom=6.0),
-        height=580, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+        mapbox=dict(style="carto-darkmatter", center={"lat": 30.8, "lon": -91.8}, zoom=5.8),
+        height=520, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
     map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="selection_map")
     
@@ -193,20 +159,19 @@ with map_col:
 with profile_col:
     if sid:
         row = master_df[master_df['GEOID_KEY'] == sid].iloc[0]
-        st.markdown(f"<div style='margin-bottom:10px;'><h3 style='margin:0;'>TRACT {sid}</h3><p style='color:#4ade80; font-weight:800; font-size:0.8rem;'>{row.get('Parish', '').upper()} PARISH</p></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-bottom:8px;'><h4 style='margin:0; font-size:1.2rem;'>TRACT {sid} <span style='color:#4ade80; font-size:0.8rem; margin-left:10px;'>{row.get('Parish', '').upper()}</span></h4></div>", unsafe_allow_html=True)
         
-        # QUALIFICATION PILLS
         m_val = str(row.get(cols['metro'], '')).lower()
         st.markdown(f"""
-            <div style='margin-bottom:15px;'>
+            <div style='margin-bottom:10px;'>
                 <span class='indicator-pill {'active' if 'metro' in m_val else 'inactive'}'>URBAN</span>
                 <span class='indicator-pill {'active' if 'rural' in m_val else 'inactive'}'>RURAL</span>
                 <span class='indicator-pill {'active' if row['is_nmtc'] else 'inactive'}'>NMTC</span>
-                <span class='indicator-pill {'active' if row['is_deeply'] else 'inactive'}'>DEEPLY DISTRESSED</span>
+                <span class='indicator-pill {'active' if row['is_deeply'] else 'inactive'}'>DEEP DISTRESS</span>
             </div>
         """, unsafe_allow_html=True)
 
-        # 8 METRIC CARDS (2x4 Grid)
+        # 8 METRIC CARDS (4x2 COMPACT)
         def f_val(c, is_p=True, is_d=False):
             v = row.get(c, 0)
             try:
@@ -218,47 +183,41 @@ with profile_col:
         r1.markdown(f"<div class='metric-card'><div class='metric-label'>Poverty</div><div class='metric-value'>{f_val(cols['pov'])}</div></div>", unsafe_allow_html=True)
         r2.markdown(f"<div class='metric-card'><div class='metric-label'>Unempl.</div><div class='metric-value'>{f_val(cols['unemp'])}</div></div>", unsafe_allow_html=True)
         r3.markdown(f"<div class='metric-card'><div class='metric-label'>Labor</div><div class='metric-value'>{f_val(cols['labor'])}</div></div>", unsafe_allow_html=True)
-        r4.markdown(f"<div class='metric-card'><div class='metric-label'>Median Home</div><div class='metric-value'>{f_val(cols['home'], False, True)}</div></div>", unsafe_allow_html=True)
+        r4.markdown(f"<div class='metric-card'><div class='metric-label'>Home Val</div><div class='metric-value'>{f_val(cols['home'], False, True)}</div></div>", unsafe_allow_html=True)
         
         r5, r6, r7, r8 = st.columns(4)
-        r5.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>HS Grad+</div><div class='metric-value'>{f_val(cols['hs'])}</div></div>", unsafe_allow_html=True)
-        r6.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>Bachelor+</div><div class='metric-value'>{f_val(cols['bach'])}</div></div>", unsafe_allow_html=True)
+        r5.markdown(f"<div class='metric-card' style='margin-top:5px;'><div class='metric-label'>HS Grad+</div><div class='metric-value'>{f_val(cols['hs'])}</div></div>", unsafe_allow_html=True)
+        r6.markdown(f"<div class='metric-card' style='margin-top:5px;'><div class='metric-label'>Bach+</div><div class='metric-value'>{f_val(cols['bach'])}</div></div>", unsafe_allow_html=True)
         try:
             bp = float(str(row.get(cols['base'])).replace(',',''))
             r65 = float(str(row.get("Population 65 years and over")).replace(',',''))
-            r7.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>Total Pop</div><div class='metric-value'>{bp:,.0f}</div></div>", unsafe_allow_html=True)
-            r8.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>65+ %</div><div class='metric-value'>{(r65/bp)*100:,.1f}%</div></div>", unsafe_allow_html=True)
+            r7.markdown(f"<div class='metric-card' style='margin-top:5px;'><div class='metric-label'>Total Pop</div><div class='metric-value'>{bp:,.0f}</div></div>", unsafe_allow_html=True)
+            r8.markdown(f"<div class='metric-card' style='margin-top:5px;'><div class='metric-label'>65+ %</div><div class='metric-value'>{(r65/bp)*100:,.1f}%</div></div>", unsafe_allow_html=True)
         except:
-            r7.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>Pop</div><div class='metric-value'>N/A</div></div>", unsafe_allow_html=True)
-            r8.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>65+</div><div class='metric-value'>N/A</div></div>", unsafe_allow_html=True)
+            r7.markdown(f"<div class='metric-card' style='margin-top:5px;'><div class='metric-label'>Pop</div><div class='metric-value'>N/A</div></div>", unsafe_allow_html=True)
+            r8.markdown(f"<div class='metric-card' style='margin-top:5px;'><div class='metric-label'>65+</div><div class='metric-value'>N/A</div></div>", unsafe_allow_html=True)
 
         # ANCHORS
         t_pos = tract_centers.get(sid)
         if t_pos:
             a_df = anchor_df.copy()
             a_df['dist'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
-            t7 = a_df.sort_values('dist').head(5)
-            st.markdown("<div style='margin-top:15px;'>", unsafe_allow_html=True)
-            st.table(t7[['name', 'type', 'dist']].rename(columns={'name': 'Anchor', 'type': 'Type', 'dist': 'Miles'}))
-            st.markdown("</div>", unsafe_allow_html=True)
+            t7 = a_df.sort_values('dist').head(4) # Shrunk to 4 for viewport
+            st.table(t7[['name', 'type', 'dist']].rename(columns={'name': 'Anchor', 'type': 'Type', 'dist': 'Mi'}))
 
         if st.button("NOMINATE FOR 2026 PORTFOLIO", type="primary", use_container_width=True):
             st.session_state.recom_count += 1
             st.rerun()
     else:
-        st.markdown("""
-            <div style='padding: 180px 40px; text-align: center; background: #161b28; border: 1px dashed #2d3748;'>
-                <h4 style='color: #64748b;'>Select a green tract to generate profile</h4>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<div style='padding: 140px 20px; text-align: center; background: #161b28; border: 1px dashed #2d3748; color:#64748b;'>Select a green tract to load profile</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # FOOTER PROGRESS
 st.markdown(f"""
     <div class='progress-footer'>
-        <div style='font-weight: 800; font-size: 0.8rem;'>2026 TARGET PORTFOLIO PROGRESS: {st.session_state.recom_count} / 150</div>
-        <div style='flex-grow: 1; height: 4px; background: #1e293b; margin: 0 40px; position: relative;'>
+        <div style='font-weight: 800; font-size: 0.75rem;'>2026 TARGET PORTFOLIO PROGRESS: {st.session_state.recom_count} / 150</div>
+        <div style='flex-grow: 1; height: 3px; background: #1e293b; margin: 0 30px; position: relative;'>
             <div style='width: {min((st.session_state.recom_count/150)*100, 100)}%; background: #4ade80; height: 100%;'></div>
         </div>
     </div>
