@@ -5,7 +5,7 @@ import json
 import numpy as np
 from streamlit_gsheets import GSheetsConnection
 
-# --- 1. DESIGN SYSTEM (LIGHT MAP & LARGE TEXT) ---
+# --- 1. DESIGN SYSTEM (PRESERVING PERFECT RIGHT PANEL) ---
 st.set_page_config(page_title="OZ 2.0 | Strategic Portal", layout="wide")
 
 st.markdown("""
@@ -158,7 +158,7 @@ with col_map:
         geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
         featureidkey="properties.GEOID_MATCH",
         colorscale=[[0, "rgba(200,200,200,0.1)"], [1, "rgba(74, 222, 128, 0.6)"]],
-        showscale=False, marker_line_width=1, marker_line_color="#ffffff"
+        showscale=False, marker_line_width=1, marker_line_color="#1e293b"
     ))
     # ANCHORS
     if show_anchors:
@@ -168,23 +168,17 @@ with col_map:
             text=anchor_df['name'], hoverinfo='text'
         ))
 
+    # FIXED LAYOUT: Using 'carto-positron' for clean light background with white-esque labels
     fig.update_layout(
-        # LIGHT BACKGROUND STYLE
         mapbox=dict(
-            style="light", 
+            style="carto-positron", 
             center={"lat": 31.0, "lon": -91.8}, 
-            zoom=6.0,
-            layers=[{
-                "below": 'traces',
-                "type": "background",
-                "color": "#f8fafc"
-            }]
+            zoom=6.0
         ),
-        height=750, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+        height=750, 
+        margin={"r":0,"t":0,"l":0,"b":0}, 
+        clickmode='event+select'
     )
-    
-    # White Labeling via Font Color in Layout
-    fig.update_layout(font=dict(color="#ffffff"))
 
     ev = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     if ev and ev.get("selection") and ev["selection"].get("points"):
