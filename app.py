@@ -5,26 +5,24 @@ import json
 import numpy as np
 from streamlit_gsheets import GSheetsConnection
 
-# --- 1. DESIGN SYSTEM (PRESERVING PERFECT RIGHT PANEL) ---
+# --- 1. DESIGN SYSTEM ---
 st.set_page_config(page_title="OZ 2.0 | Strategic Portal", layout="wide")
 
 st.markdown("""
     <style>
     .stApp { background-color: #0f172a; color: #f1f5f9; }
     
-    /* Large Metrics */
+    /* Perfect Information Sizing */
     [data-testid="stMetricLabel"] { color: #ffffff !important; font-weight: 700; font-size: 1rem !important; }
     [data-testid="stMetricValue"] { color: #4ade80 !important; font-size: 1.8rem !important; font-weight: 800; }
     .stMetric { background-color: #1e293b; border-radius: 8px; border: 1px solid #334155; padding: 15px; }
     
-    /* High-Visibility 2x2 Indicators */
     .indicator-box { border-radius: 8px; padding: 18px; text-align: center; margin-bottom: 15px; border: 1px solid #475569; }
     .status-yes { background-color: rgba(74, 222, 128, 0.25); border-color: #4ade80; }
     .status-no { background-color: #1e293b; border-color: #334155; opacity: 0.5; }
     .indicator-label { font-size: 0.95rem; color: #ffffff; text-transform: uppercase; font-weight: 800; margin-bottom: 5px; }
     .indicator-value { font-size: 1.4rem; font-weight: 900; color: #ffffff; }
     
-    /* Typography */
     .stMarkdown p, .stMarkdown li { font-size: 1.1rem !important; line-height: 1.6; }
     h3 { font-size: 1.8rem !important; font-weight: 800 !important; }
     
@@ -82,7 +80,7 @@ def safe_num(val, is_money=False):
 
 master_df, la_geojson, anchor_df, tract_centers = load_data()
 
-# --- 3. PERSISTENT COUNTER ---
+# --- 3. COUNTER LOGIC ---
 if "recom_count" not in st.session_state:
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
@@ -98,7 +96,7 @@ with t1:
 with t2:
     st.markdown(f"<div style='text-align:right; margin-top:20px;'><span class='counter-pill'>RECOMMENDATIONS: {st.session_state.recom_count}</span></div>", unsafe_allow_html=True)
 
-# --- 5. MAIN LAYOUT ---
+# --- 5. MAIN INTERFACE ---
 col_map, col_side = st.columns([0.55, 0.45])
 
 with col_side:
@@ -127,77 +125,11 @@ with col_side:
             st.markdown(draw_ind("NMTC Eligible", row.get('NMTC Eligible', '')), unsafe_allow_html=True)
             st.markdown(draw_ind("NMTC Deeply Distressed", row.get('NMTC Distressed', '')), unsafe_allow_html=True)
 
-        # Large Metrics
-        m_map = {"home": "Median Home Value", "dis": "Disability Population (%)", "pop65": "Population 65 years and over", "labor": "Labor Force Participation (%)", "unemp": "Unemployment Rate (%)", "hs": "HS Degree or More (%)", "bach": "Bachelor's Degree or More (%)", "web": "Broadband Internet (%)"}
         for i in range(0, 8, 4):
             cols = st.columns(4)
+            m_map = {"home": "Median Home Value", "dis": "Disability Population (%)", "pop65": "Population 65 years and over", "labor": "Labor Force Participation (%)", "unemp": "Unemployment Rate (%)", "hs": "HS Degree or More (%)", "bach": "Bachelor's Degree or More (%)", "web": "Broadband Internet (%)"}
             keys = list(m_map.keys())[i:i+4]
             for j, k in enumerate(keys):
                 cols[j].metric(m_map[k].split('(')[0], safe_num(row.get(m_map[k]), "Home" in m_map[k]))
 
-        # Anchors
         st.markdown("<p style='font-weight:800; margin-top:25px; color:#ffffff; font-size:1.2rem;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
-        t_pos = tract_centers.get(sid)
-        if t_pos:
-            a_dist = anchor_df.copy()
-            a_dist['d'] = a_dist.apply(lambda x: calculate_distance(t_pos['lat'], t_pos['lon'], x['lat'], x['lon']), axis=1)
-            t5 = a_dist.sort_values('d').head(5)
-            tbl = "<table class='anchor-table'><tr><th>DISTANCE</th><th>NAME</th><th>TYPE</th></tr>"
-            for _, a in t5.iterrows():
-                tbl += f"<tr><td><b>{a['d']:.1f} mi</b></td><td>{a['name'].upper()}</td><td>{str(a.get('type','N/A')).upper()}</td></tr>"
-            st.markdown(tbl + "</table>", unsafe_allow_html=True)
-    else:
-        st.info("Select a tract on the map to begin strategic analysis.")
-
-with col_map:
-    show_anchors = st.toggle("Overlay Assets", value=False)
-    
-    fig = go.Figure()
-    # TRACTS
-    fig.add_trace(go.Choroplethmapbox(
-        geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
-        featureidkey="properties.GEOID_MATCH",
-        colorscale=[[0, "rgba(200,200,200,0.1)"], [1, "rgba(74, 222, 128, 0.6)"]],
-        showscale=False, marker_line_width=1, marker_line_color="#1e293b"
-    ))
-    # ANCHORS
-    if show_anchors:
-        fig.add_trace(go.Scattermapbox(
-            lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
-            marker=dict(size=8, color='#0f172a', opacity=0.9),
-            text=anchor_df['name'], hoverinfo='text'
-        ))
-
-    # FIXED LAYOUT: Using 'carto-positron' for clean light background with white-esque labels
-    fig.update_layout(
-        mapbox=dict(
-            style="carto-positron", 
-            center={"lat": 31.0, "lon": -91.8}, 
-            zoom=6.0
-        ),
-        height=750, 
-        margin={"r":0,"t":0,"l":0,"b":0}, 
-        clickmode='event+select'
-    )
-
-    ev = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-    if ev and ev.get("selection") and ev["selection"].get("points"):
-        sel = ev["selection"]["points"][0]
-        if "location" in sel:
-            st.session_state["selected_tract"] = str(sel["location"]).zfill(11)
-
-# --- 6. ELIGIBLE TRACTS LIST ---
-st.divider()
-st.subheader("📍 ELIGIBLE TRACTS EXPLORER")
-eligible_list = master_df[master_df['is_eligible'] == True][['GEOID_KEY', 'Parish', 'Region', 'Metro Status (Metropolitan/Rural)']]
-st.dataframe(eligible_list, use_container_width=True, hide_index=True)
-
-# --- 7. FORM ---
-if not match.empty:
-    st.divider()
-    st.subheader("STRATEGIC RECOMMENDATION")
-    just = st.text_area("Justification:", height=100)
-    if st.button("EXECUTE NOMINATION", type="primary"):
-        st.session_state.recom_count += 1
-        st.success(f"Tract {sid} nominated. Recommendation counter updated.")
-        st.rerun()
