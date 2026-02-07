@@ -28,9 +28,10 @@ def load_data():
         geoid_header = df.columns[1]
     df['GEOID_KEY'] = df[geoid_header].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
     
-    # Exact Header Mapping
+    # Exact Header Mapping (Updated for 65+)
     m_map = {
         "pop": "Estimate!!Total!!Population for whom poverty status is determined",
+        "pop65": "Population 65 years and over",
         "home": "Median Home Value",
         "medicaid": "% Medicaid/Public Insurance",
         "income": "Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)",
@@ -54,7 +55,7 @@ def load_data():
 
 master_df, la_geojson, M_MAP = load_data()
 
-# --- 3. AUTHENTICATION (Standard Login Logic) ---
+# --- 3. AUTHENTICATION ---
 if not st.session_state["authenticated"]:
     st.title("🔐 Louisiana OZ 2.0 Access")
     col1, col2, col3 = st.columns([1,2,1])
@@ -76,12 +77,11 @@ if not st.session_state["authenticated"]:
                 else: st.error("Invalid credentials.")
     st.stop()
 
-# --- 4. REGIONAL FILTERING & NO-COLOR LOGIC ---
+# --- 4. REGIONAL FILTERING & ELIGIBILITY ---
 u_df = master_df.copy()
 if st.session_state["role"].lower() != "admin" and st.session_state["a_val"].lower() != "all":
     u_df = u_df[u_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# Define Eligibility: Only 'Eligible' gets a visible color
 elig_col = "5-year ACS Eligiblity"
 u_df['map_status'] = np.where(
     u_df[elig_col].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']), 
@@ -89,7 +89,6 @@ u_df['map_status'] = np.where(
     "Ineligible"
 )
 
-# Quota Logic
 regional_eligible = len(u_df[u_df['map_status'] == "Eligible"])
 quota = max(1, int(regional_eligible * 0.25))
 
@@ -112,33 +111,17 @@ st.divider()
 col_map, col_data = st.columns([0.66, 0.33])
 
 with col_map:
-    # Set Ineligible to transparent/no color
+    
     fig = px.choropleth_mapbox(
-        u_df, 
-        geojson=la_geojson, 
-        locations="GEOID_KEY", 
-        featureidkey="properties.GEOID_MATCH",
+        u_df, geojson=la_geojson, locations="GEOID_KEY", featureidkey="properties.GEOID_MATCH",
         color="map_status", 
-        color_discrete_map={
-            "Eligible": "#28a745",        # Solid Green
-            "Ineligible": "rgba(0,0,0,0)" # Transparent (No Color)
-        },
+        color_discrete_map={"Eligible": "#28a745", "Ineligible": "rgba(0,0,0,0)"},
         category_orders={"map_status": ["Eligible", "Ineligible"]},
-        mapbox_style="carto-positron", 
-        zoom=7, 
-        center={"lat": 30.8, "lon": -91.5},
-        opacity=0.8, 
-        hover_data=["GEOID_KEY", "Parish"]
+        mapbox_style="carto-positron", zoom=7, center={"lat": 30.8, "lon": -91.5},
+        opacity=0.8, hover_data=["GEOID_KEY", "Parish"]
     )
-    
-    # Force thin borders for the "no color" tracts so they are still selectable
-    fig.update_traces(marker_line_width=0.5, marker_line_color="lightgrey")
-    
-    fig.update_layout(
-        height=800, 
-        margin={"r":0,"t":0,"l":0,"b":0},
-        legend=dict(title="OZ 2.0 Eligibility", orientation="h", y=1.02, x=0)
-    )
+    fig.update_traces(marker_line_width=1.5, marker_line_color="dimgrey")
+    fig.update_layout(height=800, margin={"r":0,"t":0,"l":0,"b":0})
     
     selected = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     if selected and selected.get("selection") and selected["selection"].get("points"):
@@ -154,37 +137,40 @@ with col_data:
         row = matching_rows.iloc[0]
         st.write(f"**ID:** `{sid}` | **Parish:** {row.get('Parish')}")
         
-        # Demographic Metrics
         st.divider()
+        st.markdown("##### 📊 Demographics")
         def show(lbl, k):
             h = M_MAP.get(k)
             val = row.get(h, "N/A")
             st.metric(lbl, val)
 
-        m1, m2 = st.columns(2)
+        # Updated layout to fit all metrics including Pop 65+
+        m1, m2, m3 = st.columns(3)
         with m1:
             show("Population", "pop")
             show("Poverty %", "poverty")
             show("Unemployment", "unemp")
             show("Bachelor's+", "bach")
-            show("Disability %", "dis")
         with m2:
-            show("Median Home", "home")
+            show("Pop. 65+", "pop65")
             show("Median Income", "income")
             show("Labor Part. %", "labor")
             show("HS Degree+", "hs")
+        with m3:
+            show("Median Home", "home")
             show("Broadband %", "web")
+            show("Disability %", "dis")
 
         st.divider()
         st.markdown("##### ✍️ Submission")
-        cat = st.selectbox("Category", ["Economic Growth", "Infrastructure", "Housing", "Workforce Development", "Other"])
+        cat = st.selectbox("Category", ["Growth", "Housing", "Infrastructure", "Workforce", "Other"])
         note = st.text_area("Justification")
         
         if st.button("Submit Recommendation", type="primary"):
             if user_count >= quota:
-                st.error("Limit reached.")
+                st.error("Budget reached.")
             elif not note:
-                st.warning("Please add a justification.")
+                st.warning("Note required.")
             else:
                 new_row = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": sid, "Category": cat, "Justification": note}])
                 try:
@@ -192,7 +178,7 @@ with col_data:
                     st.success("Submitted!"); st.rerun()
                 except Exception as e: st.error(f"Error: {e}")
     else:
-        st.info("Select a highlighted tract on the map to begin.")
+        st.info("Select a tract on the map to view data.")
 
 # --- 6. SUMMARY ---
 st.divider()
