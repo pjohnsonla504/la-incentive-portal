@@ -31,13 +31,11 @@ def load_data():
     # Load Master File (Eligibility & Assignments)
     master = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
     master.columns = master.columns.str.strip()
-    # GEOID is usually Column B (Index 1)
     master['GEOID_KEY'] = master[master.columns[1]].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
     
     # Load Demographics File (Metric Cards)
     demo = pd.read_csv("Louisiana_All_Tracts_Demographics.csv")
     demo.columns = demo.columns.str.strip()
-    # GEOID is usually Column A (Index 0)
     demo['GEOID_KEY'] = demo[demo.columns[0]].astype(str).str.replace(r'\.0$', '', regex=True).str.zfill(11)
     
     # Merge Files
@@ -69,7 +67,6 @@ def load_data():
     with open("tl_2025_22_tract.json") as f: 
         g = json.load(f)
     for feature in g['features']:
-        # Force strict 11-digit matching for GeoJSON properties
         feature['properties']['GEOID_MATCH'] = str(feature['properties'].get('GEOID', ''))[-11:]
 
     # Load Anchor Assets
@@ -109,17 +106,14 @@ u_df = master_df.copy()
 if st.session_state["role"].lower() != "admin" and st.session_state["a_val"].lower() != "all":
     u_df = u_df[u_df[st.session_state["a_type"]] == st.session_state["a_val"]]
 
-# Eligibility Status for Map (Eligible vs Ineligible)
 if ELIG_COL:
     u_df['map_status'] = np.where(u_df[ELIG_COL].astype(str).str.lower().str.contains('yes|eligible', na=False), "Eligible", "Ineligible")
 else:
     u_df['map_status'] = "Ineligible"
 
-# Budget Counter (25% of eligible region)
 total_eligible = len(u_df[u_df['map_status'] == "Eligible"])
 q_limit = max(1, int(total_eligible * 0.25))
 
-# Tracker: Read current nominations from Sheet1
 try:
     recs_sheet = conn.read(worksheet="Sheet1", ttl=0)
     current_recs = len(recs_sheet[recs_sheet['User'] == st.session_state["username"]])
@@ -137,11 +131,10 @@ with c_stat:
 
 st.divider()
 
-# --- 6. MAIN INTERFACE (2/3 MAP | 1/3 PROFILE) ---
+# --- 6. MAIN INTERFACE ---
 col_map, col_profile = st.columns([0.66, 0.33])
 
 with col_map:
-    
     fig = px.choropleth_mapbox(
         u_df, geojson=la_geojson, locations="GEOID_KEY", featureidkey="properties.GEOID_MATCH",
         color="map_status", 
@@ -160,17 +153,11 @@ with col_profile:
     sid = st.session_state["selected_tract"]
     
     if sid:
-        # Get data for the selected tract from the merged dataframe
         res = master_df[master_df['GEOID_KEY'] == sid].iloc[0]
-        
-        # Identity
         st.markdown(f"#### Tract ID: `{sid}`")
-        st.write(f"**Parish:** {res.get('Parish', 'N/A')}")
-        st.write(f"**Region:** {res.get('Region', 'N/A')}")
+        st.write(f"**Parish:** {res.get('Parish', 'N/A')} | **Region:** {res.get('Region', 'N/A')}")
         
         st.divider()
-        
-        # 11 Demographic Metrics
         st.markdown("##### 📊 Demographic Snapshot")
         def disp_metric(label, key):
             col_name = M_MAP.get(key)
@@ -192,36 +179,39 @@ with col_profile:
             disp_metric("HS Degree+", "hs")
             disp_metric("Broadband %", "web")
 
-        # Justification Area
         st.divider()
         st.markdown("##### ✍️ Recommendation Justification")
         j_cat = st.selectbox("Justification Category", ["Economic Growth", "Infrastructure", "Housing", "Workforce Development", "Other"])
-        j_text = st.text_area("Written Justification", placeholder="Describe the strategic potential...")
+        j_text = st.text_area("Written Justification")
         
         if st.button("Submit Recommendation", type="primary"):
             if current_recs >= q_limit:
-                st.warning("You have reached your 25% recommendation limit for this region.")
+                st.warning("Limit reached.")
             else:
-                new_entry = pd.DataFrame([{
-                    "Date": pd.Timestamp.now().strftime("%Y-%m-%d"),
-                    "User": st.session_state["username"],
-                    "GEOID": sid,
-                    "Category": j_cat,
-                    "Justification": j_text
-                }])
+                new_entry = pd.DataFrame([{"Date": pd.Timestamp.now().strftime("%Y-%m-%d"), "User": st.session_state["username"], "GEOID": sid, "Category": j_cat, "Justification": j_text}])
                 try:
-                    updated_sheet = pd.concat([recs_sheet, new_entry], ignore_index=True)
-                    conn.update(worksheet="Sheet1", data=updated_sheet)
-                    st.success(f"Tract {sid} nominated!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Submission Error: {e}")
+                    conn.update(worksheet="Sheet1", data=pd.concat([recs_sheet, new_entry], ignore_index=True))
+                    st.success("Nominated!"); st.rerun()
+                except Exception as e: st.error(f"Error: {e}")
 
-        # Nearest Anchors
         st.divider()
         st.markdown("##### ⚓ 5 Nearest Anchor Assets")
         if not anchor_df.empty:
-            # Lat/Lon are pulled from the master file or demographics file
-            # If not present, this section is skipped
             try:
-                anchor_df['dist'] = anchor_
+                # Check if lat/lon exist in the merged master data
+                if 'lat' in res and 'lon' in res:
+                    anchor_df['dist'] = anchor_df.apply(lambda x: get_distance(res['lat'], res['lon'], x['lat'], x['lon']), axis=1)
+                    st.table(anchor_df.sort_values('dist').head(5)[['name', 'type', 'dist']].rename(columns={'dist': 'Miles'}))
+                else:
+                    st.caption("Coordinate data missing in master file.")
+            except Exception:
+                st.caption("Distance calculation error.")
+    else:
+        st.info("Select a tract on the map.")
+
+# --- 7. FOOTER SUMMARY ---
+st.divider()
+st.subheader("📋 Your Current Nominations")
+user_recs = recs_sheet[recs_sheet['User'] == st.session_state["username"]] if not recs_sheet.empty else pd.DataFrame()
+if not user_recs.empty:
+    st.dataframe(user_recs[['GEOID', 'Category', 'Justification', 'Date']], use_container_width=True)
