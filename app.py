@@ -134,10 +134,10 @@ with col_side:
         st.markdown(f"<h3 style='color:#00ff88; margin-top:0;'>TRACT {sid} | {row.get('Parish')}</h3>", unsafe_allow_html=True)
         
         def get_ind_html(label, value_str):
-            is_yes = False
-            if "Urban" in label: is_yes = 'urban' in str(value_str).lower()
-            elif "Rural" in label: is_yes = 'rural' in str(value_str).lower()
-            else: is_yes = 'yes' in str(value_str).lower()
+            val_clean = str(value_str).lower()
+            if "Urban" in label: is_yes = 'urban' in val_clean
+            elif "Rural" in label: is_yes = 'rural' in val_clean
+            else: is_yes = 'yes' in val_clean
             
             css = "status-yes" if is_yes else "status-no"
             val_css = "val-yes" if is_yes else "val-no"
@@ -176,4 +176,38 @@ with col_side:
             top5 = a_dist.sort_values('d').head(5)
             table_html = "<table class='anchor-table'><tr><th>DIST</th><th>NAME</th><th>TYPE</th></tr>"
             for _, a in top5.iterrows():
-                table_html += f"<tr><td>{a['d']:.1f} mi</td><td>{a['name'].upper()}</td><td>{
+                a_type = str(a.get('type','N/A')).upper()
+                table_html += f"<tr><td>{a['d']:.1f} mi</td><td>{a['name'].upper()}</td><td>{a_type}</td></tr>"
+            table_html += "</table>"
+            st.markdown(table_html, unsafe_allow_html=True)
+    else:
+        st.info("SELECT A SECTOR ON THE MAP")
+
+with col_map:
+    fig = go.Figure()
+    fig.add_trace(go.Choroplethmapbox(
+        geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
+        featureidkey="properties.GEOID_MATCH",
+        colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0, 255, 136, 0.4)"]],
+        showscale=False, marker_line_width=0.3
+    ))
+    fig.add_trace(go.Scattermapbox(
+        lat=anchor_df['lat'], lon=anchor_df['lon'], mode='markers',
+        marker=dict(size=10, color='white', symbol='diamond'),
+        text=anchor_df['name'], hoverinfo='text'
+    ))
+    fig.update_layout(
+        mapbox=dict(style="carto-darkmatter", center={"lat": 31.0, "lon": -92.0}, zoom=6.2),
+        height=750, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+    )
+    select_data = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+    if select_data and select_data.get("selection") and select_data["selection"].get("points"):
+        st.session_state["selected_tract"] = str(select_data["selection"]["points"][0].get("location")).zfill(11)
+
+# --- 4. JUSTIFICATION FORM ---
+st.divider()
+if not match.empty:
+    st.subheader("NOMINATION JUSTIFICATION")
+    justification = st.text_area("Strategic Reasoning:", height=100)
+    if st.button("EXECUTE NOMINATION", type="primary"):
+        st.success(f"Tract {sid} nominated.")
