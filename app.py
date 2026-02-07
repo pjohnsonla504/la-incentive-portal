@@ -71,12 +71,9 @@ if check_password():
     @st.cache_data(ttl=3600)
     def load_assets():
         geojson = None
-        # ATTEMPT 1: Local File (Fastest & most reliable)
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json") as f:
                 geojson = json.load(f)
-        
-        # ATTEMPT 2: Fallback to Web
         if not geojson:
             geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
             try:
@@ -92,9 +89,9 @@ if check_password():
         anchors = read_csv_safe("la_anchors.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # ELIGIBILITY: Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
+        # ELIGIBILITY: Explicit categorical labels to force the color palette
         elig_col = 'Opportunity Zones Insiders Eligibilty'
-        master['map_color'] = master[elig_col].apply(lambda x: 1 if str(x).strip().lower() in ['eligible', 'yes', '1'] else 0)
+        master['Eligibility_Status'] = master[elig_col].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
 
         centers = {}
         if geojson:
@@ -109,53 +106,41 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- SECTION 1: HERO (Restored) ---
-    st.markdown("""
-        <div class='content-section'>
-            <div class='section-num'>SECTION 1</div>
-            <div class='hero-subtitle'>Strategic Investment & Capital Deployment</div>
-            <div class='hero-title'>Louisiana Opportunity Zone 2.0</div>
-            <div class='narrative-text'>
-                This portal serves as the primary intelligence hub for Opportunity Zone 2.0 deployment. 
-                By integrating 2025 census tract boundaries with Louisiana's critical industrial and institutional anchors, 
-                we provide the data-driven roadmap for high-impact capital gains reinvestment.
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # --- SECTION 2: FRAMEWORK (Restored) ---
+    # --- SECTIONS 1-3 (Restored) ---
+    st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Strategic Investment & Capital Deployment</div><div class='hero-title'>Louisiana Opportunity Zone 2.0</div><div class='narrative-text'>This portal serves as the primary intelligence hub for Opportunity Zone 2.0 deployment...</div></div>""", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>30% Rural Step-Up</h3><p>Qualified Rural Opportunity Funds receive an enhanced 30% basis step-up, significantly increasing post-tax returns for non-metro projects.</p></div>", unsafe_allow_html=True)
-    with c2: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains through December 31, 2031, maximizing upfront project liquidity.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Hold for 10 years to pay zero federal capital gains tax on the appreciation of the new OZ 2.0 asset.</p></div>", unsafe_allow_html=True)
+    with c1: st.markdown("<div class='benefit-card'><h3>30% Rural Step-Up</h3><p>Qualified Rural Opportunity Funds receive an enhanced 30% basis step-up.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains through December 31, 2031.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Hold for 10 years to pay zero federal capital gains tax on appreciation.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Investment Justification</div><div class='narrative-text'>Leveraging industrial anchors and institutional stability for long-term growth.</div></div>", unsafe_allow_html=True)
 
-    # --- SECTION 3: DATA JUSTIFICATION (Restored) ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Investment Justification</div>", unsafe_allow_html=True)
-    u1, u2 = st.columns(2)
-    with u1: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><h4>Institutional Anchors</h4><p>We prioritize tracts within a 5-mile radius of major medical centers and universities to ensure stable demand and workforce participation.</p></div>", unsafe_allow_html=True)
-    with u2: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><h4>Industrial Revitalization</h4><p>Leveraging Louisiana's port infrastructure and logistics corridors to capitalize on Rural Step-Up incentives.</p></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # --- SECTION 4: MAP ---
+    # --- SECTION 4: MAP (GREEN HIGHLIGHT FIX) ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 4</div><div class='section-title'>Tract Boundary Analysis</div>", unsafe_allow_html=True)
     
     if gj:
         m_col, p_col = st.columns([7, 3])
         with m_col:
+            # Using discrete color map with specific HEX code for green
             fig = px.choropleth_mapbox(
-                master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
-                color="map_color", 
-                color_discrete_map={1: "#4ade80", 0: "rgba(30,41,59,0.2)"},
+                master_df, 
+                geojson=gj, 
+                locations="geoid_str", 
+                featureidkey="properties.GEOID",
+                color="Eligibility_Status", 
+                color_discrete_map={
+                    "Eligible": "#4ade80", 
+                    "Ineligible": "rgba(30,41,59,0.2)"
+                },
                 mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8},
                 opacity=0.7
             )
-            # REMOVES COLORBAR & ADDS BOUNDARY GRID
-            fig.update_coloraxes(showscale=False) 
-            fig.update_traces(marker_line_width=0.7, marker_line_color="#475569")
+            # Remove colorbar and apply boundary grid
+            fig.update_layout(coloraxis_showscale=False)
+            fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
             
-            fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=750)
+            fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=750)
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
         with p_col:
@@ -167,7 +152,7 @@ if check_password():
             if not row.empty:
                 d = row.iloc[0]
                 st.markdown(f"### Tract {current_id}")
-                st.markdown(f"<p style='color:#4ade80;'>{d.get('Parish', 'Louisiana').upper()} PARISH</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{d.get('Parish', 'Louisiana').upper()} PARISH</p>", unsafe_allow_html=True)
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
                 if not anchors_df.empty and current_id in tract_centers:
