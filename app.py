@@ -35,32 +35,23 @@ if not st.session_state["authenticated"]:
                 st.rerun()
     st.stop()
 
-# --- DATA LOADING (FULL-MAP CLICKABILITY VERSION) ---
+# --- DATA LOADING ---
 @st.cache_data(ttl=60)
 def load_data():
     csv_path = os.path.join(curr_dir, "Opportunity Zones 2.0 - Master Data File.csv")
     json_path = os.path.join(curr_dir, "la_tracts_2024.json")
     json_fallback = os.path.join(curr_dir, "tl_2025_22_tract.json")
 
-    # A. Load GeoJSON first to get the "Master List" of all tracts
-    final_json_path = json_path if os.path.exists(json_path) else json_fallback
-    try:
-        with open(final_json_path) as f: 
-            la_geojson = json.load(f)
-    except FileNotFoundError:
-        st.error("GeoJSON file missing."); st.stop()
+    # Load GeoJSON
+    f_path = json_path if os.path.exists(json_path) else json_fallback
+    with open(f_path) as f: 
+        la_geojson = json.load(f)
 
-    # Create a DataFrame of every GEOID present in the map
-    all_map_geoids = [f['properties']['GEOID'] for f in la_geojson['features']]
-    map_df = pd.DataFrame({'geoid': all_map_geoids})
+    all_geoids = [f['properties']['GEOID'] for f in la_geojson['features']]
+    map_df = pd.DataFrame({'geoid': all_geoids})
 
-    # B. Load Master CSV Data
-    try:
-        raw_df = pd.read_csv(csv_path)
-    except FileNotFoundError:
-        st.error("CSV Not Found."); st.stop()
-    
-    # C. Prepare CSV Data
+    # Load CSV
+    raw_df = pd.read_csv(csv_path)
     raw_df.rename(columns={raw_df.columns[1]: 'geoid'}, inplace=True)
     raw_df.columns = raw_df.columns.str.strip().str.lower()
     
@@ -74,49 +65,70 @@ def load_data():
     raw_df = raw_df.rename(columns=mapping)
     raw_df['geoid'] = raw_df['geoid'].astype(str).str.extract(r'(\d{11}$)')
     
-    # D. MERGE: Map + CSV (This makes every tract clickable)
+    # Merge and Clean
     df = pd.merge(map_df, raw_df, on='geoid', how='left')
-
-    # Fill NaNs for tracts not in the CSV
-    df['is_eligible'] = df['is_eligible'].apply(lambda x: 1 if str(x).strip().lower() in ['yes', '1', '1.0', 'true'] else 0)
+    
+    # --- CRITICAL FIX FOR GREEN HIGHLIGHTING ---
+    # Convert the raw data into specific string categories for Plotly
+    def categorize_eligibility(val):
+        if str(val).strip().lower() in ['yes', '1', '1.0', 'true']:
+            return "Eligible"
+        return "Ineligible"
+    
+    df['status'] = df['is_eligible'].apply(categorize_eligibility)
+    
+    # Fill remaining columns
     df['poverty_rate'] = pd.to_numeric(df['poverty_rate'], errors='coerce').fillna(0)
     df['med_income'] = pd.to_numeric(df['med_income'], errors='coerce').fillna(0)
     df['parish'] = df['parish'].fillna("Unknown")
-    df['region'] = df['region'].fillna("N/A")
         
     return df, la_geojson
 
 master_df, la_geojson = load_data()
 
 # --- INTERFACE ---
-st.title(f"📍 OZ 2.0 - All Tract Explorer")
-st.caption("Green: Eligible | Grey: Ineligible | All tracts are clickable for profiling.")
+st.title(f"📍 OZ 2.0 - Master Eligibility Map")
 
 c1, c2 = st.columns([0.6, 0.4])
 
 with c1:
-    # Filtering logic
-    a_type = st.session_state["a_type"].lower()
     m_df = master_df.copy()
+    
+    # User Assignment Filtering
+    a_type = st.session_state["a_type"].lower()
     if st.session_state["role"].lower() != "admin" and a_type != "all":
-        # Keep all map tracts but filter the data overlay
         m_df = m_df[m_df[a_type] == st.session_state["a_val"]]
 
+    # Parish Filter
     p_list = sorted(m_df['parish'].unique().tolist())
-    sel_p = st.selectbox("Filter by Parish", ["All Louisiana"] + p_list)
-    if sel_p != "All Louisiana": 
+    sel_p = st.selectbox("Select Parish", ["Louisiana (All)"] + p_list)
+    if sel_p != "Louisiana (All)": 
         m_df = m_df[m_df['parish'] == sel_p]
 
-    # The Map
+    # Map with Fixed Discrete Colors
     fig = px.choropleth_mapbox(
-        m_df, geojson=la_geojson, locations="geoid", featureidkey="properties.GEOID",
-        color="is_eligible", 
-        color_continuous_scale=[(0, "#D3D3D3"), (1, "#28a745")],
-        range_color=[0, 1],
-        mapbox_style="carto-positron", zoom=6, center={"lat": 31.0, "lon": -91.8},
-        opacity=0.7, hover_data=["geoid", "parish"]
+        m_df, 
+        geojson=la_geojson, 
+        locations="geoid", 
+        featureidkey="properties.GEOID",
+        color="status", # Using our string category
+        color_discrete_map={
+            "Eligible": "#28a745",   # Pure Green
+            "Ineligible": "#D3D3D3"  # Light Grey
+        },
+        category_orders={"status": ["Eligible", "Ineligible"]}, # Sets legend order
+        mapbox_style="carto-positron", 
+        zoom=6, 
+        center={"lat": 31.0, "lon": -91.8},
+        opacity=0.7, 
+        hover_data=["geoid", "parish"]
     )
-    fig.update_layout(height=700, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale=False, clickmode='event+select')
+    
+    fig.update_layout(
+        height=700, 
+        margin={"r":0,"t":0,"l":0,"b":0},
+        legend=dict(title="OZ 2.0 Status", orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
     
     map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
     
@@ -129,20 +141,16 @@ with c2:
     
     if not row.empty:
         r = row.iloc[0]
-        st.subheader(f"Tract Profile: {sid}")
-        st.markdown(f"**Parish:** {str(r['parish']).title()}")
+        st.subheader(f"Tract: {sid}")
+        st.write(f"**Parish:** {str(r['parish']).title()}")
         
-        # Display Status
-        if r['is_eligible'] == 1:
+        if r['status'] == "Eligible":
             st.success("✅ ELIGIBLE FOR OPPORTUNITY ZONE 2.0")
         else:
-            st.warning("⚪ INELIGIBLE / NOT DETERMINED")
+            st.info("⚪ STATUS: INELIGIBLE")
 
         st.divider()
         st.metric("Poverty Rate", f"{r['poverty_rate']:.1f}%")
         st.metric("Median Family Income", f"${r['med_income']:,.0f}")
-        
-        st.info("Profiles are generated for all clicked tracts, regardless of eligibility status.")
     else:
-        st.write("### ⬅️ Select any tract on the map")
-        st.write("Clicking any region (Green or Grey) will load its profile data here.")
+        st.info("Click any tract (Green or Grey) to view demographics.")
