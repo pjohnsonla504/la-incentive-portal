@@ -4,12 +4,12 @@ import plotly.graph_objects as go
 import json
 import numpy as np
 
-# --- 1. AMERICAN DYNAMISM DESIGN SYSTEM ---
+# --- 1. DESIGN SYSTEM: a16z EDITORIAL STYLE ---
 st.set_page_config(page_title="Louisiana American Dynamism", layout="wide")
 
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@0,900;1,900&display=swap');
     
     html, body, [class*="stApp"] {
         font-family: 'Inter', sans-serif;
@@ -17,47 +17,42 @@ st.markdown("""
         color: #ffffff;
     }
 
-    /* Hero Section */
-    .hero-title { font-size: 4rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1; margin-bottom: 20px; color: #ffffff; }
-    .hero-subtitle { font-size: 1.5rem; color: #4ade80; font-weight: 700; margin-bottom: 40px; text-transform: uppercase; }
+    /* Hero & Typography */
+    .hero-title { font-family: 'Playfair Display', serif; font-size: 5rem; font-weight: 900; line-height: 0.9; margin-bottom: 20px; color: #ffffff; }
+    .hero-subtitle { font-size: 1.2rem; color: #4ade80; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 40px; }
     
     /* Content Blocks */
-    .content-card { background: #161b28; border: 1px solid #2d3748; padding: 40px; border-radius: 0px; margin-bottom: 40px; }
-    .section-header { font-size: 2rem; font-weight: 800; border-left: 4px solid #4ade80; padding-left: 20px; margin-bottom: 30px; text-transform: uppercase; }
+    .content-section { padding: 80px 0; border-bottom: 1px solid #1e293b; max-width: 1100px; margin: 0 auto; }
+    .section-num { font-size: 1rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; }
+    .section-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 30px; letter-spacing: -0.02em; }
+    .narrative-text { font-size: 1.25rem; line-height: 1.7; color: #94a3b8; margin-bottom: 25px; }
     
-    /* Metric Grid (Large & Bold) */
-    .metric-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px; }
-    .metric-item { background: #1e2533; padding: 25px; border-bottom: 4px solid #4ade80; }
-    .metric-label { font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
-    .metric-value { font-size: 2rem; font-weight: 900; color: #ffffff; }
+    /* Metrics Split View */
+    .metric-card { background: #161b28; padding: 20px; border: 1px solid #2d3748; border-radius: 4px; }
+    .metric-label { font-size: 0.75rem; color: #4ade80; font-weight: 800; text-transform: uppercase; }
+    .metric-value { font-size: 1.8rem; font-weight: 900; color: #ffffff; margin-top: 5px; }
 
-    /* Custom Indicators */
-    .status-pill { display: inline-block; padding: 8px 20px; font-weight: 800; font-size: 0.9rem; border-radius: 50px; margin-right: 10px; }
-    .active { background: #4ade80; color: #0b0f19; }
-    .inactive { background: #2d3748; color: #94a3b8; }
+    /* Indicator Pills */
+    .indicator-pill { display: inline-block; padding: 6px 16px; border-radius: 50px; font-weight: 800; font-size: 0.8rem; margin-right: 8px; border: 1px solid #2d3748; }
+    .active { background: #4ade80; color: #0b0f19; border-color: #4ade80; }
+    .inactive { color: #64748b; }
 
-    /* Map & Selection Overlay */
-    .map-container { border: 1px solid #2d3748; margin-top: 40px; }
+    /* Progress Footer */
+    .progress-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0b0f19; border-top: 1px solid #4ade80; padding: 15px 40px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; }
     
-    /* Narrative Text */
-    .narrative { font-size: 1.2rem; line-height: 1.8; color: #cbd5e1; max-width: 800px; margin-bottom: 40px; }
-    
-    /* Footer Style Progress */
-    .progress-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0b0f19; border-top: 1px solid #4ade80; padding: 15px 40px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; }
-    
-    /* Global Overrides */
-    [data-testid="stMetricValue"] { color: #ffffff !important; }
-    [data-testid="stSidebar"] { display: none; }
+    /* Tables */
+    .stTable { background: transparent !important; }
+    thead tr th { background-color: #161b28 !important; color: #4ade80 !important; font-size: 0.7rem !important; text-transform: uppercase !important; }
     </style>
     """, unsafe_allow_html=True)
 
 # --- 2. DATA ENGINE ---
 @st.cache_data(ttl=60)
 def load_data():
+    # Load Master Files
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
     df.columns = df.columns.str.strip()
     
-    # Precise Column Mapping
     POV_COL = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
     BASE_COL = "Estimate!!Total!!Population for whom poverty status is determined"
     
@@ -81,17 +76,17 @@ def load_data():
     g_col = f_match[0] if f_match else df.columns[1]
     df['GEOID_KEY'] = df[g_col].astype(str).apply(lambda x: x.split('.')[0]).str.zfill(11)
     
+    # Logic for Highlighting
     def clean(val):
         try: return float(str(val).replace('%','').replace(',','').replace('$','').strip())
         except: return 0.0
 
-    # Calculated Booleans
-    df['pov_val'] = df[POV_COL].apply(clean) if POV_COL in df.columns else 0.0
+    df['pov_val'] = df[POV_COL].apply(clean)
     df['is_nmtc'] = df['pov_val'] >= 20.0
     df['is_deeply'] = (df['pov_val'] > 40.0) | (df[cols['unemp']].apply(clean) >= 10.5 if cols['unemp'] else False)
 
-    # Eligibility Filter (Strictly Green Only)
-    elig_col = find_col(['5-year', 'eligibility']) or find_col(['OZ', 'Eligible'])
+    # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
+    elig_col = find_col(['5-year', 'eligibility'])
     df['is_eligible'] = df[elig_col].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']) if elig_col else df['is_nmtc']
     df['map_z'] = np.where(df['is_eligible'], 1, 0)
 
@@ -99,118 +94,106 @@ def load_data():
     a = pd.read_csv("la_anchors.csv", encoding='cp1252')
     a.columns = a.columns.str.strip().str.lower()
     with open("tl_2025_22_tract.json") as f: gj = json.load(f)
-    centers = {}
-    for feat in gj['features']:
-        gid = str(feat['properties'].get('GEOID', '')).zfill(11)
-        feat['properties']['GEOID_MATCH'] = gid
-        if 'INTPTLAT' in feat['properties']:
-            centers[gid] = {"lat": float(str(feat['properties']['INTPTLAT']).replace('+','')), "lon": float(str(feat['properties']['INTPTLON']).replace('+',''))}
+    centers = {str(feat['properties'].get('GEOID')).zfill(11): {"lat": float(str(feat['properties'].get('INTPTLAT')).replace('+','')), "lon": float(str(feat['properties'].get('INTPTLON')).replace('+',''))} for feat in gj['features'] if 'INTPTLAT' in feat['properties']}
+    for feat in gj['features']: feat['properties']['GEOID_MATCH'] = str(feat['properties'].get('GEOID')).zfill(11)
 
     return df, gj, a, centers, cols
 
 master_df, la_geojson, anchor_df, tract_centers, cols = load_data()
 
-if "recom_count" not in st.session_state: st.session_state.recom_count = 0
-if "selected_tract" not in st.session_state: st.session_state.selected_tract = None
+# --- 3. THE NARRATIVE FLOW ---
 
-# --- 3. THE LONG-SCROLL NARRATIVE ---
-
-# HERO SECTION
+# SECTION 1: INTRODUCTION
 st.markdown("""
-    <div style='padding: 100px 0 60px 0;'>
-        <div class='hero-subtitle'>American Dynamism</div>
-        <div class='hero-title'>Louisiana<br>Opportunity Zones 2.0</div>
-        <div class='narrative'>
-            Building the future of the American South. We are identifying the census tracts 
-            where technology, manufacturing, and local community resilience intersect to 
-            drive national progress. This is the 150-site strategic portfolio for 2026.
-        </div>
+<div class='content-section' style='padding-top:120px;'>
+    <div class='hero-subtitle'>American Dynamism</div>
+    <div class='hero-title'>Louisiana<br>Strategic Portals</div>
+    <div class='narrative-text'>
+        The 2026 American Dynamism initiative focuses on the intersection of industrial capacity, human capital, 
+        and institutional stability. By aligning federal tax incentives with state-level assets, 
+        we create a roadmap for long-term regional prosperity.
     </div>
+</div>
 """, unsafe_allow_html=True)
 
-# SECTION 1: THE STRATEGIC MAP
-st.markdown("<div class='section-header'>I. Selection Tool</div>", unsafe_allow_html=True)
-st.markdown("<div class='best-practice'><b>Best Practice:</b> Target tracts with existing industrial anchors and poverty rates exceeding 25% for maximum federal incentive stacking.</div>", unsafe_allow_html=True)
-
-fig = go.Figure(go.Choroplethmapbox(
-    geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_z'],
-    featureidkey="properties.GEOID_MATCH",
-    colorscale=[[0, "rgba(255,255,255,0.02)"], [1, "#4ade80"]],
-    showscale=False, marker_line_width=0.5, marker_line_color="#2d3748"
-))
-fig.update_layout(
-    mapbox=dict(style="carto-darkmatter", center={"lat": 30.8, "lon": -91.8}, zoom=6.5),
-    height=700, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
-)
-map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="dynamism_map")
-
-if map_event and map_event.get("selection") and map_event["selection"]["points"]:
-    st.session_state.selected_tract = str(map_event["selection"]["points"][0]["location"]).zfill(11)
-
-# SECTION 2: TRACT ANALYSIS (CONDITIONAL)
-sid = st.session_state.selected_tract
-match = master_df[master_df['GEOID_KEY'] == sid]
-
-if not match.empty:
-    row = match.iloc[0]
-    st.markdown(f"""
-        <div class='content-card' id='analysis'>
-            <div class='section-header'>II. Tract Profile: {sid}</div>
-            <div style='margin-bottom:30px;'>
-                <span class='status-pill active'>{'Urban' if 'metro' in str(row.get(cols['metro'])).lower() else 'Rural'}</span>
-                <span class='status-pill {'active' if row['is_nmtc'] else 'inactive'}'>NMTC Eligible</span>
-                <span class='status-pill {'active' if row['is_deeply'] else 'inactive'}'>Deeply Distressed</span>
-            </div>
-    """, unsafe_allow_html=True)
-
-    # 8 METRIC GRID
-    def f_val(c, is_p=True, is_d=False):
-        v = row.get(c, 0)
-        try:
-            num = float(str(v).replace('%','').replace(',','').replace('$','').strip())
-            return f"${num:,.0f}" if is_d else (f"{num:,.1f}%" if is_p else f"{num:,.0f}")
-        except: return "N/A"
-
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Poverty Rate", f_val(cols['pov'])); c2.metric("Unemployment", f_val(cols['unemp']))
-    c3.metric("Labor Force", f_val(cols['labor'])); c4.metric("Median Home", f_val(cols['home'], False, True))
-    
-    c5, c6, c7, c8 = st.columns(4)
-    c5.metric("HS Grad+", f_val(cols['hs'])); c6.metric("Bachelor Degree+", f_val(cols['bach']))
-    try:
-        bp = float(str(row.get(cols['base'])).replace(',',''))
-        r65 = float(str(row.get("Population 65 years and over")).replace(',',''))
-        c7.metric("Base Pop", f"{bp:,.0f}"); c8.metric("Elderly (65+)", f"{(r65/bp)*100:,.1f}%")
-    except:
-        c7.metric("Base Pop", "N/A"); c8.metric("65+ %", "N/A")
-
-    # ANCHOR ANALYSIS
-    st.markdown("<div class='section-label' style='margin-top:40px;'>Strategic Proximity (Nearest Anchors)</div>", unsafe_allow_html=True)
-    t_pos = tract_centers.get(sid)
-    if t_pos:
-        a_df = anchor_df.copy()
-        a_df['dist'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
-        t7 = a_df.sort_values('dist').head(7)
-        st.table(t7[['name', 'type', 'dist']].rename(columns={'name': 'Anchor Asset', 'type': 'Category', 'dist': 'Miles'}))
-
-    if st.button("EXECUTE NOMINATION", type="primary", use_container_width=True):
-        st.session_state.recom_count += 1
-        st.success(f"Tract {sid} has been added to the Strategic Portfolio.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-else:
-    st.markdown("""
-        <div style='padding: 60px; text-align: center; border: 1px dashed #2d3748;'>
-            <h3 style='color: #94a3b8;'>Select a Green Census Tract on the Map to Begin Analysis</h3>
-        </div>
-    """, unsafe_allow_html=True)
-
-# FOOTER PROGRESS BAR
+# SECTION 2: THE PROGRAM DEFINITION (OEDIT MODEL)
 st.markdown(f"""
-    <div class='progress-footer'>
-        <div style='font-weight: 800; font-size: 0.9rem;'>PORTFOLIO PROGRESS: {st.session_state.recom_count} / 150</div>
-        <div style='width: 60%; background: #1e2533; height: 10px; border-radius: 5px; margin: 0 20px;'>
-            <div style='width: {min((st.session_state.recom_count/150)*100, 100)}%; background: #4ade80; height: 100%; border-radius: 5px;'></div>
-        </div>
+<div class='content-section'>
+    <div class='section-num'>02</div>
+    <div class='section-title'>Program Definition</div>
+    <div class='narrative-text'>
+        Modeled after the <b>Colorado Opportunity Zone Program</b>, this framework is a federal economic development tool 
+        that encourages long-term private investment in designated low-income census tracts.
     </div>
+    <div style='display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;'>
+        <div class='metric-card'><div class='metric-label'>Deferral</div><p style='font-size:0.9rem; color:#94a3b8;'>Investors can defer tax on prior capital gains until 2026 or until the investment is sold.</p></div>
+        <div class='metric-card'><div class='metric-label'>Elimination</div><p style='font-size:0.9rem; color:#94a3b8;'>Investments held for at least 10 years are exempt from capital gains taxes on appreciation.</p></div>
+        <div class='metric-card'><div class='metric-label'>Strategic Focus</div><p style='font-size:0.9rem; color:#94a3b8;'>Nomination is restricted to the top 25% of eligible low-income tracts to ensure capital concentration.</p></div>
+    </div>
+</div>
 """, unsafe_allow_html=True)
+
+# SECTION 3: DATA INTERPRETATION (EXAMPLE CASE)
+st.markdown("""
+<div class='content-section'>
+    <div class='section-num'>03</div>
+    <div class='section-title'>Interpreting the Data</div>
+    <div class='narrative-text'>
+        Justification for OZ nomination is found where <b>Human Capital Metrics</b> meet <b>Infrastructural Assets</b>. 
+    </div>
+    <div class='metric-card' style='border-left: 4px solid #4ade80;'>
+        <p style='margin:0; font-size:1.1rem;'><b>The Justification Example:</b> A tract with <b>40%+ Poverty</b> (Deeply Distressed) but located within <b>2 miles of a Port</b> and a <b>Community College</b> creates a high-ROI case. The distressed labor pool provides the workforce for industrial expansion, while the OZ status provides the non-dilutive capital to build the facilities.</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# SECTION 4: THE STRATEGIC RECOMMENDATION MAP (40/60 Split)
+st.markdown("<div class='content-section'><div class='section-num'>04</div><div class='section-title'>Strategic Selection</div>", unsafe_allow_html=True)
+
+map_col, profile_col = st.columns([0.4, 0.6], gap="large")
+
+with map_col:
+    # Tracks highlighted green are only those eligible for Opportunity Zone 2.0
+    fig = go.Figure(go.Choroplethmapbox(
+        geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_z'],
+        featureidkey="properties.GEOID_MATCH",
+        colorscale=[[0, "rgba(255,255,255,0.02)"], [1, "#4ade80"]],
+        showscale=False, marker_line_width=0.2, marker_line_color="#2d3748"
+    ))
+    fig.update_layout(
+        mapbox=dict(style="carto-darkmatter", center={"lat": 30.8, "lon": -91.8}, zoom=6.2),
+        height=800, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+    )
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="selection_map")
+    
+    sid = None
+    if map_event and map_event.get("selection") and map_event["selection"]["points"]:
+        sid = str(map_event["selection"]["points"][0]["location"]).zfill(11)
+
+with profile_col:
+    if sid:
+        row = master_df[master_df['GEOID_KEY'] == sid].iloc[0]
+        st.markdown(f"<div style='margin-bottom:20px;'><h2 style='margin:0;'>TRACT {sid}</h2><p style='color:#4ade80; font-weight:800;'>{row.get('Parish', '').upper()} PARISH</p></div>", unsafe_allow_html=True)
+        
+        # QUALIFICATION INDICATORS
+        m_val = str(row.get(cols['metro'], '')).lower()
+        st.markdown(f"""
+            <div style='margin-bottom:30px;'>
+                <span class='indicator-pill {'active' if 'metro' in m_val else 'inactive'}'>URBAN</span>
+                <span class='indicator-pill {'active' if 'rural' in m_val else 'inactive'}'>RURAL</span>
+                <span class='indicator-pill {'active' if row['is_nmtc'] else 'inactive'}'>NMTC</span>
+                <span class='indicator-pill {'active' if row['is_deeply'] else 'inactive'}'>DEEPLY DISTRESSED</span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # 8 METRIC CARDS
+        def f_val(c, is_p=True, is_d=False):
+            v = row.get(c, 0)
+            try:
+                num = float(str(v).replace('%','').replace(',','').replace('$','').strip())
+                return f"${num:,.0f}" if is_d else (f"{num:,.1f}%" if is_p else f"{num:,.0f}")
+            except: return "N/A"
+
+        c1, c2 = st.columns(2)
+        with c1: 
+            st.markdown(f"<div class='metric-card'><div class='metric-label'>Poverty</div>
