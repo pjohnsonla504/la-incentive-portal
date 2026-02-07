@@ -11,21 +11,16 @@ st.set_page_config(page_title="OZ 2.0 | Strategic Portal", layout="wide")
 st.markdown("""
     <style>
     .stApp { background-color: #0f172a; color: #f1f5f9; }
-    
-    /* Perfect Information Sizing */
     [data-testid="stMetricLabel"] { color: #ffffff !important; font-weight: 700; font-size: 1rem !important; }
     [data-testid="stMetricValue"] { color: #4ade80 !important; font-size: 1.8rem !important; font-weight: 800; }
     .stMetric { background-color: #1e293b; border-radius: 8px; border: 1px solid #334155; padding: 15px; }
-    
     .indicator-box { border-radius: 8px; padding: 18px; text-align: center; margin-bottom: 15px; border: 1px solid #475569; }
     .status-yes { background-color: rgba(74, 222, 128, 0.25); border-color: #4ade80; }
     .status-no { background-color: #1e293b; border-color: #334155; opacity: 0.5; }
     .indicator-label { font-size: 0.95rem; color: #ffffff; text-transform: uppercase; font-weight: 800; margin-bottom: 5px; }
     .indicator-value { font-size: 1.4rem; font-weight: 900; color: #ffffff; }
-    
     .stMarkdown p, .stMarkdown li { font-size: 1.1rem !important; line-height: 1.6; }
     h3 { font-size: 1.8rem !important; font-weight: 800 !important; }
-    
     .counter-pill { background: #4ade80; color: #0f172a; padding: 10px 25px; border-radius: 30px; font-weight: 900; font-size: 1.1rem; }
     .anchor-table { width: 100%; border-collapse: collapse; font-size: 1rem; margin-top: 15px; }
     .anchor-table th { text-align: left; color: #cbd5e1; border-bottom: 2px solid #4ade80; padding: 12px; }
@@ -33,12 +28,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. DATA UTILITIES ---
+# --- 2. DATA LOAD ---
 @st.cache_data(ttl=60)
 def load_data():
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
     df.columns = df.columns.str.strip()
-    
     try:
         a = pd.read_csv("la_anchors.csv")
     except:
@@ -62,91 +56,25 @@ def load_data():
             centers[gid] = {"lat": float(str(lat).replace('+', '')), "lon": float(str(lon).replace('+', ''))}
     return df, gj, a, centers
 
-def calculate_distance(lat1, lon1, lat2, lon2):
-    try:
-        r = 3958.8 
-        p1, p2 = np.radians(float(lat1)), np.radians(float(lat2))
-        dp, dl = np.radians(float(lat2)-float(lat1)), np.radians(float(lon2)-float(lon1))
-        a = np.sin(dp/2)**2 + np.cos(p1)*np.cos(p2)*np.sin(dl/2)**2
-        return r * 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
-    except: return 999.0
-
-def safe_num(val, is_money=False):
-    try:
-        if pd.isna(val) or str(val).strip().lower() in ['n/a', 'nan', '']: return "N/A"
-        n = float(str(val).replace('$', '').replace(',', '').replace('%', '').strip())
-        return f"${n:,.0f}" if is_money else (f"{n:,.1f}%" if n <= 100 and n > 0 else f"{n:,.0f}")
-    except: return "N/A"
-
 master_df, la_geojson, anchor_df, tract_centers = load_data()
 
-# --- 3. COUNTER LOGIC ---
+# --- 3. SESSION & COUNTER ---
 if "recom_count" not in st.session_state:
-    try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        hist = conn.read(worksheet="Sheet1", ttl=0)
-        st.session_state.recom_count = len(hist)
-    except:
-        st.session_state.recom_count = 0
+    st.session_state.recom_count = 0
+if "selected_tract" not in st.session_state:
+    st.session_state.selected_tract = None
 
 # --- 4. TOP BAR ---
 t1, t2 = st.columns([0.7, 0.3])
 with t1:
-    st.title(f"Strategic Portal: {st.session_state.get('a_val', 'Louisiana')}")
+    st.title(f"Strategic Portal: Louisiana")
 with t2:
     st.markdown(f"<div style='text-align:right; margin-top:20px;'><span class='counter-pill'>RECOMMENDATIONS: {st.session_state.recom_count}</span></div>", unsafe_allow_html=True)
 
 # --- 5. MAIN INTERFACE ---
 col_map, col_side = st.columns([0.55, 0.45])
 
-with col_side:
-    sid = st.session_state.get("selected_tract")
-    match = master_df[master_df['GEOID_KEY'] == sid]
-    
-    if not match.empty:
-        row = match.iloc[0]
-        st.markdown(f"<h3 style='color:#4ade80; margin-bottom:5px;'>TRACT: {sid}</h3>", unsafe_allow_html=True)
-        st.markdown(f"<p style='color:#94a3b8; font-size:1.2rem !important; font-weight:600;'>PARISH: {row.get('Parish')} | REGION: {row.get('Region', 'Louisiana')}</p>", unsafe_allow_html=True)
-        
-        def draw_ind(label, val):
-            v_clean = str(val).lower()
-            if "Metro" in label: is_yes = 'metropolitan' in v_clean
-            elif "Rural" in label: is_yes = 'rural' in v_clean
-            else: is_yes = 'yes' in v_clean
-            cls, txt = ("status-yes", "YES") if is_yes else ("status-no", "NO")
-            return f"<div class='indicator-box {cls}'><div class='indicator-label'>{label}</div><div class='indicator-value'>{txt}</div></div>"
-
-        i1, i2 = st.columns(2)
-        mv = row.get('Metro Status (Metropolitan/Rural)', '')
-        with i1:
-            st.markdown(draw_ind("Metro (Urban)", mv), unsafe_allow_html=True)
-            st.markdown(draw_ind("Rural", mv), unsafe_allow_html=True)
-        with i2:
-            st.markdown(draw_ind("NMTC Eligible", row.get('NMTC Eligible', '')), unsafe_allow_html=True)
-            st.markdown(draw_ind("NMTC Deeply Distressed", row.get('NMTC Distressed', '')), unsafe_allow_html=True)
-
-        for i in range(0, 8, 4):
-            cols = st.columns(4)
-            m_map = {"home": "Median Home Value", "dis": "Disability Population (%)", "pop65": "Population 65 years and over", "labor": "Labor Force Participation (%)", "unemp": "Unemployment Rate (%)", "hs": "HS Degree or More (%)", "bach": "Bachelor's Degree or More (%)", "web": "Broadband Internet (%)"}
-            keys = list(m_map.keys())[i:i+4]
-            for j, k in enumerate(keys):
-                cols[j].metric(m_map[k].split('(')[0], safe_num(row.get(m_map[k]), "Home" in m_map[k]))
-
-        st.markdown("<p style='font-weight:800; margin-top:25px; color:#ffffff; font-size:1.2rem;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
-        t_pos = tract_centers.get(sid)
-        if t_pos:
-            a_dist = anchor_df.copy()
-            a_dist['d'] = a_dist.apply(lambda x: calculate_distance(t_pos['lat'], t_pos['lon'], x['lat'], x['lon']), axis=1)
-            t5 = a_dist.sort_values('d').head(5)
-            tbl = "<table class='anchor-table'><tr><th>DISTANCE</th><th>NAME</th><th>TYPE</th></tr>"
-            for _, a in t5.iterrows():
-                tbl += f"<tr><td><b>{a['d']:.1f} mi</b></td><td>{a['name'].upper()}</td><td>{str(a.get('type','N/A')).upper()}</td></tr>"
-            st.markdown(tbl + "</table>", unsafe_allow_html=True)
-    else:
-        st.info("Select a tract on the map to begin analysis.")
-
 with col_map:
-    # Increased map height from 750 to 900 to match the full height of metrics + assets
     fig = go.Figure()
     fig.add_trace(go.Choroplethmapbox(
         geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_status'],
@@ -154,12 +82,67 @@ with col_map:
         colorscale=[[0, "rgba(200,200,200,0.1)"], [1, "rgba(74, 222, 128, 0.65)"]],
         showscale=False, marker_line_width=1, marker_line_color="#1e293b"
     ))
-    
     fig.update_layout(
         mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.2),
-        height=900, 
-        margin={"r":0,"t":0,"l":0,"b":0},
-        clickmode='event+select'
+        height=900, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
     
-    st.plotly_chart(fig, use_container_width=True, on_select="rerun")
+    # Capture Selection
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="oz_map")
+    
+    if map_event and "selection" in map_event and map_event["selection"]["points"]:
+        st.session_state.selected_tract = str(map_event["selection"]["points"][0]["location"]).zfill(11)
+
+with col_side:
+    sid = st.session_state.selected_tract
+    match = master_df[master_df['GEOID_KEY'] == sid]
+    
+    if not match.empty:
+        row = match.iloc[0]
+        st.markdown(f"<h3 style='color:#4ade80;'>TRACT: {sid}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#94a3b8;'>PARISH: {row.get('Parish')} | REGION: {row.get('Region', 'LA')}</p>", unsafe_allow_html=True)
+        
+        # 2x2 Indicators
+        i1, i2 = st.columns(2)
+        mv = str(row.get('Metro Status (Metropolitan/Rural)', '')).lower()
+        with i1:
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'metropolitan' in mv else 'status-no'}'><div class='indicator-label'>Metro (Urban)</div><div class='indicator-value'>{'YES' if 'metropolitan' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'rural' in mv else 'status-no'}'><div class='indicator-label'>Rural</div><div class='indicator-value'>{'YES' if 'rural' in mv else 'NO'}</div></div>", unsafe_allow_html=True)
+        with i2:
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Eligible</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Eligible','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='indicator-box {'status-yes' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'status-no'}'><div class='indicator-label'>NMTC Deeply Distressed</div><div class='indicator-value'>{'YES' if 'yes' in str(row.get('NMTC Distressed','')).lower() else 'NO'}</div></div>", unsafe_allow_html=True)
+
+        # 8 Demographic Metrics
+        m_map = {"Median Home Value": "home", "Disability Population (%)": "dis", "Population 65 years and over": "pop65", "Labor Force Participation (%)": "labor", "Unemployment Rate (%)": "unemp", "HS Degree or More (%)": "hs", "Bachelor's Degree or More (%)": "bach", "Broadband Internet (%)": "web"}
+        metrics_list = list(m_map.keys())
+        for i in range(0, 8, 4):
+            cols = st.columns(4)
+            for j, m_name in enumerate(metrics_list[i:i+4]):
+                val = row.get(m_name, "N/A")
+                # Format logic
+                try:
+                    f_val = f"${float(str(val).replace('$','').replace(',','')):,.0f}" if "Home" in m_name else f"{float(val):,.1f}%"
+                except: f_val = "N/A"
+                cols[j].metric(m_name.split('(')[0], f_val)
+
+        # Assets
+        st.markdown("<p style='font-weight:800; margin-top:20px; color:#ffffff;'>TOP 5 ASSET PROXIMITY</p>", unsafe_allow_html=True)
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_df = anchor_df.copy()
+            a_df['d'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
+            t5 = a_df.sort_values('d').head(5)
+            tbl = "<table class='anchor-table'><tr><th>DIST</th><th>NAME</th><th>TYPE</th></tr>"
+            for _, a in t5.iterrows():
+                tbl += f"<tr><td>{a['d']:.1f}m</td><td>{a['name'][:30]}</td><td>{str(a.get('type','')).upper()}</td></tr>"
+            st.markdown(tbl + "</table>", unsafe_allow_html=True)
+
+        # Nomination Form
+        st.divider()
+        st.subheader("STRATEGIC NOMINATION")
+        cat = st.selectbox("Investment Category", ["Energy Transition", "Cybersecurity", "Critical Mfg", "Defense Tech"])
+        just = st.text_area("Justification (Required)")
+        if st.button("SUBMIT NOMINATION", type="primary"):
+            if just:
+                st.session_state.recom_count += 1
+                st.success(f"Tract {sid}
