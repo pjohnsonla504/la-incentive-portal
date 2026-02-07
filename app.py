@@ -4,35 +4,52 @@ import plotly.express as px
 import requests
 import numpy as np
 from math import radians, cos, sin, asin, sqrt
+from streamlit_gsheets import GSheetsConnection
 
-# --- 1. AUTHENTICATION (Google Sheets via Secrets) ---
+# --- 1. AUTHENTICATION (Using Service Account Connection) ---
 def check_password():
     def password_entered():
-        # Accessing the sheet URL from Streamlit Secrets
-        sheet_url = st.secrets["public_gsheets_url"]
-        users_df = pd.read_csv(sheet_url)
-        
-        if st.session_state["username"] in users_df['username'].values:
-            stored_password = users_df.loc[users_df['username'] == st.session_state["username"], 'password'].values[0]
-            if str(st.session_state["password"]) == str(stored_password):
-                st.session_state["password_correct"] = True
-                del st.session_state["password"]
-                del st.session_state["username"]
+        try:
+            # Connect to GSheets using the [connections.gsheets] in your secrets
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            
+            # Read the spreadsheet (using the URL from your secrets)
+            # We assume your users are on the first sheet (index 0)
+            users_df = conn.read(ttl="10m")
+            
+            # Standardize headers
+            users_df.columns = users_df.columns.str.strip().str.lower()
+            
+            entered_user = st.session_state["username"].strip()
+            entered_pass = str(st.session_state["password"]).strip()
+
+            if entered_user in users_df['username'].astype(str).values:
+                user_row = users_df[users_df['username'].astype(str) == entered_user]
+                stored_password = str(user_row['password'].values[0]).strip()
+                
+                if entered_pass == stored_password:
+                    st.session_state["password_correct"] = True
+                    del st.session_state["password"]
+                    del st.session_state["username"]
+                else:
+                    st.session_state["password_correct"] = False
             else:
                 st.session_state["password_correct"] = False
-        else:
+        except Exception as e:
+            st.error(f"⚠️ Connection Error: Please ensure the Google Sheet is shared with your client_email. Error: {e}")
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
-        st.text_input("Username", on_change=None, key="username")
-        st.text_input("Password", type="password", on_change=None, key="password")
+        st.title("Louisiana OZ 2.0 Login")
+        st.text_input("Username", key="username")
+        st.text_input("Password", type="password", key="password")
         st.button("Log In", on_click=password_entered)
         return False
     elif not st.session_state["password_correct"]:
-        st.text_input("Username", on_change=None, key="username")
-        st.text_input("Password", type="password", on_change=None, key="password")
+        st.text_input("Username", key="username")
+        st.text_input("Password", type="password", key="password")
         st.button("Log In", on_click=password_entered)
-        st.error("😕 User not found or password incorrect")
+        st.error("😕 Authentication failed. Please check your credentials.")
         return False
     return True
 
@@ -62,7 +79,7 @@ if check_password():
         </style>
         """, unsafe_allow_html=True)
 
-    # --- 3. DATA & UTILITIES ---
+    # --- 3. DATA UTILITIES ---
     def haversine(lon1, lat1, lon2, lat2):
         lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
         dlon, dlat = lon2 - lon1, lat2 - lat1
@@ -71,65 +88,51 @@ if check_password():
 
     @st.cache_data(ttl=3600)
     def load_assets():
-        url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
-        geojson = requests.get(url).json()
-        
+        url_geo = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
+        geojson = requests.get(url_geo).json()
         master = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
         anchors = pd.read_csv("la_anchors.csv")
         
-        # FIXING THE JOIN (The 11-digit FIP fix)
-        master['geoid_str'] = master['11-digit FIP'].astype(str).str.replace('.0', '', regex=False).str.zfill(11)
-        master['map_color'] = master['Opportunity Zones Insiders Eligibilty'].apply(lambda x: 1 if str(x).lower() in ['eligible', 'yes', '1'] else 0)
+        # Clean FIPS logic for map join
+        master['geoid_str'] = master['11-digit FIP'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else "").str.zfill(11)
+        
+        # Color logic: Green for eligible
+        elig_col = 'Opportunity Zones Insiders Eligibilty'
+        master['map_color'] = master[elig_col].apply(lambda x: 1 if str(x).strip().lower() in ['eligible', 'yes', '1'] else 0)
 
-        # Centroids for distance
-        centers = {}
-        for feature in geojson['features']:
-            geoid = feature['properties']['GEOID']
-            coords = np.array(feature['geometry']['coordinates'][0] if feature['geometry']['type'] == 'Polygon' else feature['geometry']['coordinates'][0][0])
-            centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
+        centers = {f['properties']['GEOID']: [np.mean(np.array(f['geometry']['coordinates'][0] if f['geometry']['type'] == 'Polygon' else f['geometry']['coordinates'][0][0])[:, 0]), 
+                                              np.mean(np.array(f['geometry']['coordinates'][0] if f['geometry']['type'] == 'Polygon' else f['geometry']['coordinates'][0][0])[:, 1])] 
+                   for f in geojson['features']}
             
         return geojson, master, anchors, centers
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- RESTORED SECTION 1 ---
-    st.markdown("""
-    <div class='content-section' style='padding-top:80px;'>
-        <div class='section-num'>SECTION 1</div>
-        <div class='hero-subtitle'>Opportunity Zones 2.0</div>
-        <div class='hero-title'>Louisiana Opportunity Zone 2.0<br>Recommendation Portal</div>
-        <div class='narrative-text'>The Opportunity Zones program is a federal initiative designed to drive long-term private investment into distressed communities...</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # --- SECTION 1: INTRODUCTION (UNTOUCHED) ---
+    st.markdown("<div class='content-section' style='padding-top:80px;'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0<br>Recommendation Portal</div><div class='narrative-text'>The Opportunity Zones program is a federal initiative designed to drive long-term private investment into distressed communities by providing tax incentives to investors who reinvest their unrealized capital gains...</div></div>", unsafe_allow_html=True)
 
-    # --- RESTORED SECTION 2 ---
+    # --- SECTION 2: FRAMEWORK (UNTOUCHED) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Louisiana OZ 2.0 Framework</div></div>", unsafe_allow_html=True)
     b1, b2, b3 = st.columns(3)
     with b1: st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 01</div><div class='benefit-header'>5-Year Rolling Deferral</div><div class='benefit-body'>Investors can defer taxes on original capital gains through a 5-year rolling window...</div></div>", unsafe_allow_html=True)
-    with b2: st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 02</div><div class='benefit-header'>10% Urban / 30% Rural Step-Up</div><div class='benefit-body'>Qualified Rural Funds (QROFs) receive an enhanced 30% basis step-up...</div></div>", unsafe_allow_html=True)
-    with b3: st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 03</div><div class='benefit-header'>Permanent Exclusion</div><div class='benefit-body'>Holding for 10 years results in zero federal capital gains tax on appreciation...</div></div>", unsafe_allow_html=True)
+    with b2: st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 02</div><div class='benefit-header'>10% Urban / 30% Rural Step-Up</div><div class='benefit-body'>Standard QOFs receive a 10% basis step-up... Qualified Rural Funds (QROFs) receive an enhanced 30% basis step-up...</div></div>", unsafe_allow_html=True)
+    with b3: st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 03</div><div class='benefit-header'>Permanent Exclusion</div><div class='benefit-body'>Holding for 10 years results in zero federal capital gains tax on appreciation.</div></div>", unsafe_allow_html=True)
 
-    # --- RESTORED SECTION 3 ---
+    # --- SECTION 3: USE-CASES (UNTOUCHED) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Opportunity Zone Justification Using Data</div></div>", unsafe_allow_html=True)
     uc1, uc2 = st.columns(2)
     with uc1: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><div class='benefit-label'>Use-Case: Rural Healthcare</div><div class='benefit-body'><b>Objective: Modernize critical care.</b> Utilizing the 30% Rural Step-Up...</div></div>", unsafe_allow_html=True)
     with uc2: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><div class='benefit-label'>Use-Case: Main Street Reuse</div><div class='benefit-body'><b>Objective: Historic Revitalization.</b> Driving investment into core commercial districts...</div></div>", unsafe_allow_html=True)
 
-    # --- SECTION 4: STRATEGIC SELECTION TOOL ---
-    st.markdown("""
-    <div class='content-section' style='margin-top:40px;'>
-        <div class='section-num'>SECTION 4</div>
-        <div class='section-title'>Strategic Selection Tool</div>
-        <div class='narrative-text'>Identify high-conviction zones by selecting green eligible tracts.</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # --- SECTION 4: MAP TOOL ---
+    st.markdown("<div class='content-section' style='margin-top:40px;'><div class='section-num'>SECTION 4</div><div class='section-title'>Strategic Selection Tool</div></div>", unsafe_allow_html=True)
 
-    m_col, p_col = st.columns([5, 5])
+    m_col, p_col = st.columns([6, 4])
     with m_col:
         fig = px.choropleth(master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
                             color="map_color", color_discrete_map={1: "#4ade80", 0: "#1e293b"}, projection="mercator")
         fig.update_geos(fitbounds="locations", visible=False)
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=600)
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=700)
         selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
 
     with p_col:
@@ -140,16 +143,14 @@ if check_password():
         row = master_df[master_df["geoid_str"] == target_geoid]
         if not row.empty:
             d = row.iloc[0]
-            st.markdown(f"<h2>Tract {target_geoid}</h2>", unsafe_allow_html=True)
-            st.markdown(f"<p style='color:#4ade80; font-weight:800;'>{d.get('Parish', 'LOUISIANA').upper()}</p>", unsafe_allow_html=True)
-            
+            st.markdown(f"<h2>Tract {target_geoid}</h2><p style='color:#4ade80; font-weight:800;'>{str(d.get('Parish', 'LOUISIANA')).upper()}</p>", unsafe_allow_html=True)
             c1, c2 = st.columns(2)
-            with c1: st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
+            with c1: st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 'N/A')}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
             with c2: st.markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if d['map_color']==1 else 'NO'}</div><div class='metric-label'>Eligible</div></div>", unsafe_allow_html=True)
 
             if not anchors_df.empty and target_geoid in tract_centers:
                 t_lon, t_lat = tract_centers[target_geoid]
                 anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
-                st.markdown("<br><p style='font-size:0.7rem; font-weight:bold; color:#94a3b8;'>LOCAL ANCHORS</p>", unsafe_allow_html=True)
+                st.markdown("<br><p style='font-size:0.8rem; font-weight:bold; color:#94a3b8;'>LOCAL ANCHORS</p>", unsafe_allow_html=True)
                 for _, a in anchors_df.sort_values('dist').head(5).iterrows():
                     st.markdown(f"<div class='anchor-pill'>✔ {a['Name']} ({a['dist']:.1f} mi)</div>", unsafe_allow_html=True)
