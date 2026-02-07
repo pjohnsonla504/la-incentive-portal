@@ -76,7 +76,7 @@ if check_password():
             with open("tl_2025_22_tract.json") as f:
                 geojson = json.load(f)
         
-        # ATTEMPT 2: Fallback to Web if local missing
+        # ATTEMPT 2: Fallback to Web
         if not geojson:
             geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
             try:
@@ -92,6 +92,7 @@ if check_password():
         anchors = read_csv_safe("la_anchors.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
+        # ELIGIBILITY: Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['map_color'] = master[elig_col].apply(lambda x: 1 if str(x).strip().lower() in ['eligible', 'yes', '1'] else 0)
 
@@ -108,7 +109,7 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- SECTION 1: HERO ---
+    # --- SECTION 1: HERO (Restored) ---
     st.markdown("""
         <div class='content-section'>
             <div class='section-num'>SECTION 1</div>
@@ -122,7 +123,7 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2: FRAMEWORK ---
+    # --- SECTION 2: FRAMEWORK (Restored) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>30% Rural Step-Up</h3><p>Qualified Rural Opportunity Funds receive an enhanced 30% basis step-up, significantly increasing post-tax returns for non-metro projects.</p></div>", unsafe_allow_html=True)
@@ -130,14 +131,14 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Hold for 10 years to pay zero federal capital gains tax on the appreciation of the new OZ 2.0 asset.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 3: DATA JUSTIFICATION ---
+    # --- SECTION 3: DATA JUSTIFICATION (Restored) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Investment Justification</div>", unsafe_allow_html=True)
     u1, u2 = st.columns(2)
     with u1: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><h4>Institutional Anchors</h4><p>We prioritize tracts within a 5-mile radius of major medical centers and universities to ensure stable demand and workforce participation.</p></div>", unsafe_allow_html=True)
     with u2: st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><h4>Industrial Revitalization</h4><p>Leveraging Louisiana's port infrastructure and logistics corridors to capitalize on Rural Step-Up incentives.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 4: MAP & BOUNDARIES ---
+    # --- SECTION 4: MAP ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 4</div><div class='section-title'>Tract Boundary Analysis</div>", unsafe_allow_html=True)
     
     if gj:
@@ -145,12 +146,15 @@ if check_password():
         with m_col:
             fig = px.choropleth_mapbox(
                 master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
-                color="map_color", color_discrete_map={1: "#4ade80", 0: "rgba(30,41,59,0.3)"},
+                color="map_color", 
+                color_discrete_map={1: "#4ade80", 0: "rgba(30,41,59,0.2)"},
                 mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8},
-                opacity=0.6
+                opacity=0.7
             )
-            # THIS LINE RENDERS THE CENSUS BOUNDARIES
+            # REMOVES COLORBAR & ADDS BOUNDARY GRID
+            fig.update_coloraxes(showscale=False) 
             fig.update_traces(marker_line_width=0.7, marker_line_color="#475569")
+            
             fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=750)
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
@@ -163,16 +167,17 @@ if check_password():
             if not row.empty:
                 d = row.iloc[0]
                 st.markdown(f"### Tract {current_id}")
+                st.markdown(f"<p style='color:#4ade80;'>{d.get('Parish', 'Louisiana').upper()} PARISH</p>", unsafe_allow_html=True)
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
                 if not anchors_df.empty and current_id in tract_centers:
                     t_lon, t_lat = tract_centers[current_id]
                     anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
+                    st.write("---")
                     st.caption("NEAREST ANCHORS")
                     for _, a in anchors_df.sort_values('dist').head(4).iterrows():
                         st.write(f"📍 {a['Name']} ({a['dist']:.1f} mi)")
     else:
-        st.error("⚠️ Map service is offline.")
-        st.info("To fix: Upload 'tl_2025_22_tract.json' to your GitHub repository.")
+        st.error("⚠️ Map service offline.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
