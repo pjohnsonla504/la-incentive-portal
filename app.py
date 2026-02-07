@@ -164,4 +164,38 @@ with col_side:
                 num = float(str(v).replace('%','').replace(',','').replace('$','').strip())
                 if is_d: return f"${num:,.0f}"
                 return f"{num:,.1f}%" if is_p else f"{num:,.0f}"
-            except:
+            except: return "N/A"
+
+        r1a, r1b = st.columns(2)
+        r1a.metric("Poverty Rate", f_val(cols['pov_rate']))
+        r1b.metric("Unemployment", f_val(cols['unemp']))
+        
+        r2a, r2b = st.columns(2)
+        r2a.metric("Labor Participation", f_val(cols['labor']))
+        r2b.metric("Median Home Value", f_val(cols['home'], False, True))
+        
+        r3a, r3b = st.columns(2)
+        r3a.metric("High School Grad+", f_val(cols['hs']))
+        r3b.metric("Bachelor's Degree+", f_val(cols['bach']))
+        
+        r4a, r4b = st.columns(2)
+        try:
+            bp = float(str(row.get(cols['pov_base'])).replace(',',''))
+            r65 = float(str(row.get("Population 65 years and over")).replace(',',''))
+            r4a.metric("Base Population", f"{bp:,.0f}")
+            r4b.metric("Elderly (65+)", f"{(r65/bp)*100:,.1f}%")
+        except:
+            r4a.metric("Base Population", "N/A"); r4b.metric("Elderly (65+)", "N/A")
+
+        st.markdown("<div class='section-label'>7 Nearest Strategic Assets</div>", unsafe_allow_html=True)
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_df = anchor_df.copy()
+            a_df['dist'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
+            t7 = a_df.sort_values('dist').head(7)
+            tbl = "<table class='anchor-table'><thead><tr><th>DIST</th><th>ASSET</th><th>TYPE</th></tr></thead><tbody>"
+            for _, a in t7.iterrows():
+                tbl += f"<tr><td><b>{a['dist']:.1f}m</b></td><td>{a['name'].upper()}</td><td>{str(a.get('type','')).upper()}</td></tr>"
+            st.markdown(tbl + "</tbody></table>", unsafe_allow_html=True)
+    else:
+        st.info("Select an eligible (green) census tract to view the Strategic Profile.")
