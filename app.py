@@ -26,15 +26,18 @@ st.markdown("""
     .hero-subtitle { font-size: 0.9rem; color: #4ade80; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 30px; }
     .narrative-text { font-size: 1.1rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 25px; max-width: 1100px; }
     
-    /* Progress Bar for Section 4 */
-    .section-progress-container { width: 100%; background-color: #1e293b; height: 8px; margin: 20px 0 40px 0; border-radius: 4px; overflow: hidden; }
-    .section-progress-fill { width: 75%; height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); }
-
+    /* Benefit Box Styling (Sections 2 & 3) */
     .benefit-card { background: #161b28; padding: 30px; border: 1px solid #2d3748; border-radius: 4px; height: 100%; transition: all 0.3s ease; }
-    .benefit-label { font-size: 0.8rem; color: #4ade80; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; }
-    .benefit-header { font-size: 1.6rem; font-weight: 900; color: #ffffff; margin-bottom: 15px; }
-    .benefit-body { font-size: 1.05rem; color: #f8fafc; line-height: 1.6; }
+    .benefit-card:hover { border-color: #4ade80; background: #1c2331; }
+    .benefit-label { font-size: 0.8rem; color: #4ade80; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em; }
+    .benefit-header { font-size: 1.6rem; font-weight: 900; color: #ffffff; margin-bottom: 15px; line-height: 1.2; }
+    .benefit-body { font-size: 1.05rem; color: #f8fafc; line-height: 1.6; font-weight: 400; }
 
+    /* Section 4 Progress Bar */
+    .section-progress-container { width: 100%; background-color: #1e293b; height: 8px; margin: 20px 0 40px 0; border-radius: 4px; overflow: hidden; }
+    .section-progress-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); }
+
+    /* Metric Cards */
     .metric-card { background: #111827; padding: 20px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; }
     .metric-value { font-size: 1.6rem; font-weight: 900; color: #4ade80; }
     .metric-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-top: 5px; }
@@ -44,7 +47,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. UTILITIES & DATA ---
+# --- 2. DATA UTILITIES ---
 def haversine(lon1, lat1, lon2, lat2):
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
     dlon, dlat = lon2 - lon1, lat2 - lat1
@@ -70,28 +73,53 @@ def load_assets():
     anchors = read_csv_safe("la_anchors.csv")
     
     if not master.empty:
-        # Handling the 11-digit FIPCode column
-        fip_match = [c for c in master.columns if '11-digit' in c or 'fipcode' in c.lower()]
-        if fip_match:
-            master['geoid_str'] = master[fip_match[0]].astype(str).str.replace('.0', '', regex=False).str.zfill(11)
-        
-        # Eligibility for map color
-        elig_match = [c for c in master.columns if 'insiders' in c.lower() or 'eligibilty' in c.lower()]
-        if elig_match:
-            master['map_color'] = master[elig_match[0]].apply(lambda x: 1 if str(x).lower() in ['eligible', 'yes', '1'] else 0)
+        fip_cols = [c for c in master.columns if '11-digit' in c or 'fipcode' in c.lower()]
+        if fip_cols:
+            master['geoid_str'] = master[fip_cols[0]].astype(str).str.replace('.0', '', regex=False).str.zfill(11)
+        master['map_color'] = master['Opportunity Zones Insiders Eligibilty'].apply(lambda x: 1 if str(x).lower() in ['eligible', 'yes', '1'] else 0)
 
-    centroids = {f['properties']['GEOID']: [np.mean(np.array(f['geometry']['coordinates'][0])[:,0]), np.mean(np.array(f['geometry']['coordinates'][0])[:,1])] 
-                 for f in geojson.get('features', []) if f['geometry']['type'] == 'Polygon'}
+    centroids = {}
+    for feature in geojson.get('features', []):
+        props = feature.get('properties', {})
+        geom = feature.get('geometry', {})
+        coords = np.array(geom['coordinates'][0] if geom['type'] == 'Polygon' else geom['coordinates'][0][0])
+        centroids[props['GEOID']] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
         
     return geojson, master, anchors, centroids
 
 gj, master_df, anchors_df, tract_centers = load_assets()
 
-# --- SECTIONS 1, 2, 3 (Narrative Text Content) ---
-st.markdown("<div class='content-section' style='padding-top:80px;'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0<br>Recommendation Portal</div><div class='narrative-text'>The Opportunity Zones program... (content preserved)</div></div>", unsafe_allow_html=True)
-# [Section 2 and 3 Cards go here, preserved as per your script]
+# --- SECTION 1: INTRODUCTION (YOUR ORIGINAL CONTENT) ---
+st.markdown("""
+<div class='content-section' style='padding-top:80px;'>
+    <div class='section-num'>SECTION 1</div>
+    <div class='hero-subtitle'>Opportunity Zones 2.0</div>
+    <div class='hero-title'>Louisiana Opportunity Zone 2.0<br>Recommendation Portal</div>
+    <div class='narrative-text'>
+        The Opportunity Zones program is a federal initiative designed to drive long-term private investment into distressed communities...
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-# --- SECTION 4: STRATEGIC SELECTION TOOL ---
+# --- SECTION 2: FRAMEWORK (YOUR ORIGINAL CONTENT) ---
+st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Louisiana OZ 2.0 Framework</div></div>", unsafe_allow_html=True)
+b1, b2, b3 = st.columns(3)
+with b1:
+    st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 01</div><div class='benefit-header'>5-Year Rolling Deferral</div><div class='benefit-body'>Investors can defer taxes on original capital gains through a 5-year rolling window.</div></div>", unsafe_allow_html=True)
+with b2:
+    st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 02</div><div class='benefit-header'>30% Rural Step-Up</div><div class='benefit-body'>Qualified Rural Funds receive an enhanced 30% basis step-up, excluding nearly a third of the original gain.</div></div>", unsafe_allow_html=True)
+with b3:
+    st.markdown("<div class='benefit-card'><div class='benefit-label'>Benefit 03</div><div class='benefit-header'>Permanent Exclusion</div><div class='benefit-body'>Holding the investment for at least 10 years results in zero federal capital gains tax on appreciation.</div></div>", unsafe_allow_html=True)
+
+# --- SECTION 3: USE-CASES (YOUR ORIGINAL CONTENT) ---
+st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Opportunity Zone Justification Using Data</div></div>", unsafe_allow_html=True)
+uc1, uc2 = st.columns(2)
+with uc1:
+    st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><div class='benefit-label'>Use-Case: Rural Healthcare</div><div class='benefit-body'><b>Objective: Modernize critical care.</b> Utilizing the 30% Rural Step-Up to offset construction costs.</div></div>", unsafe_allow_html=True)
+with uc2:
+    st.markdown("<div class='benefit-card' style='border-left: 5px solid #4ade80;'><div class='benefit-label'>Use-Case: Main Street Reuse</div><div class='benefit-body'><b>Objective: Historic Revitalization.</b> Driving investment into core commercial districts.</div></div>", unsafe_allow_html=True)
+
+# --- SECTION 4: STRATEGIC SELECTION TOOL (NEW LOGIC) ---
 st.markdown("""
 <div class='content-section' style='margin-top:40px;'>
     <div class='section-num'>SECTION 4</div>
@@ -106,12 +134,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if not master_df.empty:
-    m_col, p_col = st.columns([4, 6])
+    m_col, p_col = st.columns([5, 5])
     with m_col:
         fig = px.choropleth(master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
                             color="map_color", color_discrete_map={1: "#4ade80", 0: "#1e293b"}, projection="mercator")
         fig.update_geos(fitbounds="locations", visible=False)
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=650)
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=700)
         selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
 
     with p_col:
@@ -123,19 +151,19 @@ if not master_df.empty:
         if not row.empty:
             d = row.iloc[0]
             st.markdown(f"<h2>Tract {target_geoid}</h2>", unsafe_allow_html=True)
-            st.markdown(f"<p style='color:#4ade80; font-weight:bold;'>{d.get('Parish', 'LOUISIANA').upper()}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color:#4ade80; font-weight:800;'>{d.get('Parish', 'LOUISIANA').upper()} PARISH</p>", unsafe_allow_html=True)
 
             c1, c2, c3 = st.columns(3)
             with c1:
-                pov_key = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get(pov_key, 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
+                pov = d.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 'N/A')
+                st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
             with c2:
-                inc_key = 'Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)'
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>${d.get(inc_key, 0)/1000:.1f}K</div><div class='metric-label'>Median Income</div></div>", unsafe_allow_html=True)
+                inc = d.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)
+                st.markdown(f"<div class='metric-card'><div class='metric-value'>${inc/1000:.1f}K</div><div class='metric-label'>Median Income</div></div>", unsafe_allow_html=True)
             with c3:
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if d['map_color']==1 else 'NO'}</div><div class='metric-label'>OZ 2.0 Eligible</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if d['map_color']==1 else 'NO'}</div><div class='metric-label'>Eligible</div></div>", unsafe_allow_html=True)
 
-            st.markdown("<p style='text-transform:uppercase; font-size:0.8rem; margin-top:25px; font-weight:bold; color:#94a3b8;'>Nearest Strategic Anchors</p>", unsafe_allow_html=True)
+            st.markdown("<p style='text-transform:uppercase; font-size:0.8rem; margin-top:30px; font-weight:bold; color:#94a3b8;'>Nearest Strategic Anchors</p>", unsafe_allow_html=True)
             if not anchors_df.empty and target_geoid in tract_centers:
                 t_lon, t_lat = tract_centers[target_geoid]
                 anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
