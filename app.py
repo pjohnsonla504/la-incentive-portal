@@ -73,18 +73,18 @@ def load_data():
         try: return float(str(val).replace('%','').replace(',','').replace('$','').strip())
         except: return 0.0
 
-    # NMTC & DISTRESS CALCULATIONS
+    # Logic Calculations
     df['pov_val'] = df[POV_COL].apply(clean) if POV_COL in df.columns else 0.0
     df['unemp_val'] = df[unemp_col].apply(clean) if unemp_col else 0.0
-    
     df['is_nmtc'] = df['pov_val'] >= 20.0
     df['is_deeply'] = (df['pov_val'] > 40.0) | (df['unemp_val'] >= 10.5)
 
-    # MAP FILTER: ONLY ELIGIBLE TRACTS GREEN
+    # MAP FILTER: Highlight only eligible tracts in green
     elig_col = find_col(['5-year', 'eligibility'])
     df['is_eligible'] = df[elig_col].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']) if elig_col else False
-    # Set non-eligible to NaN so they don't get colored
-    df['map_color'] = np.where(df['is_eligible'], 1, np.nan)
+    
+    # Create map-specific dataframe containing ONLY eligible rows
+    map_df = df[df['is_eligible'] == True].copy()
 
     # Load Assets & GeoJSON
     try: a = pd.read_csv("la_anchors.csv")
@@ -100,12 +100,12 @@ def load_data():
         if 'INTPTLAT' in p:
             centers[gid] = {"lat": float(str(p['INTPTLAT']).replace('+','')), "lon": float(str(p['INTPTLON']).replace('+',''))}
 
-    return df, gj, a, centers, {
+    return df, map_df, gj, a, centers, {
         "pov": POV_COL, "base": BASE_COL, "unemp": unemp_col, "metro": metro_col, 
         "hs": edu_hs, "bach": edu_bach, "labor": labor_col, "home": home_val
     }
 
-master_df, la_geojson, anchor_df, tract_centers, cols = load_data()
+master_df, map_df, la_geojson, anchor_df, tract_centers, cols = load_data()
 
 # --- 3. SESSION STATE ---
 if "recom_count" not in st.session_state: st.session_state.recom_count = 0
@@ -122,19 +122,22 @@ with t2:
 col_map, col_side = st.columns([0.55, 0.45])
 
 with col_map:
-    # Lighter map, strict green for eligible
+    # Use map_df so ONLY eligible tracts are rendered
     fig = go.Figure(go.Choroplethmapbox(
-        geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_color'],
+        geojson=la_geojson, 
+        locations=map_df['GEOID_KEY'], 
+        z=np.ones(len(map_df)), # Uniform green
         featureidkey="properties.GEOID_MATCH",
         colorscale=[[0, "rgba(34, 197, 94, 0.75)"], [1, "rgba(34, 197, 94, 0.75)"]],
-        showscale=False, marker_line_width=0.5, marker_line_color="#1e293b",
-        nan_color="rgba(0,0,0,0)" # Non-eligible are transparent
+        showscale=False, 
+        marker_line_width=1, 
+        marker_line_color="#1e293b"
     ))
     fig.update_layout(
         mapbox=dict(style="carto-positron", center={"lat": 31.0, "lon": -91.8}, zoom=6.5),
         height=1020, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
     )
-    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="v64_map")
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="v65_map")
     if map_event and map_event.get("selection") and map_event["selection"]["points"]:
         st.session_state.selected_tract = str(map_event["selection"]["points"][0]["location"]).zfill(11)
         st.rerun()
@@ -144,6 +147,7 @@ with col_side:
     st.progress(min(st.session_state.recom_count / 150, 1.0))
 
     sid = st.session_state.selected_tract
+    # Match against master_df to get full details for any selected tract
     match = master_df[master_df['GEOID_KEY'] == sid]
     
     if not match.empty:
@@ -165,9 +169,8 @@ with col_side:
         with m3: st.markdown(f"<div class='indicator-box {'status-yes' if row['is_nmtc'] else 'status-no'}'><div class='indicator-label'>NMTC</div><div class='indicator-value'>{'YES' if row['is_nmtc'] else 'NO'}</div></div>", unsafe_allow_html=True)
         with m4: st.markdown(f"<div class='indicator-box {'status-yes' if row['is_deeply'] else 'status-no'}'><div class='indicator-label'>Deeply Dist.</div><div class='indicator-value'>{'YES' if row['is_deeply'] else 'NO'}</div></div>", unsafe_allow_html=True)
 
-        # 8 METRIC CARDS (LARGE / WHITE TEXT)
+        # 8 METRICS
         st.markdown("<div class='section-label'>Economic & Demographic Profile</div>", unsafe_allow_html=True)
-        
         def f_val(c, is_p=True, is_d=False):
             v = row.get(c, 0)
             try:
@@ -176,24 +179,15 @@ with col_side:
                 return f"{num:,.1f}%" if is_p else f"{num:,.0f}"
             except: return "N/A"
 
-        c1, c2 = st.columns(2)
-        c1.metric("Poverty Rate", f_val(cols['pov']))
-        c2.metric("Unemployment", f_val(cols['unemp']))
-        
-        c3, c4 = st.columns(2)
-        c3.metric("Labor Participation", f_val(cols['labor']))
-        c4.metric("Median Home Value", f_val(cols['home'], False, True))
-        
-        c5, c6 = st.columns(2)
-        c5.metric("High School Grad+", f_val(cols['hs']))
-        c6.metric("Bachelor's Degree+", f_val(cols['bach']))
+        c1, c2 = st.columns(2); c1.metric("Poverty Rate", f_val(cols['pov'])); c2.metric("Unemployment", f_val(cols['unemp']))
+        c3, c4 = st.columns(2); c3.metric("Labor Participation", f_val(cols['labor'])); c4.metric("Median Home Value", f_val(cols['home'], False, True))
+        c5, c6 = st.columns(2); c5.metric("High School Grad+", f_val(cols['hs'])); c6.metric("Bachelor's Degree+", f_val(cols['bach']))
         
         c7, c8 = st.columns(2)
         try:
             bp = float(str(row.get(cols['base'])).replace(',',''))
             r65 = float(str(row.get("Population 65 years and over")).replace(',',''))
-            c7.metric("Base Population", f"{bp:,.0f}")
-            c8.metric("Elderly (65+)", f"{(r65/bp)*100:,.1f}%")
+            c7.metric("Base Population", f"{bp:,.0f}"); c8.metric("Elderly (65+)", f"{(r65/bp)*100:,.1f}%")
         except:
             c7.metric("Base Population", "N/A"); c8.metric("Elderly (65+)", "N/A")
 
@@ -212,7 +206,6 @@ with col_side:
         st.divider()
         if st.button("EXECUTE STRATEGIC NOMINATION", type="primary", use_container_width=True):
             st.session_state.recom_count += 1
-            st.success(f"Tract {sid} Nominated.")
-            st.rerun()
+            st.success(f"Tract {sid} Nominated."); st.rerun()
     else:
         st.info("Select a green census tract on the map to load the Strategic Profile.")
