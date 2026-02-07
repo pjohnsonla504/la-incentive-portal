@@ -25,8 +25,8 @@ st.markdown("""
     .section-title { font-size: 2rem; font-weight: 900; margin-bottom: 15px; letter-spacing: -0.02em; }
     .narrative-text { font-size: 1rem; line-height: 1.6; color: #94a3b8; margin-bottom: 20px; }
     
-    /* Section 4: Compact Portal Styles */
-    .portal-container { padding: 20px; background: #0b0f19; border-top: 2px solid #1e293b; }
+    /* Section 3: Portal Styles */
+    .portal-container { padding: 40px 0; background: #0b0f19; max-width: 1200px; margin: 0 auto; }
     .metric-card { background: #161b28; padding: 10px; border: 1px solid #2d3748; border-radius: 4px; }
     .metric-label { font-size: 0.6rem; color: #4ade80; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
     .metric-value { font-size: 1.15rem; font-weight: 900; color: #ffffff; }
@@ -38,6 +38,11 @@ st.markdown("""
 
     /* Progress Footer */
     .progress-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0b0f19; border-top: 1px solid #4ade80; padding: 10px 40px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; }
+    
+    /* Tables */
+    .stTable { font-size: 0.7rem !important; margin-top: 5px; }
+    thead tr th { background-color: #161b28 !important; color: #4ade80 !important; font-size: 0.6rem !important; padding: 4px !important; }
+    tbody tr td { padding: 4px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -77,6 +82,7 @@ def load_data():
     df['is_nmtc'] = df['pov_val'] >= 20.0
     df['is_deeply'] = (df['pov_val'] > 40.0) | (df[cols['unemp']].apply(clean) >= 10.5 if cols['unemp'] else False)
 
+    # Tracks highlighted green are only those eligible for Opportunity Zone 2.0.
     elig_col = find_col(['5-year', 'eligibility'])
     df['is_eligible'] = df[elig_col].astype(str).str.lower().str.strip().isin(['yes', 'eligible', 'y']) if elig_col else df['is_nmtc']
     df['map_z'] = np.where(df['is_eligible'], 1, 0)
@@ -130,44 +136,66 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# --- SECTION 3: OPPORTUNITY ZONE JUSTIFICATION ---
+# --- SECTION 3: STRATEGIC SELECTION TOOL (MAP + DATA) ---
 st.markdown("""
-<div class='content-section'>
+<div class='portal-container'>
     <div class='section-num'>SECTION 3</div>
-    <div class='section-title'>Opportunity Zone Justification Using Data</div>
+    <div class='section-title'>Strategic Selection Tool</div>
     <div class='narrative-text'>
-        Strategic deployment requires aligning demographic distress with community assets. Below are two model justifications for how OZ 2.0 capital can be targeted to maximize both social impact and federal basis benefits.
+        Utilize the interactive map below to identify high-conviction Opportunity Zones. Selecting an eligible (green) tract will generate a comprehensive demographic profile and identify proximity to key industrial and community anchors.
     </div>
-""")
+""", unsafe_allow_html=True)
 
-ex_c1, ex_c2 = st.columns(2)
-with ex_c1:
-    st.markdown("""
-    <div class='metric-card' style='border-top: 4px solid #4ade80;'>
-        <div class='metric-label'>Example A: Rural Healthcare Expansion</div>
-        <p style='font-size:0.85rem; color:#cbd5e1; margin-top:10px;'>
-            <b>Data:</b> High Poverty | < 50% Rural Broadband Access<br>
-            <b>Asset:</b> Regional Transit Node (within 3 mi)<br>
-            <b>Justification:</b> Utilizing the 2.0 rural healthcare priority, this investment funds a modernized clinic in a parish with high elderly populations, leveraging the basis step-up to offset construction costs in underserved areas.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+map_col, profile_col = st.columns([0.45, 0.55], gap="medium")
 
-with ex_c2:
-    st.markdown("""
-    <div class='metric-card' style='border-top: 4px solid #4ade80;'>
-        <div class='metric-label'>Example B: Adaptive Reuse & Broadband Hub</div>
-        <p style='font-size:0.85rem; color:#cbd5e1; margin-top:10px;'>
-            <b>Data:</b> Deeply Distressed | Main Street District<br>
-            <b>Asset:</b> Historic Municipal Building<br>
-            <b>Justification:</b> This project revitalizes a historic Main Street structure into a multi-use hub. By integrating OZ 2.0 digital infrastructure incentives, the project finances high-speed fiber adaptive reuse for local small businesses.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+with map_col:
+    fig = go.Figure(go.Choroplethmapbox(
+        geojson=la_geojson, locations=master_df['GEOID_KEY'], z=master_df['map_z'],
+        featureidkey="properties.GEOID_MATCH",
+        colorscale=[[0, "rgba(255,255,255,0.02)"], [1, "#4ade80"]],
+        showscale=False, marker_line_width=0.2, marker_line_color="#2d3748"
+    ))
+    fig.update_layout(
+        mapbox=dict(style="carto-darkmatter", center={"lat": 30.8, "lon": -91.8}, zoom=5.8),
+        height=550, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select'
+    )
+    map_event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="selection_map")
+    
+    sid = None
+    if map_event and map_event.get("selection") and map_event["selection"]["points"]:
+        sid = str(map_event["selection"]["points"][0]["location"]).zfill(11)
 
+with profile_col:
+    if sid:
+        row = master_df[master_df['GEOID_KEY'] == sid].iloc[0]
+        st.markdown(f"<h4 style='margin:0; font-size:1.3rem;'>TRACT {sid} <span style='color:#4ade80; font-size:0.9rem; margin-left:10px;'>{row.get('Parish', '').upper()} PARISH</span></h4>", unsafe_allow_html=True)
+        
+        m_val = str(row.get(cols['metro'], '')).lower()
+        st.markdown(f"""
+            <div style='margin: 12px 0;'>
+                <span class='indicator-pill {'active' if 'metro' in m_val else 'inactive'}'>URBAN</span>
+                <span class='indicator-pill {'active' if 'rural' in m_val else 'inactive'}'>RURAL</span>
+                <span class='indicator-pill {'active' if row['is_nmtc'] else 'inactive'}'>NMTC</span>
+                <span class='indicator-pill {'active' if row['is_deeply'] else 'inactive'}'>DEEP DISTRESS</span>
+            </div>
+        """, unsafe_allow_html=True)
 
+        def f_val(c, is_p=True, is_d=False):
+            v = row.get(c, 0)
+            try:
+                num = float(str(v).replace('%','').replace(',','').replace('$','').strip())
+                return f"${num:,.0f}" if is_d else (f"{num:,.1f}%" if is_p else f"{num:,.0f}")
+            except: return "N/A"
 
-st.markdown("</div>", unsafe_allow_html=True)
-
-# --- SECTION 4: INTERACTIVE PORTAL PLACEHOLDER ---
-st.markdown("<div class='portal-container'><div class='section-num'>SECTION 4</div><div class='section-title'>Strategic Selection Tool</div><p style='color:#64748b;'>Section 4 edits pending next response...</p></div>", unsafe_allow_html=True)
+        r1, r2, r3, r4 = st.columns(4)
+        r1.markdown(f"<div class='metric-card'><div class='metric-label'>Poverty</div><div class='metric-value'>{f_val(cols['pov'])}</div></div>", unsafe_allow_html=True)
+        r2.markdown(f"<div class='metric-card'><div class='metric-label'>Unempl.</div><div class='metric-value'>{f_val(cols['unemp'])}</div></div>", unsafe_allow_html=True)
+        r3.markdown(f"<div class='metric-card'><div class='metric-label'>Labor</div><div class='metric-value'>{f_val(cols['labor'])}</div></div>", unsafe_allow_html=True)
+        r4.markdown(f"<div class='metric-card'><div class='metric-label'>Home Val</div><div class='metric-value'>{f_val(cols['home'], False, True)}</div></div>", unsafe_allow_html=True)
+        
+        r5, r6, r7, r8 = st.columns(4)
+        r5.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>HS Grad+</div><div class='metric-value'>{f_val(cols['hs'])}</div></div>", unsafe_allow_html=True)
+        r6.markdown(f"<div class='metric-card' style='margin-top:8px;'><div class='metric-label'>Bach+</div><div class='metric-value'>{f_val(cols['bach'])}</div></div>", unsafe_allow_html=True)
+        try:
+            bp = float(str(row.get(cols['base'])).replace(',',''))
+            r65 = float(
