@@ -199,4 +199,20 @@ with col_side:
 
         # ANCHORS
         st.markdown("<div class='section-label'>7 Nearest Strategic Assets</div>", unsafe_allow_html=True)
-        t_pos = tract_centers.get(
+        t_pos = tract_centers.get(sid)
+        if t_pos:
+            a_df = anchor_df.copy()
+            a_df['dist'] = a_df.apply(lambda x: np.sqrt((t_pos['lat']-x['lat'])**2 + (t_pos['lon']-x['lon'])**2) * 69, axis=1)
+            t7 = a_df.sort_values('dist').head(7)
+            tbl = "<table class='anchor-table'><tr><th>DIST</th><th>ASSET</th><th>TYPE</th></tr>"
+            for _, a in t7.iterrows():
+                tbl += f"<tr><td><b>{a['dist']:.1f}m</b></td><td>{a['name'].upper()}</td><td>{str(a.get('type','')).upper()}</td></tr>"
+            st.markdown(tbl + "</table>", unsafe_allow_html=True)
+
+        st.divider()
+        if st.button("EXECUTE STRATEGIC NOMINATION", type="primary", use_container_width=True):
+            st.session_state.recom_count += 1
+            st.success(f"Tract {sid} Nominated.")
+            st.rerun()
+    else:
+        st.info("Select a green census tract on the map to load the Strategic Profile.")
