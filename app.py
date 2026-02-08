@@ -138,82 +138,109 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- SECTION 5: RECOMMENDATION TOOL (MAP & LOG TABLE) ---
-    st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 5</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
+# --- SECTION 5: RECOMMENDATION TOOL (MAP, NARRATIVE & LOG TABLE) ---
+    st.markdown("""
+        <div class='content-section' style='border-bottom:none;'>
+            <div class='section-num'>SECTION 5</div>
+            <div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>
+        </div>
+    """, unsafe_allow_html=True)
     
-    # Initialize session state for the log if not present
+    # Initialize session state for the recommendation log if not present
     if "recommendation_log" not in st.session_state:
         st.session_state["recommendation_log"] = []
 
     if gj:
-        # 1. PRIMARY TOOL LAYOUT
+        # 1. TOOL LAYOUT: MAP (LEFT) AND DATA/NARRATIVE (RIGHT)
         m_col, p_col = st.columns([7, 3])
         
         with m_col:
+            # Main Analysis Map
             fig = px.choropleth_mapbox(
-                master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
+                master_df, 
+                geojson=gj, 
+                locations="geoid_str", 
+                featureidkey="properties.GEOID",
                 color="Eligibility_Status", 
-                color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
-                mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8}, opacity=0.7
+                color_discrete_map={
+                    "Eligible": "#4ade80", 
+                    "Ineligible": "rgba(30,41,59,0.2)"
+                },
+                mapbox_style="carto-darkmatter", 
+                zoom=6.5, 
+                center={"lat": 30.8, "lon": -91.8}, 
+                opacity=0.7
             )
-            fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=650)
-            fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
+            fig.update_layout(
+                coloraxis_showscale=False, 
+                margin={"r":0,"t":0,"l":0,"b":0}, 
+                paper_bgcolor='rgba(0,0,0,0)', 
+                height=600
+            )
+            fig.update_traces(
+                marker_line_width=0.7, 
+                marker_line_color="#475569", 
+                showlegend=False
+            )
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
         with p_col:
-            current_id = "22071001700" 
+            # Handle Map Click Selection
+            current_id = "22071001700" # Default/Initial Tract
             if selection and selection.get("selection", {}).get("points"):
                 current_id = str(selection["selection"]["points"][0]["location"])
             
             row = master_df[master_df["geoid_str"] == current_id]
             if not row.empty:
                 d = row.iloc[0]
-                current_parish = str(d.get('Parish', 'Louisiana')).upper()
+                # Combine Parish and Region for the header
+                current_parish = str(d.get('Parish', 'LOUISIANA')).upper()
                 current_region = str(d.get('Region', 'N/A')).upper()
                 
-                # Selection Header with Region Integration
                 st.markdown(f"### Tract {current_id}")
-                st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{current_parish} ({current_region})</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:#4ade80; font-weight:800; font-size:1.2rem;'>{current_parish} ({current_region})</p>", unsafe_allow_html=True)
                 
-                # Metric Card
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
-                
-                # Anchor Proximity Logic
-                if not anchors_df.empty and current_id in tract_centers:
-                    t_lon, t_lat = tract_centers[current_id]
-                    anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
-                    st.write("---")
-                    st.caption("NEAREST ANCHORS")
-                    for _, a in anchors_df.sort_values('dist').head(3).iterrows():
-                        st.write(f"📍 {a['Name']} ({a['dist']:.1f} mi)")
+                # Poverty Metric Card
+                st.markdown(f"""
+                    <div class='metric-card'>
+                        <div class='metric-value'>{d['pov_val']}%</div>
+                        <div class='metric-label'>Poverty Rate</div>
+                    </div>
+                """, unsafe_allow_html=True)
                 
                 st.write("---")
                 st.markdown("#### Recommendation Narrative")
-                justification = st.text_area("Narrative", label_visibility="collapsed", placeholder=f"Justification for {current_id}...", height=120)
+                justification = st.text_area(
+                    "Narrative Input", 
+                    label_visibility="collapsed",
+                    placeholder="Describe why this tract is a priority...", 
+                    height=150
+                )
 
-                if st.button("Submit Recommendation", use_container_width=True, type="primary"):
+                if st.button("Log Recommendation", use_container_width=True, type="primary"):
                     if justification:
+                        # Append selection to the log
                         if current_id not in st.session_state["recommendation_log"]:
                             st.session_state["recommendation_log"].append(current_id)
-                            st.success(f"Tract {current_id} added!")
+                            st.success(f"Tract {current_id} Logged")
                             st.rerun()
                         else:
-                            st.warning("This tract is already in your recommendations.")
+                            st.warning("This tract is already in your recommendation log.")
                     else:
-                        st.error("Please enter a justification.")
+                        st.error("Please provide a justification narrative before logging.")
 
-        # 2. LOWER AREA: OZ 2.0 RECOMMENDATIONS TABLE
+        # --- 2. LOWER AREA: OZ 2.0 RECOMMENDATIONS TABLE ---
         st.write("---")
         st.markdown("### OZ 2.0 Recommendations")
         
         if st.session_state["recommendation_log"]:
-            # Build DataFrame - Cast numbers to strings to force Left Alignment in Streamlit Dataframe
+            # Build DataFrame - Cast to String ensures left alignment in st.dataframe
             log_df = pd.DataFrame({
                 "Recommendation Number": [str(i+1) for i in range(len(st.session_state["recommendation_log"]))],
                 "Tract Number": [str(x) for x in st.session_state["recommendation_log"]]
             })
             
-            # Display using st.dataframe with Left Alignment Configuration
+            # Display Table with strictly white text and left alignment
             st.dataframe(
                 log_df,
                 use_container_width=True,
@@ -224,19 +251,24 @@ if check_password():
                 }
             )
 
-            # Feature: Clear individual recommendations
+            # Individual Deletion Tool
             c1, c2 = st.columns([3, 1])
             with c1:
-                to_delete = st.multiselect("Select Tracts to Remove", options=st.session_state["recommendation_log"], label_visibility="collapsed", placeholder="Select tracts to remove...")
+                to_delete = st.multiselect(
+                    "Remove Individual Recommendations", 
+                    options=st.session_state["recommendation_log"], 
+                    label_visibility="collapsed",
+                    placeholder="Select tracts to remove from the list..."
+                )
             with c2:
                 if st.button("Delete Selected", use_container_width=True):
-                    st.session_state["recommendation_log"] = [t for t in st.session_state["recommendation_log"] if t not in to_delete]
+                    st.session_state["recommendation_log"] = [
+                        t for t in st.session_state["recommendation_log"] if t not in to_delete
+                    ]
                     st.rerun()
         else:
-            st.info("No recommendations added yet. Select a tract on the map to begin.")
+            st.info("No recommendations have been added yet. Click a tract on the map to begin logging.")
 
     else:
-        st.error("⚠️ Map service offline.")
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.error("GeoJSON data not found. Please ensure the map assets are correctly loaded.")
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
