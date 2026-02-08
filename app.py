@@ -107,10 +107,10 @@ if check_password():
     gj, master_df, anchors_df, tract_centers = load_assets()
 
     # --- SECTIONS 1-3 (Restored) ---
-    st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Strategic Investment & Capital Deployment</div><div class='hero-title'>Louisiana Opportunity Zone 2.0</div><div class='narrative-text'>This portal serves as the primary intelligence hub for Opportunity Zone 2.0 deployment...</div></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most. With a permanent, future-ready design, OZ 2.0 lets Louisiana compete nationally for capital while building inclusive growth that’s smart, strategic, and unmistakably Louisiana.</div></div>""", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>30% Rural Step-Up</h3><p>Qualified Rural Opportunity Funds receive an enhanced 30% basis step-up.</p></div>", unsafe_allow_html=True)
+    with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years. Qualified taxpayer receives 10% basis step-up (30% if rural), following the 5-year deferral period</p></div>", unsafe_allow_html=True)
     with c2: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains through December 31, 2031.</p></div>", unsafe_allow_html=True)
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Hold for 10 years to pay zero federal capital gains tax on appreciation.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
