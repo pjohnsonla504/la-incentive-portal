@@ -109,8 +109,6 @@ if check_password():
     # --- SECTION 1 ---
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most. With a permanent, future-ready design, OZ 2.0 lets Louisiana compete nationally for capital while building inclusive growth that’s smart, strategic, and unmistakably Louisiana.</div></div>""", unsafe_allow_html=True)
 
-
-    
     # --- SECTION 2 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
@@ -139,51 +137,77 @@ if check_password():
     with c2: st.markdown("<div class='benefit-card'><h3>Workforce Pipeline</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
     with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
-
-    # --- SECTION 5: MAP ---
-    st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 4</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
+# --- SECTION 5: RECOMMENDATION TOOL (MAP & JUSTIFICATION) ---
+    st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 5</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
     
     if gj:
+        # Layout: Map on left, Analysis/Justification on right
         m_col, p_col = st.columns([7, 3])
+        
         with m_col:
+            # Map Rendering
             fig = px.choropleth_mapbox(
-                master_df, 
-                geojson=gj, 
-                locations="geoid_str", 
-                featureidkey="properties.GEOID",
+                master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
                 color="Eligibility_Status", 
-                color_discrete_map={
-                    "Eligible": "#4ade80", 
-                    "Ineligible": "rgba(30,41,59,0.2)"
-                },
-                mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8},
-                opacity=0.7
+                color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
+                mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8}, opacity=0.7
             )
-            fig.update_layout(coloraxis_showscale=False)
+            fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=800)
             fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
-            fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=750)
+            
+            # Interactive Map Selection
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
         with p_col:
-            current_id = "22071001700"
+            # Determine which tract is selected
+            current_id = "22071001700" # Default
             if selection and selection.get("selection", {}).get("points"):
                 current_id = str(selection["selection"]["points"][0]["location"])
             
             row = master_df[master_df["geoid_str"] == current_id]
             if not row.empty:
                 d = row.iloc[0]
+                
+                # 1. Selection Header & Parish Data
                 st.markdown(f"### Tract {current_id}")
                 st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{d.get('Parish', 'Louisiana').upper()} PARISH</p>", unsafe_allow_html=True)
+                
+                # 2. Metric Card
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
+                # 3. Anchor Proximity
                 if not anchors_df.empty and current_id in tract_centers:
                     t_lon, t_lat = tract_centers[current_id]
                     anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
                     st.write("---")
                     st.caption("NEAREST ANCHORS")
-                    for _, a in anchors_df.sort_values('dist').head(4).iterrows():
+                    for _, a in anchors_df.sort_values('dist').head(3).iterrows():
                         st.write(f"📍 {a['Name']} ({a['dist']:.1f} mi)")
+                
+                st.write("---")
+                
+                # 4. Selection Progress Bar
+                # (This could be tied to your GSheets 'Submitted' count in the future)
+                st.caption("PORTAL SELECTION PROGRESS")
+                st.progress(0.65) # Static 65% for visual demo
+                
+                # 5. Justification Box
+                st.markdown("#### Recommendation Narrative")
+                justification = st.text_area(
+                    label="Justification Narrative",
+                    label_visibility="collapsed",
+                    placeholder=f"Explain why Tract {current_id} is a priority...",
+                    height=150
+                )
+                
+                if st.button("Submit Recommendation", use_container_width=True, type="primary"):
+                    if justification:
+                        st.success(f"Tract {current_id} submitted!")
+                    else:
+                        st.error("Please enter a justification.")
     else:
         st.error("⚠️ Map service offline.")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
