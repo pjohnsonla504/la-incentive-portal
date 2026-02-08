@@ -138,20 +138,19 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- SECTION 5: RECOMMENDATION TOOL (MAP, JUSTIFICATION & LOG) ---
+# --- SECTION 5: RECOMMENDATION TOOL (MAP & LOG TABLE) ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 5</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
     
-    if gj:
-        # Initialize variables with defaults
-        current_user_submissions = [] # Changed to a list to store tract numbers
-        allowed_quota = 1
-        current_parish = "Louisiana"
-        total_eligible_in_region = 0
+    # Initialize a session state list to store recommendations if it doesn't exist
+    if "recommendation_log" not in st.session_state:
+        st.session_state["recommendation_log"] = []
 
+    if gj:
         # 1. PRIMARY TOOL LAYOUT (Map and Narrative)
         m_col, p_col = st.columns([7, 3])
         
         with m_col:
+            # Map Rendering
             fig = px.choropleth_mapbox(
                 master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
                 color="Eligibility_Status", 
@@ -160,10 +159,13 @@ if check_password():
             )
             fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=650)
             fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
+            
+            # Interactive Map Selection
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
         with p_col:
-            current_id = "22071001700" 
+            # Determine which tract is selected
+            current_id = "22071001700" # Default
             if selection and selection.get("selection", {}).get("points"):
                 current_id = str(selection["selection"]["points"][0]["location"])
             
@@ -172,10 +174,12 @@ if check_password():
                 d = row.iloc[0]
                 current_parish = d.get('Parish', 'Louisiana')
                 
+                # Selection Header & Metric Card
                 st.markdown(f"### Tract {current_id}")
                 st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{current_parish.upper()} PARISH</p>", unsafe_allow_html=True)
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
+                # Anchor Proximity Logic
                 if not anchors_df.empty and current_id in tract_centers:
                     t_lon, t_lat = tract_centers[current_id]
                     anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
@@ -185,6 +189,8 @@ if check_password():
                         st.write(f"📍 {a['Name']} ({a['dist']:.1f} mi)")
                 
                 st.write("---")
+                
+                # Justification Box
                 st.markdown("#### Recommendation Narrative")
                 justification = st.text_area(
                     label="Justification Narrative",
@@ -193,41 +199,36 @@ if check_password():
                     height=120
                 )
 
-                # SCARCITY LOGIC: 25% Quota
-                parish_tracts = master_df[master_df['Parish'] == current_parish]
-                total_eligible_in_region = len(parish_tracts[parish_tracts['Eligibility_Status'] == 'Eligible'])
-                allowed_quota = max(1, int(total_eligible_in_region * 0.25))
-                
-                # MOCK DATA: In a real app, this list comes from your Google Sheet
-                # Example: current_user_submissions = ["22071001700", "22071001800"]
-                submitted_tracts = [] 
-                
-                is_quota_full = len(submitted_tracts) >= allowed_quota
-
-                if st.button("Submit Recommendation", use_container_width=True, type="primary", disabled=is_quota_full):
+                # Submit Button (Scarcity Filter Removed)
+                if st.button("Submit Recommendation", use_container_width=True, type="primary"):
                     if justification:
-                        st.success(f"Tract {current_id} submitted!")
+                        # Append the new recommendation to the session list
+                        st.session_state["recommendation_log"].append(current_id)
+                        st.success(f"Tract {current_id} added to recommendations!")
+                        st.rerun() # Refresh to update the table below
                     else:
                         st.error("Please enter a justification.")
-                
-                if is_quota_full:
-                    st.warning(f"Regional limit of {allowed_quota} reached for {current_parish}.")
 
         # 2. LOWER AREA: OZ 2.0 RECOMMENDATIONS TABLE
         st.write("---")
         st.markdown("### OZ 2.0 Recommendations")
-        st.caption(f"Allocated Slots: {len(submitted_tracts)} used of {allowed_quota} available for {current_parish}.")
         
-        if submitted_tracts:
+        if st.session_state["recommendation_log"]:
             # Create a DataFrame for the display table
+            # Column A: Recommendation Number | Column B: Tract Number
             log_df = pd.DataFrame({
-                "Recommendation Number": range(1, len(submitted_tracts) + 1),
-                "Tract Number": submitted_tracts
+                "Recommendation Number": range(1, len(st.session_state["recommendation_log"]) + 1),
+                "Tract Number": st.session_state["recommendation_log"]
             })
+            
+            # Display the table (A and B headers as requested)
             st.table(log_df)
+            
+            if st.button("Clear All Recommendations"):
+                st.session_state["recommendation_log"] = []
+                st.rerun()
         else:
-            # Placeholder for empty state
-            st.info("No recommendations submitted for this region yet.")
+            st.info("No recommendations have been added yet. Click a tract on the map and submit a narrative to populate this table.")
 
     else:
         st.error("⚠️ Map service offline.")
