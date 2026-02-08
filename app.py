@@ -137,11 +137,13 @@ if check_password():
     with c2: st.markdown("<div class='benefit-card'><h3>Workforce Pipeline</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
     with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
-# --- SECTION 5: RECOMMENDATION TOOL (MAP & JUSTIFICATION) ---
+
+
+# --- SECTION 5: RECOMMENDATION TOOL (MAP, JUSTIFICATION & PROGRESS) ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 5</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
     
     if gj:
-        # Layout: Map on left, Analysis/Justification on right
+        # 1. PRIMARY TOOL LAYOUT (Map and Narrative)
         m_col, p_col = st.columns([7, 3])
         
         with m_col:
@@ -152,7 +154,7 @@ if check_password():
                 color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
                 mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8}, opacity=0.7
             )
-            fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=800)
+            fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=650)
             fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
             
             # Interactive Map Selection
@@ -167,15 +169,14 @@ if check_password():
             row = master_df[master_df["geoid_str"] == current_id]
             if not row.empty:
                 d = row.iloc[0]
+                current_parish = d.get('Parish', 'Louisiana')
                 
-                # 1. Selection Header & Parish Data
+                # Selection Header & Metric Card
                 st.markdown(f"### Tract {current_id}")
-                st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{d.get('Parish', 'Louisiana').upper()} PARISH</p>", unsafe_allow_html=True)
-                
-                # 2. Metric Card
+                st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{current_parish.upper()} PARISH</p>", unsafe_allow_html=True)
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
-                # 3. Anchor Proximity
+                # Anchor Proximity Logic
                 if not anchors_df.empty and current_id in tract_centers:
                     t_lon, t_lat = tract_centers[current_id]
                     anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
@@ -186,28 +187,47 @@ if check_password():
                 
                 st.write("---")
                 
-                # 4. Selection Progress Bar
-                # (This could be tied to your GSheets 'Submitted' count in the future)
-                st.caption("PORTAL SELECTION PROGRESS")
-                st.progress(0.65) # Static 65% for visual demo
-                
-                # 5. Justification Box
+                # Justification Box
                 st.markdown("#### Recommendation Narrative")
                 justification = st.text_area(
                     label="Justification Narrative",
                     label_visibility="collapsed",
                     placeholder=f"Explain why Tract {current_id} is a priority...",
-                    height=150
+                    height=120
                 )
+
+                # SCARCITY LOGIC: Calculate 25% of eligible tracts in the selected Parish
+                parish_tracts = master_df[master_df['Parish'] == current_parish]
+                total_eligible_in_region = len(parish_tracts[parish_tracts['Eligibility_Status'] == 'Eligible'])
+                allowed_quota = max(1, int(total_eligible_in_region * 0.25))
                 
-                if st.button("Submit Recommendation", use_container_width=True, type="primary"):
+                # Placeholder for current count (to be connected to GSheets later)
+                current_user_submissions = 0 
+                
+                # Disable button if quota met
+                is_quota_full = current_user_submissions >= allowed_quota
+
+                if st.button("Submit Recommendation", use_container_width=True, type="primary", disabled=is_quota_full):
                     if justification:
                         st.success(f"Tract {current_id} submitted!")
                     else:
                         st.error("Please enter a justification.")
+                
+                if is_quota_full:
+                    st.warning(f"Regional limit of {allowed_quota} recommendations reached.")
+
+        # 2. LOWER AREA: OZ 2.0 RECOMMENDATIONS PROGRESS BAR
+        st.write("---")
+        prog_col1, prog_col2 = st.columns([7, 3])
+        with prog_col1:
+            st.markdown(f"**OZ 2.0 Recommendations**")
+            # Calculate progress percentage
+            progress_val = min(1.0, current_user_submissions / allowed_quota)
+            st.progress(progress_val)
+            st.caption(f"Strategy: You have utilized {current_user_submissions} of {allowed_quota} available priority slots for {current_parish} (Total Eligible Tracts: {total_eligible_in_region}).")
+
     else:
         st.error("⚠️ Map service offline.")
     
     st.markdown("</div>", unsafe_allow_html=True)
-
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
