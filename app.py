@@ -89,7 +89,7 @@ if check_password():
         anchors = read_csv_safe("la_anchors.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # ELIGIBILITY: Explicit categorical labels to force the color palette
+        # ELIGIBILITY: Tracks highlighted green are only those eligible for OZ 2.0
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['Eligibility_Status'] = master[elig_col].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
 
@@ -106,27 +106,33 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- SECTIONS 1-3 (Restored) ---
+    # --- SECTION 1 ---
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most. With a permanent, future-ready design, OZ 2.0 lets Louisiana compete nationally for capital while building inclusive growth that’s smart, strategic, and unmistakably Louisiana.</div></div>""", unsafe_allow_html=True)
+    
+    # --- SECTION 2 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
     with c2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>Qualified taxpayer receives 10% basis step-up (30% if rural), following the 5-year deferral period.</p></div>", unsafe_allow_html=True)
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Taxpayers that hold QOF investment for 10 years to pay zero federal capital gains tax on appreciation.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Investment Justification</div><div class='narrative-text'>Leveraging industrial anchors and institutional stability for long-term growth.</div></div>", unsafe_allow_html=True)c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
-    with c2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>Qualified taxpayer receives 10% basis step-up (30% if rural), following the 5-year deferral period.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Taxpayers that hold QOF investment for 10 years to pay zero federal capital gains tax on appreciation.</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 3 ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Investment Justification</div><div class='narrative-text'>Leveraging industrial anchors and institutional stability for long-term growth.</div></div>", unsafe_allow_html=True)
+    
+    # Syntax Fix Applied Here: New line before column assignment
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='benefit-card'><h3>Industrial Stability</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Workforce Pipeline</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 4: MAP (GREEN HIGHLIGHT FIX) ---
+    # --- SECTION 4: MAP ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 4</div><div class='section-title'>Tract Boundary Analysis</div>", unsafe_allow_html=True)
     
     if gj:
         m_col, p_col = st.columns([7, 3])
         with m_col:
-            # Using discrete color map with specific HEX code for green
             fig = px.choropleth_mapbox(
                 master_df, 
                 geojson=gj, 
@@ -140,10 +146,8 @@ if check_password():
                 mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 31.0, "lon": -91.8},
                 opacity=0.7
             )
-            # Remove colorbar and apply boundary grid
             fig.update_layout(coloraxis_showscale=False)
             fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
-            
             fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=750)
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
