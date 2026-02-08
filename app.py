@@ -146,7 +146,7 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
     
-    # Initialize session state for the recommendation log if not present
+    # Initialize session state for the recommendation log
     if "recommendation_log" not in st.session_state:
         st.session_state["recommendation_log"] = []
 
@@ -155,7 +155,6 @@ if check_password():
         m_col, p_col = st.columns([7, 3])
         
         with m_col:
-            # Main Analysis Map
             fig = px.choropleth_mapbox(
                 master_df, 
                 geojson=gj, 
@@ -177,23 +176,30 @@ if check_password():
                 paper_bgcolor='rgba(0,0,0,0)', 
                 height=600
             )
-            fig.update_traces(
-                marker_line_width=0.7, 
-                marker_line_color="#475569", 
-                showlegend=False
-            )
+            fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
         with p_col:
-            # Handle Map Click Selection
-            current_id = "22071001700" # Default/Initial Tract
+            # Selection Logic
+            current_id = "22071001700" # Default
             if selection and selection.get("selection", {}).get("points"):
                 current_id = str(selection["selection"]["points"][0]["location"])
             
             row = master_df[master_df["geoid_str"] == current_id]
+            
             if not row.empty:
                 d = row.iloc[0]
-                # Combine Parish and Region for the header
+                
+                # Robust Poverty Value Calculation to prevent KeyError
+                pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
+                try:
+                    raw_pov = d.get(pov_col, 0)
+                    pov_display = pd.to_numeric(raw_pov, errors='coerce')
+                    if np.isnan(pov_display): pov_display = 0
+                except:
+                    pov_display = 0
+
+                # Region and Parish Header
                 current_parish = str(d.get('Parish', 'LOUISIANA')).upper()
                 current_region = str(d.get('Region', 'N/A')).upper()
                 
@@ -203,7 +209,7 @@ if check_password():
                 # Poverty Metric Card
                 st.markdown(f"""
                     <div class='metric-card'>
-                        <div class='metric-value'>{d['pov_val']}%</div>
+                        <div class='metric-value'>{pov_display}%</div>
                         <div class='metric-label'>Poverty Rate</div>
                     </div>
                 """, unsafe_allow_html=True)
@@ -219,28 +225,28 @@ if check_password():
 
                 if st.button("Log Recommendation", use_container_width=True, type="primary"):
                     if justification:
-                        # Append selection to the log
                         if current_id not in st.session_state["recommendation_log"]:
                             st.session_state["recommendation_log"].append(current_id)
                             st.success(f"Tract {current_id} Logged")
                             st.rerun()
                         else:
-                            st.warning("This tract is already in your recommendation log.")
+                            st.warning("This tract is already in your log.")
                     else:
-                        st.error("Please provide a justification narrative before logging.")
+                        st.error("Please provide a justification narrative.")
 
         # --- 2. LOWER AREA: OZ 2.0 RECOMMENDATIONS TABLE ---
         st.write("---")
         st.markdown("### OZ 2.0 Recommendations")
         
         if st.session_state["recommendation_log"]:
-            # Build DataFrame - Cast to String ensures left alignment in st.dataframe
+            # DataFrame Construction
+            # Recommendation Number is cast to String for Left Alignment
             log_df = pd.DataFrame({
                 "Recommendation Number": [str(i+1) for i in range(len(st.session_state["recommendation_log"]))],
                 "Tract Number": [str(x) for x in st.session_state["recommendation_log"]]
             })
             
-            # Display Table with strictly white text and left alignment
+            # Display Table
             st.dataframe(
                 log_df,
                 use_container_width=True,
@@ -258,7 +264,7 @@ if check_password():
                     "Remove Individual Recommendations", 
                     options=st.session_state["recommendation_log"], 
                     label_visibility="collapsed",
-                    placeholder="Select tracts to remove from the list..."
+                    placeholder="Select tracts to remove..."
                 )
             with c2:
                 if st.button("Delete Selected", use_container_width=True):
@@ -267,8 +273,8 @@ if check_password():
                     ]
                     st.rerun()
         else:
-            st.info("No recommendations have been added yet. Click a tract on the map to begin logging.")
+            st.info("No recommendations added yet. Select a tract on the map to begin.")
 
     else:
-        st.error("GeoJSON data not found. Please ensure the map assets are correctly loaded.")
+        st.error("Map assets not found. Check your GeoJSON and Master File CSV.")
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
