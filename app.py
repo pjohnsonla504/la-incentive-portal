@@ -168,12 +168,17 @@ if check_password():
             row = master_df[master_df["geoid_str"] == current_id]
             if not row.empty:
                 d = row.iloc[0]
-                current_parish = d.get('Parish', 'Louisiana')
+                current_parish = str(d.get('Parish', 'Louisiana')).upper()
+                current_region = str(d.get('Region', 'N/A')).upper()
                 
+                # Selection Header with Region Integration
                 st.markdown(f"### Tract {current_id}")
-                st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{current_parish.upper()} PARISH</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{current_parish} ({current_region})</p>", unsafe_allow_html=True)
+                
+                # Metric Card
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
+                # Anchor Proximity Logic
                 if not anchors_df.empty and current_id in tract_centers:
                     t_lon, t_lat = tract_centers[current_id]
                     anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
@@ -202,19 +207,19 @@ if check_password():
         st.markdown("### OZ 2.0 Recommendations")
         
         if st.session_state["recommendation_log"]:
-            # Build DataFrame - Convert Rec Number to string to ensure Left Alignment
+            # Build DataFrame - Cast numbers to strings to force Left Alignment in Streamlit Dataframe
             log_df = pd.DataFrame({
                 "Recommendation Number": [str(i+1) for i in range(len(st.session_state["recommendation_log"]))],
-                "Tract Number": st.session_state["recommendation_log"]
+                "Tract Number": [str(x) for x in st.session_state["recommendation_log"]]
             })
             
-            # Display using st.dataframe with Left Alignment for all columns
+            # Display using st.dataframe with Left Alignment Configuration
             st.dataframe(
                 log_df,
                 use_container_width=True,
                 hide_index=True,
                 column_config={
-                    "Recommendation Number": st.column_config.TextColumn("Recommendation Number", width="small"),
+                    "Recommendation Number": st.column_config.TextColumn("Recommendation Number", width="medium"),
                     "Tract Number": st.column_config.TextColumn("Tract Number", width="large")
                 }
             )
@@ -228,7 +233,7 @@ if check_password():
                     st.session_state["recommendation_log"] = [t for t in st.session_state["recommendation_log"] if t not in to_delete]
                     st.rerun()
         else:
-            st.info("No recommendations added yet.")
+            st.info("No recommendations added yet. Select a tract on the map to begin.")
 
     else:
         st.error("⚠️ Map service offline.")
