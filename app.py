@@ -127,8 +127,19 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 4: MAP ---
-    st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 4</div><div class='section-title'>Tract Boundary Analysis</div>", unsafe_allow_html=True)
+
+    # --- SECTION 4 ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leveraging industrial anchors and institutional stability for long-term growth.</div></div>", unsafe_allow_html=True)
+    
+    # Syntax Fix Applied Here: New line before column assignment
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='benefit-card'><h3>Industrial Stability</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Workforce Pipeline</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: MAP ---
+    st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 4</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
     
     if gj:
         m_col, p_col = st.columns([7, 3])
