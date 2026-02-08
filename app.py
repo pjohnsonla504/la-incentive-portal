@@ -138,11 +138,16 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-
 # --- SECTION 5: RECOMMENDATION TOOL (MAP, JUSTIFICATION & PROGRESS) ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 5</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
     
     if gj:
+        # Initialize variables with defaults to prevent NameErrors
+        current_user_submissions = 0 
+        allowed_quota = 1
+        current_parish = "Louisiana"
+        total_eligible_in_region = 0
+
         # 1. PRIMARY TOOL LAYOUT (Map and Narrative)
         m_col, p_col = st.columns([7, 3])
         
@@ -221,8 +226,8 @@ if check_password():
         prog_col1, prog_col2 = st.columns([7, 3])
         with prog_col1:
             st.markdown(f"**OZ 2.0 Recommendations**")
-            # Calculate progress percentage
-            progress_val = min(1.0, current_user_submissions / allowed_quota)
+            # Calculate progress percentage safely
+            progress_val = min(1.0, current_user_submissions / allowed_quota) if allowed_quota > 0 else 0
             st.progress(progress_val)
             st.caption(f"Strategy: You have utilized {current_user_submissions} of {allowed_quota} available priority slots for {current_parish} (Total Eligible Tracts: {total_eligible_in_region}).")
 
