@@ -202,28 +202,31 @@ if check_password():
         st.markdown("### OZ 2.0 Recommendations")
         
         if st.session_state["recommendation_log"]:
-            # Build DataFrame
+            # Build DataFrame - Convert Rec Number to string to ensure Left Alignment
             log_df = pd.DataFrame({
-                "Recommendation Number": range(1, len(st.session_state["recommendation_log"]) + 1),
+                "Recommendation Number": [str(i+1) for i in range(len(st.session_state["recommendation_log"]))],
                 "Tract Number": st.session_state["recommendation_log"]
             })
             
-            # Display using st.dataframe with white text (theme default) and Left Alignment
+            # Display using st.dataframe with Left Alignment for all columns
             st.dataframe(
                 log_df,
                 use_container_width=True,
                 hide_index=True,
                 column_config={
-                    "Recommendation Number": st.column_config.Column(width="small", help="Order of submission", required=True),
-                    "Tract Number": st.column_config.TextColumn(width="large")
+                    "Recommendation Number": st.column_config.TextColumn("Recommendation Number", width="small"),
+                    "Tract Number": st.column_config.TextColumn("Tract Number", width="large")
                 }
             )
 
             # Feature: Clear individual recommendations
-            to_delete = st.multiselect("Select Tracts to Remove", options=st.session_state["recommendation_log"])
-            if st.button("Delete Selected"):
-                st.session_state["recommendation_log"] = [t for t in st.session_state["recommendation_log"] if t not in to_delete]
-                st.rerun()
+            c1, c2 = st.columns([3, 1])
+            with c1:
+                to_delete = st.multiselect("Select Tracts to Remove", options=st.session_state["recommendation_log"], label_visibility="collapsed", placeholder="Select tracts to remove...")
+            with c2:
+                if st.button("Delete Selected", use_container_width=True):
+                    st.session_state["recommendation_log"] = [t for t in st.session_state["recommendation_log"] if t not in to_delete]
+                    st.rerun()
         else:
             st.info("No recommendations added yet.")
 
