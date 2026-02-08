@@ -133,9 +133,9 @@ if check_password():
     
     # Syntax Fix Applied Here: New line before column assignment
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>Industrial Stability</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
-    with c2: st.markdown("<div class='benefit-card'><h3>Workforce Pipeline</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
+    with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>American Policy Institute</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # --- SECTION 5: RECOMMENDATION TOOL (MAP, NARRATIVE & LOG TABLE) ---
