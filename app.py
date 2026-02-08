@@ -141,16 +141,15 @@ if check_password():
 # --- SECTION 5: RECOMMENDATION TOOL (MAP & LOG TABLE) ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 5</div><div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>", unsafe_allow_html=True)
     
-    # Initialize a session state list to store recommendations if it doesn't exist
+    # Initialize session state for the log if not present
     if "recommendation_log" not in st.session_state:
         st.session_state["recommendation_log"] = []
 
     if gj:
-        # 1. PRIMARY TOOL LAYOUT (Map and Narrative)
+        # 1. PRIMARY TOOL LAYOUT
         m_col, p_col = st.columns([7, 3])
         
         with m_col:
-            # Map Rendering
             fig = px.choropleth_mapbox(
                 master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
                 color="Eligibility_Status", 
@@ -159,13 +158,10 @@ if check_password():
             )
             fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=650)
             fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
-            
-            # Interactive Map Selection
             selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
         with p_col:
-            # Determine which tract is selected
-            current_id = "22071001700" # Default
+            current_id = "22071001700" 
             if selection and selection.get("selection", {}).get("points"):
                 current_id = str(selection["selection"]["points"][0]["location"])
             
@@ -174,12 +170,10 @@ if check_password():
                 d = row.iloc[0]
                 current_parish = d.get('Parish', 'Louisiana')
                 
-                # Selection Header & Metric Card
                 st.markdown(f"### Tract {current_id}")
                 st.markdown(f"<p style='color:#4ade80; font-weight:900;'>{current_parish.upper()} PARISH</p>", unsafe_allow_html=True)
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level', 'N/A')}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
-                # Anchor Proximity Logic
                 if not anchors_df.empty and current_id in tract_centers:
                     t_lon, t_lat = tract_centers[current_id]
                     anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
@@ -189,23 +183,17 @@ if check_password():
                         st.write(f"📍 {a['Name']} ({a['dist']:.1f} mi)")
                 
                 st.write("---")
-                
-                # Justification Box
                 st.markdown("#### Recommendation Narrative")
-                justification = st.text_area(
-                    label="Justification Narrative",
-                    label_visibility="collapsed",
-                    placeholder=f"Explain why Tract {current_id} is a priority...",
-                    height=120
-                )
+                justification = st.text_area("Narrative", label_visibility="collapsed", placeholder=f"Justification for {current_id}...", height=120)
 
-                # Submit Button (Scarcity Filter Removed)
                 if st.button("Submit Recommendation", use_container_width=True, type="primary"):
                     if justification:
-                        # Append the new recommendation to the session list
-                        st.session_state["recommendation_log"].append(current_id)
-                        st.success(f"Tract {current_id} added to recommendations!")
-                        st.rerun() # Refresh to update the table below
+                        if current_id not in st.session_state["recommendation_log"]:
+                            st.session_state["recommendation_log"].append(current_id)
+                            st.success(f"Tract {current_id} added!")
+                            st.rerun()
+                        else:
+                            st.warning("This tract is already in your recommendations.")
                     else:
                         st.error("Please enter a justification.")
 
@@ -214,21 +202,30 @@ if check_password():
         st.markdown("### OZ 2.0 Recommendations")
         
         if st.session_state["recommendation_log"]:
-            # Create a DataFrame for the display table
-            # Column A: Recommendation Number | Column B: Tract Number
+            # Build DataFrame
             log_df = pd.DataFrame({
                 "Recommendation Number": range(1, len(st.session_state["recommendation_log"]) + 1),
                 "Tract Number": st.session_state["recommendation_log"]
             })
             
-            # Display the table (A and B headers as requested)
-            st.table(log_df)
-            
-            if st.button("Clear All Recommendations"):
-                st.session_state["recommendation_log"] = []
+            # Display using st.dataframe with white text (theme default) and Left Alignment
+            st.dataframe(
+                log_df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Recommendation Number": st.column_config.Column(width="small", help="Order of submission", required=True),
+                    "Tract Number": st.column_config.TextColumn(width="large")
+                }
+            )
+
+            # Feature: Clear individual recommendations
+            to_delete = st.multiselect("Select Tracts to Remove", options=st.session_state["recommendation_log"])
+            if st.button("Delete Selected"):
+                st.session_state["recommendation_log"] = [t for t in st.session_state["recommendation_log"] if t not in to_delete]
                 st.rerun()
         else:
-            st.info("No recommendations have been added yet. Click a tract on the map and submit a narrative to populate this table.")
+            st.info("No recommendations added yet.")
 
     else:
         st.error("⚠️ Map service offline.")
