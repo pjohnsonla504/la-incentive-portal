@@ -156,4 +156,61 @@ if check_password():
             master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
             color="Eligibility_Status", 
             color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.15)", "Ineligible": "rgba(30,41,59,0.05)"},
-            mapbox_style="carto
+            mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}
+        )
+        fig_assets.add_trace(go.Scattermapbox(
+            lat=filtered_anchors["Lat"], lon=filtered_anchors["Lon"], mode='markers',
+            marker=go.scattermapbox.Marker(size=7, color='#4ade80', opacity=0.8),
+            text=filtered_anchors["Name"], hoverinfo='text'
+        ))
+        fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=500, showlegend=False)
+        st.plotly_chart(fig_assets, use_container_width=True)
+
+    # --- SECTION 6: RECOMMENDATION TOOL (SHRUNK TO 450PX) ---
+    st.markdown("""
+        <div class='content-section' style='border-bottom:none;'>
+            <div class='section-num'>SECTION 6</div>
+            <div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    if "recommendation_log" not in st.session_state:
+        st.session_state["recommendation_log"] = []
+
+    if gj:
+        m_col, p_col = st.columns([7, 3])
+        with m_col:
+            fig_rec = px.choropleth_mapbox(
+                master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
+                color="Eligibility_Status", color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
+                mapbox_style="carto-darkmatter", zoom=6.0, center={"lat": 30.8, "lon": -91.8}, opacity=0.7
+            )
+            fig_rec.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=450)
+            selection = st.plotly_chart(fig_rec, use_container_width=True, on_select="rerun", key="rec_map")
+        
+        with p_col:
+            current_id = "22071001700" 
+            if selection and selection.get("selection", {}).get("points"):
+                current_id = str(selection["selection"]["points"][0]["location"])
+            
+            row = master_df[master_df["geoid_str"] == current_id]
+            if not row.empty:
+                d = row.iloc[0]
+                pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
+                pov_display = pd.to_numeric(d.get(pov_col, 0), errors='coerce')
+                
+                st.markdown(f"**Tract {current_id}**")
+                st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov_display}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
+                
+                justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Justification...", height=100)
+                
+                if st.button("Log", use_container_width=True, type="primary"):
+                    if justification and current_id not in [x['Tract'] for x in st.session_state["recommendation_log"]]:
+                        st.session_state["recommendation_log"].append({"Tract": current_id, "Narrative": justification})
+                        st.rerun()
+
+        if st.session_state["recommendation_log"]:
+            st.write("---")
+            st.dataframe(pd.DataFrame(st.session_state["recommendation_log"]), use_container_width=True, hide_index=True)
+
+    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
