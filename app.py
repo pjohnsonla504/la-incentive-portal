@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import requests
 import json
 import os
@@ -10,7 +9,7 @@ import ssl
 from math import radians, cos, sin, asin, sqrt
 from streamlit_gsheets import GSheetsConnection
 
-# 0. INITIAL CONFIG
+# 0. INITIAL CONFIG (Must be the very first Streamlit command)
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
 # Force SSL Bypass for Cloud Environments
@@ -21,6 +20,7 @@ except:
 
 # --- 1. AUTHENTICATION ---
 def check_password():
+    """Returns True if the user had the correct password."""
     def password_entered():
         try:
             conn = st.connection("gsheets", type=GSheetsConnection)
@@ -54,6 +54,7 @@ def check_password():
             }
             .login-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 8px; }
             .login-subtitle { font-size: 0.8rem; color: #4ade80; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 30px; }
+            .stTextInput label { color: #94a3b8 !important; font-weight: 600 !important; }
             </style>
             <div class="login-box">
                 <div class="login-subtitle">Louisiana Opportunity Zones 2.0</div>
@@ -67,6 +68,8 @@ def check_password():
             st.text_input("Username", key="username")
             st.text_input("Password", type="password", key="password")
             st.button("Secure Login", on_click=password_entered, use_container_width=True, type="primary")
+            if "password_correct" in st.session_state and not st.session_state["password_correct"]:
+                st.error("Invalid credentials. Please try again.")
         return False
     return True
 
@@ -93,11 +96,15 @@ if check_password():
     @st.cache_data(ttl=3600)
     def load_assets():
         geojson = None
-        geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
-        try:
-            r = requests.get(geo_url, timeout=10, verify=False)
-            if r.status_code == 200: geojson = r.json()
-        except: pass
+        if os.path.exists("tl_2025_22_tract.json"):
+            with open("tl_2025_22_tract.json") as f:
+                geojson = json.load(f)
+        if not geojson:
+            geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
+            try:
+                r = requests.get(geo_url, timeout=10, verify=False)
+                if r.status_code == 200: geojson = r.json()
+            except: pass
 
         def read_csv_safe(f):
             try: return pd.read_csv(f, encoding='utf-8')
@@ -107,16 +114,9 @@ if check_password():
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['Eligibility_Status'] = master[elig_col].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
-        
-        # Load Anchors
-        anchors = read_csv_safe("la_anchors.csv")
-        anchors['Lat'] = pd.to_numeric(anchors['Lat'], errors='coerce')
-        anchors['Lon'] = pd.to_numeric(anchors['Lon'], errors='coerce')
-        anchors = anchors.dropna(subset=['Lat', 'Lon'])
-        
-        return geojson, master, anchors
+        return geojson, master
 
-    gj, master_df, anchors_df = load_assets()
+    gj, master_df = load_assets()
 
     # --- SECTION 1 ---
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most.</div></div>""", unsafe_allow_html=True)
@@ -145,27 +145,10 @@ if check_password():
     with c3: st.markdown("""<div class='benefit-card'><h3>American Policy Institute</h3><p>Stack incentives to de-risk innovative projects. Historic Tax Credits, New Markets Tax Credits, and LIHTC are available to Louisiana developers.</p></div>""", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAP (VISUALIZATION ONLY) ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Institutional Asset Map</div></div>", unsafe_allow_html=True)
-    
-    if gj:
-        fig_a = px.choropleth_mapbox(
-            master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
-            color="Eligibility_Status", color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.3)", "Ineligible": "rgba(30,41,59,0.1)"},
-            mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}, opacity=0.5
-        )
-        fig_a.add_trace(go.Scattermapbox(
-            lat=anchors_df['Lat'], lon=anchors_df['Lon'], mode='markers',
-            marker=go.scattermapbox.Marker(size=8, color='#4ade80'),
-            text=anchors_df['Name'], hoverinfo='text'
-        ))
-        fig_a.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, showlegend=False)
-        st.plotly_chart(fig_a, use_container_width=True, key="section_5_static_assets")
-
-    # --- SECTION 6: RECOMMENDATION TOOL ---
+    # --- SECTION 5: RECOMMENDATION TOOL ---
     st.markdown("""
         <div class='content-section' style='border-bottom:none;'>
-            <div class='section-num'>SECTION 6</div>
+            <div class='section-num'>SECTION 5</div>
             <div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>
         </div>
     """, unsafe_allow_html=True)
@@ -183,7 +166,7 @@ if check_password():
             )
             fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=600)
             fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
-            selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="section_6_interactive_tool")
+            selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
         
         with p_col:
             current_id = "22071001700" 
@@ -202,7 +185,7 @@ if check_password():
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov_display}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
                 st.write("---")
-                justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Describe why this tract is a priority...", height=150, key="narr_input_sec6")
+                justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Describe why this tract is a priority...", height=150)
                 if st.button("Log Recommendation", use_container_width=True, type="primary"):
                     if justification:
                         if current_id not in st.session_state["recommendation_log"]:
@@ -221,7 +204,10 @@ if check_password():
                 "Recommendation Number": [str(i+1) for i in range(len(st.session_state["recommendation_log"]))],
                 "Tract Number": [str(x) for x in st.session_state["recommendation_log"]]
             })
-            st.dataframe(log_df, use_container_width=True, hide_index=True)
+            st.dataframe(log_df, use_container_width=True, hide_index=True, column_config={
+                "Recommendation Number": st.column_config.TextColumn("Recommendation Number", width="medium"),
+                "Tract Number": st.column_config.TextColumn("Tract Number", width="large")
+            })
             if st.button("Clear All Recommendations"):
                 st.session_state["recommendation_log"] = []
                 st.rerun()
