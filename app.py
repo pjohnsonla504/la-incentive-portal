@@ -26,7 +26,7 @@ try:
 except:
     pass
 
-# --- 1. AUTHENTICATION (BLACK INPUT TEXT LOGIC) ---
+# --- 1. AUTHENTICATION (WHITE LABELS / BLACK INPUT TEXT) ---
 def check_password():
     def password_entered():
         try:
@@ -63,7 +63,7 @@ def check_password():
             .login-title { font-family: 'Inter', sans-serif; font-size: 1.5rem; font-weight: 900; color: #ffffff; margin-bottom: 4px; }
             label, p, .stText { color: #ffffff !important; font-weight: 600 !important; }
             div[data-baseweb="input"] { background-color: #f8fafc !important; border-radius: 6px !important; }
-            input { color: #000000 !important; -webkit-text-fill-color: #000000 !important; }
+            input { color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-family: 'Inter', sans-serif !important; }
             </style>
             <div class="login-card">
                 <div class="login-title">OZ 2.0 Portal</div>
@@ -90,14 +90,14 @@ if check_password():
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
-        .metric-card { background-color: #111827 !important; padding: 8px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 90px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
-        .metric-value { font-size: 1.0rem; font-weight: 900; color: #4ade80; }
-        .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 4px; }
+        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
+        .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
+        .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
         .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
         </style>
         """, unsafe_allow_html=True)
 
-    # --- 3. DATA ENGINE ---
+    # --- 3. DATA ENGINE (FIXED ENCODING) ---
     def haversine(lon1, lat1, lon2, lat2):
         lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
         dlon, dlat = lon2 - lon1, lat2 - lat1
@@ -109,10 +109,18 @@ if check_password():
         geojson = None
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: geojson = json.load(f)
-        master = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
+        
+        # Restoration of Encoding Safety
+        def read_csv_safe(f):
+            try: return pd.read_csv(f, encoding='utf-8')
+            except: return pd.read_csv(f, encoding='latin1')
+
+        master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
-        anchors = pd.read_csv("la_anchors.csv")
+        
+        anchors = read_csv_safe("la_anchors.csv")
+        
         centers = {}
         if geojson:
             for feature in geojson['features']:
@@ -135,24 +143,6 @@ if check_password():
     # --- SECTIONS 1-4: NARRATIVE ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div class='section-title'>Louisiana Opportunity Zone 2.0 Portal</div></div>", unsafe_allow_html=True)
     
-    sections_data = [
-        ("SECTION 2", "The OZ 2.0 Benefit Framework", [
-            ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
-            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
-            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
-        ]),
-        ("SECTION 3", "Census Tract Advocacy", [
-            ("Geographically Disbursed", "Zones focused on rural and investment-ready tracts."),
-            ("Distressed Communities", "Eligibility follows federal low-income definitions."),
-            ("Project Ready", "Aligning recommendations with private investment targets.")
-        ])
-    ]
-    for num, title, cards in sections_data:
-        st.markdown(f"<div class='content-section'><div class='section-num'>{num}</div><div class='section-title'>{title}</div>", unsafe_allow_html=True)
-        cols = st.columns(3)
-        for i, (ct, ctx) in enumerate(cards):
-            cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
-
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
@@ -171,7 +161,7 @@ if check_password():
                 list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='font-weight:700;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div></div>"
         components.html(f"<div style='height: 530px; overflow-y: auto;'>{list_html}</div>", height=550)
 
-    # --- SECTION 6: PERFECT NINE METRIC GRID ---
+    # --- SECTION 6: PERFECT NINE GRID ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
@@ -184,7 +174,7 @@ if check_password():
             d = row.iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size:2rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color:#94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
             
-            # THE 9-METRIC GRID
+            # 3x3 Metric Grid
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (d.get('Urban/Rural status', 'N/A'), "Tract Status"),
