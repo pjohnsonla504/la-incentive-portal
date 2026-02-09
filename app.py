@@ -89,7 +89,13 @@ if check_password():
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
+        .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
+        .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
+        .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; }
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
+        .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
+        .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+        .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
@@ -110,7 +116,6 @@ if check_password():
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: geojson = json.load(f)
         
-        # Restoration of Encoding Safety
         def read_csv_safe(f):
             try: return pd.read_csv(f, encoding='utf-8')
             except: return pd.read_csv(f, encoding='latin1')
@@ -140,9 +145,40 @@ if check_password():
         fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height)
         return fig
 
-    # --- SECTIONS 1-4: NARRATIVE ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div class='section-title'>Louisiana Opportunity Zone 2.0 Portal</div></div>", unsafe_allow_html=True)
-    
+    # --- SECTION 1: HERO ---
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 1</div>
+            <div class='hero-subtitle'>Opportunity Zones 2.0</div>
+            <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
+            <div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, and innovation in the communities that need it most.</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # --- SECTIONS 2, 3, 4: FRAMEWORK ---
+    sections_data = [
+        ("SECTION 2", "The OZ 2.0 Benefit Framework", [
+            ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
+            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
+            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
+        ]),
+        ("SECTION 3", "Census Tract Advocacy", [
+            ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
+            ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
+            ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
+        ]),
+        ("SECTION 4", "Best Practices", [
+            ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
+            ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
+            ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+        ])
+    ]
+    for num, title, cards in sections_data:
+        st.markdown(f"<div class='content-section'><div class='section-num'>{num}</div><div class='section-title'>{title}</div>", unsafe_allow_html=True)
+        cols = st.columns(3)
+        for i, (ct, ctx) in enumerate(cards):
+            cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
@@ -174,7 +210,6 @@ if check_password():
             d = row.iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size:2rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color:#94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
             
-            # 3x3 Metric Grid
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (d.get('Urban/Rural status', 'N/A'), "Tract Status"),
