@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import requests
 import json
 import os
@@ -204,22 +205,20 @@ if check_password():
             <div class='section-num'>SECTION 5</div>
             <div class='section-title'>Industrial & Institutional Asset Map</div>
             <p class='narrative-text'>
-                This spatial layer visualizes the intersection of <b>Opportunity Zone 2.0 Eligibility</b> 
-                and Louisiana's core economic anchors. Hover over the nodes to identify strategic 
-                industrial sites, ports, and universities.
+                Visualizing the intersection of <b>Opportunity Zone 2.0 Eligibility</b> 
+                and Louisiana's core economic anchors.
             </p>
         </div>
     """, unsafe_allow_html=True)
 
     if gj:
-        # 1. Initialize the Base Choropleth (Tract Eligibility)
+        # 1. Base Eligibility Layer
         fig = px.choropleth_mapbox(
             master_df, 
             geojson=gj, 
             locations="geoid_str", 
             featureidkey="properties.GEOID",
             color="Eligibility_Status", 
-            # High-end dark theme colors: muted navy for background, highlight for eligible
             color_discrete_map={
                 "Eligible": "#1e293b", 
                 "Ineligible": "rgba(15, 23, 42, 0.1)"
@@ -230,35 +229,31 @@ if check_password():
             opacity=0.6
         )
 
-        # 2. Overlay the Anchor Assets (Scatter Layer)
+        # 2. Add the Anchor Layer (Requires 'import plotly.graph_objects as go')
         fig.add_trace(go.Scattermapbox(
             lat=anchors_df['Latitude'],
             lon=anchors_df['Longitude'],
             mode='markers',
             marker=go.scattermapbox.Marker(
                 size=10, 
-                color='#4ade80', # Vibrant green to match your UI
-                opacity=0.9,
-                symbol='circle'
+                color='#4ade80', 
+                opacity=0.9
             ),
             text=anchors_df['Anchor Name'],
             hoverinfo='text',
             name='Strategic Anchors'
         ))
 
-        # 3. Final Layout Adjustments
         fig.update_layout(
             margin={"r":0,"t":0,"l":0,"b":0}, 
             paper_bgcolor='rgba(0,0,0,0)', 
-            plot_bgcolor='rgba(0,0,0,0)',
             height=700, 
             showlegend=False
         )
 
-        # 4. Render the Map
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig, use_container_width=True)
     else:
-        st.error("GeoJSON assets not found. Please verify the map data source.")
+        st.error("GeoJSON data not found.")
 
 # --- SECTION 6: RECOMMENDATION TOOL (MAP, NARRATIVE & LOG TABLE) ---
     st.markdown("""
