@@ -46,7 +46,14 @@ def check_password():
             st.error(f"Auth Error: {e}")
 
     if not st.session_state["password_correct"]:
-        st.markdown("<div style='text-align:center; padding:50px;'><h1 style='color:white;'>Louisiana OZ 2.0 Login</h1></div>", unsafe_allow_html=True)
+        st.markdown("""
+            <style>
+            .stApp { background-color: #0b0f19; }
+            .login-box { max-width: 450px; margin: 80px auto; padding: 40px; background: #111827; border: 1px solid #1e293b; border-radius: 12px; text-align: center; }
+            .login-title { font-family: serif; font-size: 2.2rem; font-weight: 900; color: #f8fafc; }
+            </style>
+            <div class="login-box"><div class="login-title">Louisiana OZ 2.0 Portal</div></div>
+        """, unsafe_allow_html=True)
         _, col_mid, _ = st.columns([1, 1.2, 1])
         with col_mid:
             st.text_input("Username", key="username")
@@ -63,39 +70,31 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #ffffff; }
-        
-        /* Section Styling */
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 5px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         
-        /* FIXED SIZE BENEFIT CARDS (Sections 2, 3, 4) */
-        .benefit-card { 
-            background: #161b28; 
-            padding: 25px; 
-            border: 1px solid #2d3748; 
-            border-radius: 8px; 
-            min-height: 220px; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: flex-start;
-            transition: 0.3s;
-        }
+        /* Unified Card Styling */
+        .benefit-card { background: #161b28; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: 0.3s; }
         .benefit-card:hover { border-color: #4ade80; }
-        .benefit-card h3 { margin-top: 0; color: #f8fafc; font-size: 1.2rem; }
+        .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; margin-bottom: 10px; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
 
-        /* Metric Cards */
         .metric-card { background: #111827; padding: 8px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 85px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 8px;}
         .metric-value { font-size: 1.1rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 3px; }
         
-        /* Justification Text White Override */
         .stTextArea textarea { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
         </style>
         """, unsafe_allow_html=True)
 
     # --- 3. DATA ENGINE ---
+    def haversine(lon1, lat1, lon2, lat2):
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+        dlon, dlat = lon2 - lon1, lat2 - lat1
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        return 3956 * 2 * asin(sqrt(a))
+
     @st.cache_data(ttl=3600)
     def load_assets():
         geojson = None
@@ -109,11 +108,21 @@ if check_password():
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
-        return geojson, master
+        anchors = read_csv_safe("la_anchors.csv")
+        centers = {}
+        if geojson:
+            for feature in geojson['features']:
+                props = feature['properties']
+                geoid = props.get('GEOID') or props.get('GEOID20')
+                try:
+                    coords = np.array(feature['geometry']['coordinates'][0]) if feature['geometry']['type'] == 'Polygon' else np.array(feature['geometry']['coordinates'][0][0])
+                    centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
+                except: continue
+        return geojson, master, anchors, centers
 
-    gj, master_df = load_assets()
+    gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- SECTIONS 2, 3, 4 (Standardized Cards) ---
+    # --- SECTIONS 2-4 (Standardized UI) ---
     sections = [
         ("SECTION 2", "The OZ 2.0 Benefit Framework", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -135,20 +144,43 @@ if check_password():
     for num, title, cards in sections:
         st.markdown(f"<div class='content-section'><div class='section-num'>{num}</div><div class='section-title'>{title}</div>", unsafe_allow_html=True)
         cols = st.columns(3)
-        for i, (card_title, card_text) in enumerate(cards):
-            cols[i].markdown(f"<div class='benefit-card'><h3>{card_title}</h3><p>{card_text}</p></div>", unsafe_allow_html=True)
+        for i, (ctitle, ctext) in enumerate(cards):
+            cols[i].markdown(f"<div class='benefit-card'><h3>{ctitle}</h3><p>{ctext}</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: STRATEGIC ASSET MAPPING ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
+    col5_map, col5_list = st.columns([0.6, 0.4], gap="large")
+    
+    with col5_map:
+        fig5 = px.choropleth_mapbox(master_df, geojson=gj, locations="geoid_str", 
+                                     featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
+                                     color="Eligibility_Status", color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#1e293b"},
+                                     mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}, opacity=0.8)
+        fig5.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=650, clickmode='event+select')
+        sel5 = st.plotly_chart(fig5, use_container_width=True, on_select="rerun", key="map_s5_perfect")
+        if sel5 and sel5.get("selection", {}).get("points"): st.session_state["active_tract"] = str(sel5["selection"]["points"][0]["location"])
+
+    with col5_list:
+        curr = st.session_state["active_tract"]
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800; margin-bottom:10px;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
+        list_items = ""
+        if curr in tract_centers:
+            t_lon, t_lat = tract_centers[curr]
+            anchors_df['dist'] = anchors_df.apply(lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1)
+            for _, a in anchors_df.sort_values('dist').head(25).iterrows():
+                list_items += f"<div style='background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px;'><div style='color:#4ade80; font-size:0.7rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='font-weight:700; color:#f8fafc;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.8rem;'>📍 {a['dist']:.1f} miles</div></div>"
+        components.html(f"""<div style="height: 580px; overflow-y: auto; padding-right: 10px; scrollbar-width: thin; scrollbar-color: #4ade80 #0b0f19;">{list_items}</div><style>::-webkit-scrollbar {{ width: 6px; }} ::-webkit-scrollbar-thumb {{ background: #4ade80; border-radius: 10px; }}</style>""", height=600)
 
     # --- SECTION 6: TRACT PROFILING ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & My Recommendations</div>", unsafe_allow_html=True)
     col6_map, col6_data = st.columns([0.5, 0.5])
     
     with col6_map:
-        fig6 = px.choropleth_mapbox(master_df, geojson=gj, locations="geoid_str", 
-                                     featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
+        fig6 = px.choropleth_mapbox(master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Eligibility_Status", color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#1e293b"},
                                      mapbox_style="carto-darkmatter", zoom=6.5, center={"lat": 30.8, "lon": -91.8}, opacity=0.8)
         fig6.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=750, clickmode='event+select')
-        sel6 = st.plotly_chart(fig6, use_container_width=True, on_select="rerun", key="map_s6_final")
+        sel6 = st.plotly_chart(fig6, use_container_width=True, on_select="rerun", key="map_s6_v2")
         if sel6 and sel6.get("selection", {}).get("points"): st.session_state["active_tract"] = str(sel6["selection"]["points"][0]["location"])
 
     with col6_data:
@@ -162,10 +194,6 @@ if check_password():
 
             st.markdown(f"<div style='background:#111827; padding:20px; border-radius:10px; border-left: 5px solid #4ade80; margin-bottom:15px;'><h2 style='margin:0;'>{st.session_state['active_tract']}</h2><p style='color:#4ade80; font-weight:700;'>{str(d.get('Parish','')).upper()}</p></div>", unsafe_allow_html=True)
             
-            # Metric Rows
-            for cols in [st.columns(3), st.columns(3), st.columns(3)]:
-                pass # Structure only
-            
             # Row 1: Status
             r1 = st.columns(3)
             r1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{'URBAN' if 'metropolitan' in str(d.get('Metro Status','')).lower() else 'RURAL'}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
@@ -178,7 +206,7 @@ if check_password():
             r2[1].markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Unemployment Rate (%)','0')}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
             r2[2].markdown(f"<div class='metric-card'><div class='metric-value'>${med_income:,.0f}</div><div class='metric-label'>Median Income</div></div>", unsafe_allow_html=True)
 
-            # Row 3: Housing/Demographics
+            # Row 3: Requested Metrics
             r3 = st.columns(3)
             r3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{home_val}</div><div class='metric-label'>Median Home Value</div></div>", unsafe_allow_html=True)
             r3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Total!!Total population!!65 years and over','0')}</div><div class='metric-label'>Pop (65+)</div></div>", unsafe_allow_html=True)
@@ -194,10 +222,10 @@ if check_password():
                     conn.create(worksheet="Sheet1", data=new_rec)
                     st.success("Recommendation logged to Sheet1")
                     st.rerun()
-                except Exception as e: st.error(f"Error: {e}")
+                except Exception as e: st.error(f"Write error: {e}")
 
     # History Table
-    st.markdown("### My Recommendations (Sheet1)")
+    st.markdown("### My Regional Recommendations (Sheet1)")
     try:
         all_recs = conn.read(worksheet="Sheet1", ttl="5s")
         st.dataframe(all_recs[all_recs['User'].astype(str) == st.session_state["current_user"]], use_container_width=True, hide_index=True)
