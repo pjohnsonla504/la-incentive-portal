@@ -192,7 +192,7 @@ if check_password():
         st.markdown("""
             <div class='benefit-card'>
                 <h3>American Policy Institute</h3>
-                <p>Stack incentives to de-risk innovative projects. Louisiana has many levers that can be combined to attract investment and streamlined permitting through city partnership can support a public-private partnership development.</p>
+                <p>Stack incentives to de-risk innovative projects. Historic Tax Credits, New Markets Tax Credits, and Low-Income Housing Tax Credits are available to Louisiana developers at the state and federal level.</p>
             </div>
         """, unsafe_allow_html=True)
     
