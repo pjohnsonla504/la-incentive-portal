@@ -169,13 +169,13 @@ if check_password():
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- SECTION 3 ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Investment Justification</div><div class='narrative-text'>Leveraging industrial anchors and institutional stability for long-term growth.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div><div class='narrative-text'>Regional driven advocacy to amplify local stakeholder needs.</div></div>", unsafe_allow_html=True)
     
     # Syntax Fix Applied Here: New line before column assignment
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>Industrial Stability</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
-    with c2: st.markdown("<div class='benefit-card'><h3>Workforce Pipeline</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("<div class='benefit-card'><h3>Infrastructure ROI</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
+    with c1: st.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>The zones will be distributed throughout the state, focusing on rural areas and investment ready tracts.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Distressed Communities</h3><p>Opportunity Zone eligibility is dependent on the federal definition of a low-income community.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>The Council of Development Finance Agencies and National Bureau of Economic Research suggest regional recommendations align with tracts likely to receive investment.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 
