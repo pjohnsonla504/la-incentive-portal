@@ -1,6 +1,6 @@
 streamlit
 pandas
 numpy
-plotly>=4.0.0
+plotly>=5.15.0
 requests
 st-gsheets-connection
