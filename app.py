@@ -198,101 +198,67 @@ if check_password():
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- SECTION 5: RECOMMENDATION TOOL (MAP, NARRATIVE & LOG TABLE) ---
+# --- SECTION 5: INDUSTRIAL & INSTITUTIONAL ASSET MAP ---
     st.markdown("""
-        <div class='content-section' style='border-bottom:none;'>
+        <div class='content-section'>
             <div class='section-num'>SECTION 5</div>
-            <div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>
+            <div class='section-title'>Industrial & Institutional Asset Map</div>
+            <p class='narrative-text'>
+                This spatial layer visualizes the intersection of <b>Opportunity Zone 2.0 Eligibility</b> 
+                and Louisiana's core economic anchors. Hover over the nodes to identify strategic 
+                industrial sites, ports, and universities.
+            </p>
         </div>
     """, unsafe_allow_html=True)
-    
-    # Initialize session state for the recommendation log
-    if "recommendation_log" not in st.session_state:
-        st.session_state["recommendation_log"] = []
 
     if gj:
-        # 1. TOOL LAYOUT: MAP (LEFT) AND DATA/NARRATIVE (RIGHT)
-        m_col, p_col = st.columns([7, 3])
-        
-        with m_col:
-            fig = px.choropleth_mapbox(
-                master_df, 
-                geojson=gj, 
-                locations="geoid_str", 
-                featureidkey="properties.GEOID",
-                color="Eligibility_Status", 
-                color_discrete_map={
-                    "Eligible": "#4ade80", 
-                    "Ineligible": "rgba(30,41,59,0.2)"
-                },
-                mapbox_style="carto-darkmatter", 
-                zoom=6.5, 
-                center={"lat": 30.8, "lon": -91.8}, 
-                opacity=0.7
-            )
-            fig.update_layout(
-                coloraxis_showscale=False, 
-                margin={"r":0,"t":0,"l":0,"b":0}, 
-                paper_bgcolor='rgba(0,0,0,0)', 
-                height=600
-            )
-            fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
-            selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-        
-        with p_col:
-            # Selection Logic
-            current_id = "22071001700" # Default
-            if selection and selection.get("selection", {}).get("points"):
-                current_id = str(selection["selection"]["points"][0]["location"])
-            
-            row = master_df[master_df["geoid_str"] == current_id]
-            
-            if not row.empty:
-                d = row.iloc[0]
-                
-                # Robust Poverty Value Calculation to prevent KeyError
-                pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
-                try:
-                    raw_pov = d.get(pov_col, 0)
-                    pov_display = pd.to_numeric(raw_pov, errors='coerce')
-                    if np.isnan(pov_display): pov_display = 0
-                except:
-                    pov_display = 0
+        # 1. Initialize the Base Choropleth (Tract Eligibility)
+        fig = px.choropleth_mapbox(
+            master_df, 
+            geojson=gj, 
+            locations="geoid_str", 
+            featureidkey="properties.GEOID",
+            color="Eligibility_Status", 
+            # High-end dark theme colors: muted navy for background, highlight for eligible
+            color_discrete_map={
+                "Eligible": "#1e293b", 
+                "Ineligible": "rgba(15, 23, 42, 0.1)"
+            },
+            mapbox_style="carto-darkmatter", 
+            zoom=6.5, 
+            center={"lat": 31.0, "lon": -92.0}, 
+            opacity=0.6
+        )
 
-                # Region and Parish Header
-                current_parish = str(d.get('Parish', 'LOUISIANA')).upper()
-                current_region = str(d.get('Region', 'N/A')).upper()
-                
-                st.markdown(f"### Tract {current_id}")
-                st.markdown(f"<p style='color:#4ade80; font-weight:800; font-size:1.2rem;'>{current_parish} ({current_region})</p>", unsafe_allow_html=True)
-                
-                # Poverty Metric Card
-                st.markdown(f"""
-                    <div class='metric-card'>
-                        <div class='metric-value'>{pov_display}%</div>
-                        <div class='metric-label'>Poverty Rate</div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                st.write("---")
-                st.markdown("#### Recommendation Narrative")
-                justification = st.text_area(
-                    "Narrative Input", 
-                    label_visibility="collapsed",
-                    placeholder="Describe why this tract is a priority...", 
-                    height=150
-                )
+        # 2. Overlay the Anchor Assets (Scatter Layer)
+        fig.add_trace(go.Scattermapbox(
+            lat=anchors_df['Latitude'],
+            lon=anchors_df['Longitude'],
+            mode='markers',
+            marker=go.scattermapbox.Marker(
+                size=10, 
+                color='#4ade80', # Vibrant green to match your UI
+                opacity=0.9,
+                symbol='circle'
+            ),
+            text=anchors_df['Anchor Name'],
+            hoverinfo='text',
+            name='Strategic Anchors'
+        ))
 
-                if st.button("Log Recommendation", use_container_width=True, type="primary"):
-                    if justification:
-                        if current_id not in st.session_state["recommendation_log"]:
-                            st.session_state["recommendation_log"].append(current_id)
-                            st.success(f"Tract {current_id} Logged")
-                            st.rerun()
-                        else:
-                            st.warning("This tract is already in your log.")
-                    else:
-                        st.error("Please provide a justification narrative.")
+        # 3. Final Layout Adjustments
+        fig.update_layout(
+            margin={"r":0,"t":0,"l":0,"b":0}, 
+            paper_bgcolor='rgba(0,0,0,0)', 
+            plot_bgcolor='rgba(0,0,0,0)',
+            height=700, 
+            showlegend=False
+        )
+
+        # 4. Render the Map
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+    else:
+        st.error("GeoJSON assets not found. Please verify the map data source.")
 
 # --- SECTION 6: RECOMMENDATION TOOL (MAP, NARRATIVE & LOG TABLE) ---
     st.markdown("""
