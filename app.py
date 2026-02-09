@@ -73,8 +73,8 @@ def check_password():
             </style>
             
             <div class="login-box">
-                <div class="login-subtitle">Louisiana OZ 2.0</div>
-                <div class="login-title">Incentive Portal</div>
+                <div class="login-subtitle">Louisiana Opportunity Zones 2.0</div>
+                <div class="login-title">Recommendation Portal</div>
                 <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Please enter your credentials to access the strategic recommendation tools.</p>
             </div>
         """, unsafe_allow_html=True)
@@ -95,7 +95,7 @@ def check_password():
 if check_password():
 
     # --- 2. STYLING ---
-    st.set_page_config(page_title="Louisiana OZ 2.0 Portal", layout="wide")
+    st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@0,900;1,900&display=swap');
