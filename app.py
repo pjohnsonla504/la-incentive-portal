@@ -26,7 +26,7 @@ try:
 except:
     pass
 
-# --- 1. AUTHENTICATION ---
+# --- 1. AUTHENTICATION (SLEEK & PROFESSIONAL UPGRADE) ---
 def check_password():
     def password_entered():
         try:
@@ -48,17 +48,68 @@ def check_password():
     if not st.session_state["password_correct"]:
         st.markdown("""
             <style>
-            .stApp { background-color: #0b0f19; }
-            .login-box { max-width: 450px; margin: 80px auto; padding: 40px; background: #111827; border: 1px solid #1e293b; border-radius: 12px; text-align: center; }
-            .login-title { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; color: #f8fafc; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+            
+            .stApp { 
+                background-color: #0b0f19;
+                background-image: radial-gradient(circle at 2px 2px, #1e293b 1px, transparent 0);
+                background-size: 40px 40px;
+            }
+            
+            .login-container {
+                max-width: 420px;
+                margin: 120px auto;
+                padding: 50px;
+                background: #111827;
+                border: 1px solid #1e293b;
+                border-top: 5px solid #4ade80;
+                border-radius: 16px;
+                text-align: center;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            
+            .login-title { 
+                font-family: 'Inter', sans-serif; 
+                font-size: 1.8rem; 
+                font-weight: 900; 
+                color: #f8fafc; 
+                letter-spacing: -0.02em;
+                margin-bottom: 8px;
+            }
+            
+            .login-subtitle {
+                font-family: 'Inter', sans-serif;
+                font-size: 0.85rem;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                margin-bottom: 32px;
+            }
+            
+            /* Inputs styling */
+            div[data-baseweb="input"] {
+                background-color: #1f2937 !important;
+                border-radius: 8px !important;
+                border: 1px solid #374151 !important;
+            }
+            input {
+                color: #ffffff !important;
+                font-family: 'Inter', sans-serif !important;
+            }
             </style>
-            <div class="login-box"><div class="login-title">Louisiana OZ 2.0 Portal</div></div>
+            
+            <div class="login-container">
+                <div class="login-title">Louisiana OZ 2.0</div>
+                <div class="login-subtitle">Secure Stakeholder Access</div>
+            </div>
         """, unsafe_allow_html=True)
-        _, col_mid, _ = st.columns([1, 1.2, 1])
+        
+        _, col_mid, _ = st.columns([1, 1.1, 1])
         with col_mid:
-            st.text_input("Username", key="username")
-            st.text_input("Password", type="password", key="password")
-            st.button("Secure Login", on_click=password_entered, use_container_width=True, type="primary")
+            st.text_input("Username", key="username", placeholder="Enter your ID")
+            st.text_input("Password", type="password", key="password", placeholder="••••••••")
+            st.write("") # Spacer
+            st.button("Authenticate & Enter", on_click=password_entered, use_container_width=True, type="primary")
         return False
     return True
 
@@ -84,7 +135,6 @@ if check_password():
         .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; }
 
-        /* Benefit Cards - WITH GREEN HOVER */
         .benefit-card { 
             background-color: #111827 !important; 
             padding: 25px; 
@@ -102,7 +152,6 @@ if check_password():
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
 
-        /* Metric Cards */
         .metric-card { 
             background-color: #111827 !important; 
             padding: 8px; 
@@ -119,7 +168,6 @@ if check_password():
         .metric-value { font-size: 1.1rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 3px; }
         
-        /* Section 6 Profile Header */
         .tract-header-container { 
             background-color: #111827 !important; 
             padding: 20px 25px; 
@@ -154,13 +202,11 @@ if check_password():
         def read_csv_safe(f):
             try: return pd.read_csv(f, encoding='utf-8')
             except: return pd.read_csv(f, encoding='latin1')
-        
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
-        
         anchors = read_csv_safe("la_anchors.csv")
         centers = {}
         if geojson:
@@ -197,7 +243,7 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTIONS 2, 3, 4: FRAMEWORK ---
+    # --- SECTIONS 2-4: FRAMEWORK ---
     sections_data = [
         ("SECTION 2", "The OZ 2.0 Benefit Framework", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -231,16 +277,7 @@ if check_password():
     with c5b:
         curr = st.session_state["active_tract"]
         st.markdown(f"<p style='color:#94a3b8; font-weight:800; margin-bottom:10px;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
-        # Adding hover capability to the anchor list items as well
-        anchor_style = """
-        <style>
-        .anchor-item {
-            background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;
-            transition: all 0.2s ease; cursor: default;
-        }
-        .anchor-item:hover { border-color: #4ade80; background: #161b28; }
-        </style>
-        """
+        anchor_style = "<style>.anchor-item { background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px; transition: all 0.2s ease; cursor: default; } .anchor-item:hover { border-color: #4ade80; background: #161b28; }</style>"
         list_html = anchor_style
         if curr in tract_centers:
             lon, lat = tract_centers[curr]
@@ -281,12 +318,12 @@ if check_password():
             r2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Broadband Internet (%)','0')}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
 
             st.write("---")
-            cat = st.selectbox("Recommendation Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
+            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification")
             if st.button("Submit Official Recommendation", type="primary", use_container_width=True):
                 new_rec = pd.DataFrame([{"Date": datetime.now().strftime("%Y-%m-%d"), "GEOID": str(st.session_state["active_tract"]), "Category": cat, "Justification": just, "User": st.session_state["current_user"]}])
                 conn.create(worksheet="Sheet1", data=new_rec)
-                st.success("Recommendation logged to database.")
+                st.success("Recommendation logged.")
                 st.rerun()
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
