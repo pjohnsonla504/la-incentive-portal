@@ -13,7 +13,7 @@ from streamlit_gsheets import GSheetsConnection
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
-# Force SSL Bypass
+# Force SSL Bypass for GeoJSON fetching
 try:
     ssl._create_default_https_context = ssl._create_unverified_context
 except:
@@ -26,11 +26,11 @@ def check_password():
             conn = st.connection("gsheets", type=GSheetsConnection)
             users_df = conn.read(ttl="5m")
             users_df.columns = users_df.columns.str.strip().str.lower()
-            u = st.session_state["username"].strip()
-            p = str(st.session_state["password"]).strip()
-            if u in users_df['username'].astype(str).values:
-                user_row = users_df[users_df['username'].astype(str) == u]
-                if str(user_row['password'].values[0]).strip() == p:
+            entered_user = st.session_state["username"].strip()
+            entered_pass = str(st.session_state["password"]).strip()
+            if entered_user in users_df['username'].astype(str).values:
+                user_row = users_df[users_df['username'].astype(str) == entered_user]
+                if str(user_row['password'].values[0]).strip() == entered_pass:
                     st.session_state["password_correct"] = True
                     return
             st.session_state["password_correct"] = False
@@ -101,6 +101,7 @@ if check_password():
 
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        # Tracking green tracts only for OZ 2.0 eligibility
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -113,9 +114,9 @@ if check_password():
 
         centers = {}
         if geojson:
-            for f in geojson['features']:
-                geoid = f['properties'].get('GEOID')
-                geom = f['geometry']
+            for feature in geojson['features']:
+                geoid = feature['properties'].get('GEOID')
+                geom = feature['geometry']
                 try:
                     coords = np.array(geom['coordinates'][0]) if geom['type'] == 'Polygon' else np.array(geom['coordinates'][0][0])
                     centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
@@ -126,18 +127,21 @@ if check_password():
 
     # --- SECTIONS 1 - 4 ---
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most.</div></div>""", unsafe_allow_html=True)
+
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
     with c2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>Qualified taxpayer receives 10% basis step-up (30% if rural).</p></div>", unsafe_allow_html=True)
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero federal capital gains tax on appreciation after 10 years.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div><div class='narrative-text'>Regional driven advocacy to amplify local stakeholder needs.</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>Zones will be distributed throughout the state focusing on rural and investment ready tracts.</p></div>", unsafe_allow_html=True)
     with c2: st.markdown("<div class='benefit-card'><h3>Distressed Communities</h3><p>Eligibility is dependent on the federal definition of a low-income community.</p></div>", unsafe_allow_html=True)
     with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning regional recommendations with tracts likely to receive private investment.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leverage OZ 2.0 capital to catalyze community and economic development.</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Industrial Hubs</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
@@ -148,7 +152,8 @@ if check_password():
     # --- SECTION 5: STRATEGIC SELECTION TOOL ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Selection Tool</div></div>", unsafe_allow_html=True)
 
-    selection5 = None # Initialize to prevent NameError
+    # Initialize variables to prevent NameError
+    selection5 = None
     m_col5, p_col5 = st.columns([6, 4])
     
     with m_col5:
@@ -158,6 +163,7 @@ if check_password():
                 color="map_color", color_discrete_map={1: "#4ade80", 0: "#1e293b"},
                 mapbox_style="white-bg", zoom=6.2, center={"lat": 30.8, "lon": -91.8}, opacity=0.7
             )
+            # Reliable CartoDB Basemap layers
             fig5.update_layout(
                 mapbox_layers=[{
                     "below": 'traces', "sourcetype": "raster",
@@ -167,9 +173,10 @@ if check_password():
             )
             selection5 = st.plotly_chart(fig5, use_container_width=True, on_select="rerun", key="strat_map_v5")
         else:
-            st.error("GeoJSON failed to load. Please check your internet connection.")
+            st.warning("Map failed to render. Please check internet connection for GeoJSON.")
 
     with p_col5:
+        # Default starting tract if no selection
         current_id5 = "22071001700" 
         if selection5 and selection5.get("selection", {}).get("points"):
             current_id5 = str(selection5["selection"]["points"][0]["location"])
@@ -178,6 +185,7 @@ if check_password():
         if not row5.empty:
             d5 = row5.iloc[0]
             st.markdown(f"<h2>Tract {current_id5}</h2><p style='color:#4ade80; font-weight:800; font-size:1.3rem;'>{str(d5.get('Parish', 'LOUISIANA')).upper()}</p>", unsafe_allow_html=True)
+            
             c1, c2 = st.columns(2)
             with c1: 
                 pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
@@ -225,12 +233,13 @@ if check_password():
             row6 = master_df[master_df["geoid_str"] == current_id6]
             if not row6.empty:
                 d6 = row6.iloc[0]
-                pov6 = pd.to_numeric(d6.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0), errors='coerce')
+                pov_key = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
+                pov6 = pd.to_numeric(d6.get(pov_key, 0), errors='coerce')
                 st.markdown(f"### Tract {current_id6}")
                 st.markdown(f"<p style='color:#4ade80; font-weight:800;'>{str(d6.get('Parish', 'LOUISIANA')).upper()}</p>", unsafe_allow_html=True)
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov6 if not np.isnan(pov6) else 0}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
-                justification = st.text_area("Narrative Input", placeholder="Describe why this tract is a priority...", height=150, key="narr_input_6")
+                justification = st.text_area("Narrative Input", placeholder="Describe priority status...", height=150, key="narr_input_6")
                 if st.button("Log Recommendation", use_container_width=True, type="primary"):
                     if justification and current_id6 not in st.session_state["recommendation_log"]:
                         st.session_state["recommendation_log"].append(current_id6)
