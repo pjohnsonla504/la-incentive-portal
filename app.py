@@ -86,7 +86,6 @@ if check_password():
         anchors = read_csv_safe("la_anchors.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Safety for missing Tract column in anchors
         if 'Tract' not in anchors.columns:
             anchors['Tract'] = "Not Assigned"
             
@@ -96,10 +95,9 @@ if check_password():
 
     gj, master_df, anchors_df = load_assets()
 
-    # --- SECTION 1 ---
+    # --- SECTIONS 1-4 (Your Content) ---
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most.</div></div>""", unsafe_allow_html=True)
 
-    # --- SECTION 2 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
@@ -107,7 +105,6 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero federal capital gains tax on appreciation after 10 years.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 3 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div><div class='narrative-text'>Regional driven advocacy to amplify local stakeholder needs.</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>Zones will be distributed throughout the state focusing on rural and investment ready tracts.</p></div>", unsafe_allow_html=True)
@@ -115,7 +112,6 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning regional recommendations with tracts likely to receive private investment.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 4 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leverage OZ 2.0 capital to catalyze community and economic development.</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
@@ -134,17 +130,25 @@ if check_password():
             color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.15)", "Ineligible": "rgba(30,41,59,0.05)"},
             mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}
         )
+        # Added Tract ID to customdata of scatter layer to prevent crashes if clicked
         fig_assets.add_trace(go.Scattermapbox(
             lat=anchors_df["Lat"], lon=anchors_df["Lon"], mode='markers',
             marker=go.scattermapbox.Marker(size=6, color='#4ade80', opacity=0.3),
+            customdata=anchors_df['Tract'],
             hoverinfo='none'
         ))
         fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=450, showlegend=False)
         asset_selection = st.plotly_chart(fig_assets, use_container_width=True, on_select="rerun", key="asset_map")
 
     with a_col_right:
-        if asset_selection and asset_selection.get("selection", {}).get("points"):
-            active_tract = str(asset_selection["selection"]["points"][0]["location"])
+        active_tract = None
+        # ROBUST KEY ERROR PREVENTION
+        if asset_selection and "selection" in asset_selection and asset_selection["selection"]["points"]:
+            point = asset_selection["selection"]["points"][0]
+            # Try Choropleth key first, then Scatter customdata
+            active_tract = point.get("location") or point.get("customdata")
+            
+        if active_tract:
             st.markdown(f"### Tract: {active_tract}")
             local_assets = anchors_df[anchors_df['Tract'].astype(str) == str(active_tract)]
             
@@ -181,8 +185,11 @@ if check_password():
         rec_selection = st.plotly_chart(fig_rec, use_container_width=True, on_select="rerun", key="rec_map")
     
     with p_col:
-        if rec_selection and rec_selection.get("selection", {}).get("points"):
-            rec_id = str(rec_selection["selection"]["points"][0]["location"])
+        rec_id = None
+        if rec_selection and "selection" in rec_selection and rec_selection["selection"]["points"]:
+            rec_id = rec_selection["selection"]["points"][0].get("location")
+
+        if rec_id:
             row = master_df[master_df["geoid_str"] == rec_id]
             if not row.empty:
                 d = row.iloc[0]
@@ -207,4 +214,4 @@ if check_password():
         st.write("---")
         st.dataframe(pd.DataFrame(st.session_state["recommendation_log"]), use_container_width=True, hide_index=True)
 
-    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
+    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear
