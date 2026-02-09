@@ -26,7 +26,7 @@ try:
 except:
     pass
 
-# --- 1. AUTHENTICATION (BLACK INPUT TEXT) ---
+# --- 1. AUTHENTICATION ---
 def check_password():
     def password_entered():
         try:
@@ -50,25 +50,12 @@ def check_password():
             <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
             .stApp { background-color: #0b0f19; }
-            .login-card {
-                max-width: 360px;
-                margin: 140px auto 20px auto;
-                padding: 30px;
-                background: #111827;
-                border: 1px solid #1e293b;
-                border-top: 4px solid #4ade80;
-                border-radius: 12px;
-                text-align: center;
-            }
-            .login-title { font-family: 'Inter', sans-serif; font-size: 1.5rem; font-weight: 900; color: #ffffff; margin-bottom: 4px; }
+            .login-card { max-width: 360px; margin: 140px auto 20px auto; padding: 30px; background: #111827; border: 1px solid #1e293b; border-top: 4px solid #4ade80; border-radius: 12px; text-align: center; }
             label, p, .stText { color: #ffffff !important; font-weight: 600 !important; }
             div[data-baseweb="input"] { background-color: #f8fafc !important; border-radius: 6px !important; }
             input { color: #000000 !important; -webkit-text-fill-color: #000000 !important; }
             </style>
-            <div class="login-card">
-                <div class="login-title">OZ 2.0 Portal</div>
-                <div style="color:#4ade80; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em;">Secure Stakeholder Access</div>
-            </div>
+            <div class="login-card"><div style="font-family:'Inter'; font-size:1.5rem; font-weight:900; color:white;">OZ 2.0 Portal</div></div>
         """, unsafe_allow_html=True)
         _, col_mid, _ = st.columns([1, 0.8, 1])
         with col_mid:
@@ -89,29 +76,36 @@ if check_password():
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
-        .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
-        .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
-        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         
-        /* UPDATED SECTION 6 METRIC CARDS */
-        .metric-card { 
+        /* SECTIONS 2-4 GREEN HOVER CARDS */
+        .benefit-card { 
             background-color: #111827 !important; 
-            padding: 15px; 
-            border: 1px solid #1e293b; 
-            border-radius: 12px; 
-            text-align: center; 
-            height: 115px; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            margin-bottom: 15px;
-            transition: background-color 0.2s ease;
+            padding: 25px; 
+            border: 1px solid #2d3748; 
+            border-radius: 8px; 
+            min-height: 220px; 
+            transition: all 0.3s ease-in-out; 
         }
-        .metric-card:hover { background-color: #1a2234 !important; border-color: #334155; }
+        .benefit-card:hover { 
+            border-color: #4ade80 !important; 
+            transform: translateY(-5px); 
+            background-color: #161b28 !important; 
+            box-shadow: 0 10px 30px -10px rgba(74, 222, 128, 0.2);
+        }
+        .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+        .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
+
+        /* SECTION 6 METRIC CARDS */
+        .metric-card { 
+            background-color: #111827 !important; padding: 15px; border: 1px solid #1e293b; border-radius: 12px; 
+            text-align: center; height: 115px; display: flex; flex-direction: column; justify-content: center; 
+            margin-bottom: 15px; transition: all 0.2s ease;
+        }
+        .metric-card:hover { border-color: #4ade80; background-color: #161b28 !important; }
         .metric-value { font-size: 1.3rem; font-weight: 900; color: #4ade80; line-height: 1; }
         .metric-label { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.08em; margin-top: 8px; font-weight: 700; }
         
-        .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
+        .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 15px;}
         </style>
         """, unsafe_allow_html=True)
 
@@ -153,16 +147,17 @@ if check_password():
         fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height)
         return fig
 
-    # --- SECTIONS 1-4: NARRATIVE ---
+    # --- SECTION 1: HERO ---
     st.markdown("""
         <div class='content-section'>
             <div class='section-num'>SECTION 1</div>
-            <div class='hero-subtitle'>Opportunity Zones 2.0</div>
-            <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
-            <div class='narrative-text'>Louisiana’s pathway to long-term private capital, fueling jobs and innovation.</div>
+            <div style="color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;">Opportunity Zones 2.0</div>
+            <div style="font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px;">Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
+            <div style="font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px;">Louisiana’s pathway to long-term private capital, fueling jobs and innovation in the communities that need it most.</div>
         </div>
     """, unsafe_allow_html=True)
 
+    # --- SECTIONS 2-4 ---
     for num, title, cards in [
         ("SECTION 2", "The OZ 2.0 Benefit Framework", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -177,7 +172,7 @@ if check_password():
         ("SECTION 4", "Best Practices", [
             ("Economic Innovation Group", "Proximity to ports ensures long-term tenant demand."),
             ("Frost Brown Todd", "Utilizing educational anchors for a skilled labor force."),
-            ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+            ("American Policy Institute", "Stack incentives to de-risk projects for growth.")
         ])
     ]:
         st.markdown(f"<div class='content-section'><div class='section-num'>{num}</div><div class='section-title'>{title}</div>", unsafe_allow_html=True)
@@ -185,7 +180,7 @@ if check_password():
         for i, (ct, ctx) in enumerate(cards):
             cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-# --- SECTION 5: PERFECT ASSET MAPPING ---
+    # --- SECTION 5: HIGH-END ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
@@ -194,16 +189,49 @@ if check_password():
         if s5 and s5.get("selection", {}).get("points"): st.session_state["active_tract"] = str(s5["selection"]["points"][0]["location"])
     with c5b:
         curr = st.session_state["active_tract"]
-        st.markdown(f"<p style='color:#94a3b8; font-weight:800; margin-bottom:10px;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
-        list_html = "<style>.anchor-item { background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px; transition: all 0.2s ease; } .anchor-item:hover { border-color: #4ade80; }</style>"
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800; margin-bottom:15px;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
+        
+        anchor_html = """
+        <style>
+            .anchor-card {
+                background: #111827;
+                border: 1px solid #1e293b;
+                padding: 16px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                transition: all 0.2s ease;
+            }
+            .anchor-card:hover { border-color: #4ade80; background: #161b28; }
+            .anchor-name { font-weight: 800; color: #f8fafc; font-size: 1.05rem; margin-bottom: 6px; }
+            .anchor-type-tag {
+                display: inline-block;
+                background: rgba(74, 222, 128, 0.1);
+                color: #4ade80;
+                font-size: 0.6rem;
+                font-weight: 900;
+                padding: 2px 8px;
+                border-radius: 4px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 8px;
+            }
+            .anchor-dist { color: #64748b; font-size: 0.75rem; font-weight: 600; }
+        </style>
+        """
         if curr in tract_centers:
             lon, lat = tract_centers[curr]
             anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            for _, a in anchors_df.sort_values('dist').head(12).iterrows():
-                list_html += f"<div class='anchor-item'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='font-weight:700; font-size:0.9rem;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div></div>"
-        components.html(f"<div style='height: 530px; overflow-y: auto;'>{list_html}</div>", height=550)
+            for _, a in anchors_df.sort_values('dist').head(15).iterrows():
+                anchor_html += f"""
+                <div class='anchor-card'>
+                    <div class='anchor-type-tag'>{str(a.get('Type','')).upper()}</div>
+                    <div class='anchor-name'>{a['Name']}</div>
+                    <div class='anchor-dist'>📍 {a['dist']:.1f} miles away</div>
+                </div>
+                """
+        components.html(f"<div style='height: 540px; overflow-y: auto; padding-right:10px;'>{anchor_html}</div>", height=550)
 
-    # --- SECTION 6: MODIFIED LEGIBLE GRID ---
+    # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
