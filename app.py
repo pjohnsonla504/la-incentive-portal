@@ -119,57 +119,8 @@ if check_password():
     with c3: st.markdown("""<div class='benefit-card'><h3>American Policy Institute</h3><p>Stack incentives to de-risk innovative projects. Historic Tax Credits, New Markets Tax Credits, and LIHTC are available to Louisiana developers.</p></div>""", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAP ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Community Assets</div></div>", unsafe_allow_html=True)
-    a_col_left, a_col_right = st.columns([7, 3])
-    
-    with a_col_left:
-        fig_assets = px.choropleth_mapbox(
-            master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
-            color="Eligibility_Status", 
-            color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.15)", "Ineligible": "rgba(30,41,59,0.05)"},
-            mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}
-        )
-        # Added Tract ID to customdata of scatter layer to prevent crashes if clicked
-        fig_assets.add_trace(go.Scattermapbox(
-            lat=anchors_df["Lat"], lon=anchors_df["Lon"], mode='markers',
-            marker=go.scattermapbox.Marker(size=6, color='#4ade80', opacity=0.3),
-            customdata=anchors_df['Tract'],
-            hoverinfo='none'
-        ))
-        fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=450, showlegend=False)
-        asset_selection = st.plotly_chart(fig_assets, use_container_width=True, on_select="rerun", key="asset_map")
-
-    with a_col_right:
-        active_tract = None
-        # ROBUST KEY ERROR PREVENTION
-        if asset_selection and "selection" in asset_selection and asset_selection["selection"]["points"]:
-            point = asset_selection["selection"]["points"][0]
-            # Try Choropleth key first, then Scatter customdata
-            active_tract = point.get("location") or point.get("customdata")
-            
-        if active_tract:
-            st.markdown(f"### Tract: {active_tract}")
-            local_assets = anchors_df[anchors_df['Tract'].astype(str) == str(active_tract)]
-            
-            type_options = ["All Types"] + sorted(anchors_df['Type'].unique().tolist())
-            selected_cat = st.selectbox("Filter Assets:", options=type_options)
-            
-            display_assets = local_assets if selected_cat == "All Types" else local_assets[local_assets['Type'] == selected_cat]
-            st.markdown(f"<div class='metric-card'><div class='metric-value'>{len(display_assets)}</div><div class='metric-label'>Found Nearby</div></div>", unsafe_allow_html=True)
-            
-            if not display_assets.empty:
-                st.markdown("<div style='max-height: 200px; overflow-y: auto;'>", unsafe_allow_html=True)
-                for _, asset in display_assets.iterrows():
-                    st.markdown(f"<div class='asset-item'><b>{asset['Name']}</b><br><small>{asset['Type']}</small></div>", unsafe_allow_html=True)
-                st.markdown("</div>", unsafe_allow_html=True)
-            else:
-                st.info("No specific assets assigned to this tract.")
-        else:
-            st.markdown("<p class='empty-state'><br><br>Click a census tract on the map<br>to analyze local industrial assets.</p>", unsafe_allow_html=True)
-
-    # --- SECTION 6: RECOMMENDATION TOOL ---
-    st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 6</div><div class='section-title'>OZ 2.0 Recommendation Tool</div></div>", unsafe_allow_html=True)
+    # --- SECTION 5: RECOMMENDATION TOOL ---
+    st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 5</div><div class='section-title'>OZ 2.0 Recommendation Tool</div></div>", unsafe_allow_html=True)
     
     if "recommendation_log" not in st.session_state:
         st.session_state["recommendation_log"] = []
