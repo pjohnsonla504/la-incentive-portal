@@ -54,7 +54,9 @@ if check_password():
         .content-section { padding: 30px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.7rem; font-weight: 900; color: #4ade80; margin-bottom: 2px; letter-spacing: 0.1em; }
         .section-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
-        .hero-title { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 900; color: #f8fafc; }
+        .hero-title { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 900; color: #f8fafc; line-height: 1.1; margin-bottom: 10px; }
+        .hero-subtitle { font-size: 0.9rem; color: #4ade80; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.2em; }
+        .narrative-text { font-size: 1.1rem; line-height: 1.6; color: #cbd5e1; max-width: 900px; margin-bottom: 15px; }
         .benefit-card { background: #161b28; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; height: 100%; }
         .metric-card { background: #111827; padding: 15px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; margin-bottom: 15px; }
         .metric-value { font-size: 1.8rem; font-weight: 900; color: #4ade80; }
@@ -66,12 +68,13 @@ if check_password():
     @st.cache_data(ttl=3600)
     def load_assets():
         geojson = None
+        # Primary local load, fallback to raw GitHub source
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json") as f: geojson = json.load(f)
         else:
             geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
             try:
-                r = requests.get(geo_url, timeout=10, verify=False)
+                r = requests.get(geo_url, timeout=10)
                 if r.status_code == 200: geojson = r.json()
             except: pass
 
@@ -81,67 +84,86 @@ if check_password():
 
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         anchors = read_csv_safe("la_anchors.csv")
+        
+        # Ensure ID alignment
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # --- CRITICAL FIX FOR KEYERROR ---
-        # Map anchors to Tracts based on proximity if 'Tract' column is missing
         if 'Tract' not in anchors.columns:
-            # Simple fallback to ensure code runs; ideally, anchors should have a 'Tract' column matching master['geoid_str']
-            # For this version, we ensure the column exists to avoid the crash
             anchors['Tract'] = "22071001700" 
             
         elig_col = 'Opportunity Zones Insiders Eligibilty'
-        master['Eligibility_Status'] = master[elig_col].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
+        # Green only for Opportunity Zone 2.0 Eligible
+        master['Eligibility_Status'] = master[elig_col].apply(
+            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
+        )
         return geojson, master, anchors
 
     gj, master_df, anchors_df = load_assets()
 
-    # --- SECTIONS 1-4 ---
-    st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div></div>""", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2-4</div><div class='section-title'>Framework & Best Practices</div><p>Unlocking capital for Louisiana's distressed communities through strategic asset alignment.</p></div>", unsafe_allow_html=True)
+    # --- SECTION 1-4 RESTORED ---
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 1</div>
+            <div class='hero-subtitle'>Opportunity Zones 2.0</div>
+            <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
+            <div class='narrative-text'>
+                Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAP (FIXED) ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Community Assets</div></div>", unsafe_allow_html=True)
-    a_col_left, a_col_right = st.columns([7, 3])
-    
-    with a_col_left:
-        fig_assets = px.choropleth_mapbox(
-            master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
-            color="Eligibility_Status", 
-            color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.15)", "Ineligible": "rgba(30,41,59,0.05)"},
-            mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}
-        )
-        fig_assets.add_trace(go.Scattermapbox(
-            lat=anchors_df["Lat"], lon=anchors_df["Lon"], mode='markers',
-            marker=go.scattermapbox.Marker(size=6, color='#4ade80', opacity=0.5),
-            hoverinfo='none'
-        ))
-        fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=450, showlegend=False)
-        asset_selection = st.plotly_chart(fig_assets, use_container_width=True, on_select="rerun", key="asset_map")
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>Qualified taxpayer receives 10% basis step-up (30% if rural).</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero federal capital gains tax on appreciation after 10 years.</p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    with a_col_right:
-        active_tract = "22071001700" 
-        if asset_selection and asset_selection.get("selection", {}).get("points"):
-            active_tract = str(asset_selection["selection"]["points"][0]["location"])
-        
-        st.markdown(f"### Tract: {active_tract}")
-        
-        # Safely filter
-        local_assets = anchors_df[anchors_df['Tract'].astype(str) == str(active_tract)]
-        
-        type_options = ["All Types"] + sorted(anchors_df['Type'].unique().tolist())
-        selected_cat = st.selectbox("Filter Assets:", options=type_options)
-        
-        display_assets = local_assets if selected_cat == "All Types" else local_assets[local_assets['Type'] == selected_cat]
-        
-        st.markdown(f"<div class='metric-card'><div class='metric-value'>{len(display_assets)}</div><div class='metric-label'>Assets Nearby</div></div>", unsafe_allow_html=True)
-        
-        st.markdown("<div style='max-height: 200px; overflow-y: auto;'>", unsafe_allow_html=True)
-        for _, asset in display_assets.iterrows():
-            st.markdown(f"<div class='asset-item'><b>{asset['Name']}</b><br><small>{asset['Type']}</small></div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Regional driven advocacy to amplify local stakeholder needs.</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 6: RECOMMENDATION TOOL (RESTORED METRICS) ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Leverage OZ 2.0 capital to catalyze community and economic development. Stack incentives like Historic Tax Credits and LIHTC.</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: ASSET MAP ---
+    if gj is None:
+        st.error("Map Data (GeoJSON) failed to load. Please check your internet connection or the 'tl_2025_22_tract.json' file.")
+    else:
+        st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Community Assets</div></div>", unsafe_allow_html=True)
+        a_col_left, a_col_right = st.columns([7, 3])
+        
+        with a_col_left:
+            # Using 'carto-darkmatter' which is built-in and highly reliable
+            fig_assets = px.choropleth_mapbox(
+                master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
+                color="Eligibility_Status", 
+                color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.4)", "Ineligible": "rgba(30,41,59,0.1)"},
+                mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}
+            )
+            # Add Anchor Points
+            fig_assets.add_trace(go.Scattermapbox(
+                lat=anchors_df["Lat"], lon=anchors_df["Lon"], mode='markers',
+                marker=go.scattermapbox.Marker(size=8, color='#4ade80', opacity=0.8),
+                text=anchors_df['Name'], hoverinfo='text'
+            ))
+            fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=500, showlegend=False)
+            asset_selection = st.plotly_chart(fig_assets, use_container_width=True, on_select="rerun", key="asset_map")
+
+        with a_col_right:
+            active_tract = "22071001700" 
+            if asset_selection and asset_selection.get("selection", {}).get("points"):
+                active_tract = str(asset_selection["selection"]["points"][0]["location"])
+            
+            st.markdown(f"### Tract: {active_tract}")
+            local_assets = anchors_df[anchors_df['Tract'].astype(str) == str(active_tract)]
+            st.markdown(f"<div class='metric-card'><div class='metric-value'>{len(local_assets)}</div><div class='metric-label'>Nearby Assets</div></div>", unsafe_allow_html=True)
+            
+            for _, asset in local_assets.head(5).iterrows():
+                st.markdown(f"<div class='asset-item'><b>{asset['Name']}</b><br><small>{asset.get('Type', 'Asset')}</small></div>", unsafe_allow_html=True)
+
+    # --- SECTION 6: RECOMMENDATION TOOL ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 6</div><div class='section-title'>OZ 2.0 Recommendation Tool</div></div>", unsafe_allow_html=True)
     
     if "recommendation_log" not in st.session_state:
@@ -151,37 +173,29 @@ if check_password():
     with m_col:
         fig_rec = px.choropleth_mapbox(
             master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
-            color="Eligibility_Status", color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
-            mapbox_style="carto-darkmatter", zoom=6.0, center={"lat": 30.8, "lon": -91.8}, opacity=0.7
+            color="Eligibility_Status", 
+            color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.3)"},
+            mapbox_style="carto-darkmatter", zoom=6.0, center={"lat": 30.8, "lon": -91.8}, opacity=0.8
         )
-        fig_rec.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=450)
+        fig_rec.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=500, showlegend=False)
         rec_selection = st.plotly_chart(fig_rec, use_container_width=True, on_select="rerun", key="rec_map")
     
     with p_col:
-        rec_id = "22071001700"
+        rec_id = None
         if rec_selection and rec_selection.get("selection", {}).get("points"):
             rec_id = str(rec_selection["selection"]["points"][0]["location"])
         
-        row = master_df[master_df["geoid_str"] == rec_id]
-        if not row.empty:
-            d = row.iloc[0]
-            pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
-            pov_val = pd.to_numeric(d.get(pov_col, 0), errors='coerce')
-            pov_display = 0 if np.isnan(pov_val) else pov_val
-            
-            st.markdown(f"### Tract {rec_id}")
-            st.markdown(f"<p style='color:#4ade80; font-weight:800; font-size:1.1rem;'>{str(d.get('Parish', 'LOUISIANA')).upper()} — {str(d.get('Region', 'N/A')).upper()}</p>", unsafe_allow_html=True)
-            st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov_display}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
-            
-            justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Provide justification...", height=120)
-            
-            if st.button("Log Recommendation", use_container_width=True, type="primary"):
-                if justification and rec_id not in [x['Tract'] for x in st.session_state["recommendation_log"]]:
+        if rec_id:
+            row = master_df[master_df["geoid_str"] == rec_id]
+            if not row.empty:
+                d = row.iloc[0]
+                st.markdown(f"### Priority Tract: {rec_id}")
+                st.markdown(f"**Parish:** {d.get('Parish', 'N/A')}")
+                justification = st.text_area("Justification", placeholder="Why this tract?")
+                if st.button("Log Selection", use_container_width=True, type="primary"):
                     st.session_state["recommendation_log"].append({"Tract": rec_id, "Narrative": justification, "Parish": d.get('Parish')})
                     st.rerun()
-
-    if st.session_state["recommendation_log"]:
-        st.write("---")
-        st.dataframe(pd.DataFrame(st.session_state["recommendation_log"]), use_container_width=True, hide_index=True)
+        else:
+            st.info("Select a tract on the map to begin.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
