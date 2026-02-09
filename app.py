@@ -139,113 +139,18 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning with tracts likely to receive investment.</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 4 ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>Industrial Hubs</h3><p>Proximity to ports ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
-    with c2: st.markdown("<div class='benefit-card'><h3>Educational Anchors</h3><p>Utilizing universities to provide a skilled labor force.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("<div class='benefit-card'><h3>Incentive Stacking</h3><p>Leverage Historic and New Market Tax Credits.</p></div>", unsafe_allow_html=True)
+    with c1: st.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>Focusing on rural areas and investment ready tracts.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Distressed Communities</h3><p>Dependent on federal low-income community definitions.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning with tracts likely to receive investment.</p></div>", unsafe_allow_html=True)    # --- SECTION 4 ---
 
-   # --- SECTION 5: STRATEGIC SELECTION TOOL ---
-st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 5</div>
-        <div class='section-title'>Strategic Selection Tool</div>
-    </div>
-""", unsafe_allow_html=True)
-
-# 1. Layout: Map (Left) and Data/Anchors (Right)
-m_col, p_col = st.columns([6, 4])
-
-with m_col:
-    if gj:
-        # Use mapbox for high-fidelity census tract rendering
-        fig = px.choropleth_mapbox(
-            master_df, 
-            geojson=gj, 
-            locations="geoid_str", 
-            featureidkey="properties.GEOID",
-            color="map_color", 
-            color_discrete_map={1: "#4ade80", 0: "rgba(30, 41, 59, 0.4)"},
-            mapbox_style="carto-darkmatter", 
-            zoom=6.2, 
-            center={"lat": 30.8, "lon": -91.8}, 
-            opacity=0.7
-        )
-        fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)', 
-            showlegend=False, 
-            height=700
-        )
-        # Enable selection logic for interactivity
-        selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="strat_map_v5")
-    else:
-        st.warning("🗺️ Map currently unavailable. Using manual selector.")
-        target_geoid = st.selectbox("Select Tract ID", master_df['geoid_str'].unique())
-        selection = None
-
-with p_col:
-    # Selection Logic: Default to a known Orleans Parish tract if nothing is clicked
-    current_id = "22071001700" 
-    if selection and selection.get("selection", {}).get("points"):
-        current_id = str(selection["selection"]["points"][0]["location"])
-    elif not gj:
-        current_id = target_geoid
-    
-    row = master_df[master_df["geoid_str"] == current_id]
-    
-    if not row.empty:
-        d = row.iloc[0]
-        st.markdown(f"""
-            <h2 style='margin-bottom:0;'>Tract {current_id}</h2>
-            <p style='color:#4ade80; font-weight:800; font-size:1.3rem; margin-top:0;'>
-                {str(d.get('Parish', 'LOUISIANA')).upper()}
-            </p>
-        """, unsafe_allow_html=True)
-        
-        # Metric Cards
-        c1, c2 = st.columns(2)
-        with c1: 
-            pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
-            pov = d.get(pov_col, 'N/A')
-            st.markdown(f"""
-                <div class='metric-card'>
-                    <div class='metric-value'>{pov}%</div>
-                    <div class='metric-label'>Poverty Rate</div>
-                </div>
-            """, unsafe_allow_html=True)
-        with c2: 
-            status = "ELIGIBLE" if d['map_color'] == 1 else "INELIGIBLE"
-            st.markdown(f"""
-                <div class='metric-card'>
-                    <div class='metric-value' style='font-size:1.5rem;'>{status}</div>
-                    <div class='metric-label'>OZ 2.0 Status</div>
-                </div>
-            """, unsafe_allow_html=True)
-
-        # Nearest Anchor Analysis (Visualized as Pills)
-        if not anchors_df.empty and current_id in tract_centers:
-            t_lon, t_lat = tract_centers[current_id]
-            # Calculate distance using haversine from data engine
-            anchors_df['dist'] = anchors_df.apply(
-                lambda r: haversine(t_lon, t_lat, r['Lon'], r['Lat']), axis=1
-            )
-            
-            st.markdown("""
-                <br>
-                <p style='font-size:0.8rem; font-weight:bold; color:#94a3b8; letter-spacing:0.1em; text-transform:uppercase;'>
-                    Nearest Local Anchors
-                </p>
-            """, unsafe_allow_html=True)
-            
-            # Display top 6 nearest anchors from la_anchors.csv
-            for _, a in anchors_df.sort_values('dist').head(6).iterrows():
-                st.markdown(f"""
-                    <div class='anchor-pill'>
-                        <span style='color:#4ade80;'>✔</span> {a['Name']} 
-                        <span style='color:#94a3b8; font-size:0.8rem;'>({a['dist']:.1f} mi)</span>
-                    </div>
-                """, unsafe_allow_html=True)
+    # --- SECTION 5 ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div></div>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>Focusing on rural areas and investment ready tracts.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Distressed Communities</h3><p>Dependent on federal low-income community definitions.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning with tracts likely to receive investment.</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 6: RECOMMENDATION TOOL ---
     st.markdown("""
