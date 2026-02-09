@@ -184,9 +184,10 @@ if check_password():
     
     # Syntax Fix Applied Here: New line before column assignment
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
-    with c2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Utilizing local educational anchors to provide a skilled labor force for new ventures.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("<div class='benefit-card'><h3>American Policy Institute</h3><p>Targeting areas with planned state upgrades to maximize private capital impact.</p></div>", unsafe_allow_html=True)
+    with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Balance economic need and investment potential. Consider areas at 60% or below of area medium income.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Select rural areas with transportation access. Prioritize rural tracts with major highways, navigable water, rail and air, or major ports.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>American Policy Institute</h3><p>Stack incentives to de-risk innovative projects. Louisiana has many levers that can be combined to attract investment and streamlined permitting through city partnership can support a public-private partnership development.
+.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # --- SECTION 5: RECOMMENDATION TOOL (MAP, NARRATIVE & LOG TABLE) ---
