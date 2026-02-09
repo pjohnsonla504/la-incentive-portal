@@ -146,7 +146,7 @@ if check_password():
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- SECTION 5 ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leverage OZ 2.0 capital to catalyze community and economic development.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leverage OZ 2.0 capital to catalyze community and economic development.</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
     with c2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Utilizing local educational anchors to provide a skilled labor force.</p></div>", unsafe_allow_html=True)
@@ -156,7 +156,7 @@ if check_password():
     # --- SECTION 6: RECOMMENDATION TOOL ---
     st.markdown("""
         <div class='content-section' style='border-bottom:none;'>
-            <div class='section-num'>SECTION 5</div>
+            <div class='section-num'>SECTION 6</div>
             <div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>
         </div>
     """, unsafe_allow_html=True)
