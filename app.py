@@ -26,7 +26,7 @@ try:
 except:
     pass
 
-# --- 1. AUTHENTICATION (SLEEK & PROFESSIONAL UPGRADE) ---
+# --- 1. AUTHENTICATION (CONDENSED & MODERN WHITE TEXT) ---
 def check_password():
     def password_entered():
         try:
@@ -48,75 +48,79 @@ def check_password():
     if not st.session_state["password_correct"]:
         st.markdown("""
             <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
             
-            .stApp { 
-                background-color: #0b0f19;
-                background-image: radial-gradient(circle at 2px 2px, #1e293b 1px, transparent 0);
-                background-size: 40px 40px;
-            }
+            .stApp { background-color: #0b0f19; }
             
-            .login-container {
-                max-width: 420px;
-                margin: 120px auto;
-                padding: 50px;
+            /* Professional Condensed Login Card */
+            .login-card {
+                max-width: 360px;
+                margin: 140px auto 20px auto;
+                padding: 30px;
                 background: #111827;
                 border: 1px solid #1e293b;
-                border-top: 5px solid #4ade80;
-                border-radius: 16px;
+                border-top: 4px solid #4ade80;
+                border-radius: 12px;
                 text-align: center;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             }
             
             .login-title { 
                 font-family: 'Inter', sans-serif; 
-                font-size: 1.8rem; 
+                font-size: 1.5rem; 
                 font-weight: 900; 
-                color: #f8fafc; 
-                letter-spacing: -0.02em;
-                margin-bottom: 8px;
+                color: #ffffff; 
+                margin-bottom: 4px;
+                letter-spacing: -0.03em;
             }
             
-            .login-subtitle {
+            .login-tag {
                 font-family: 'Inter', sans-serif;
-                font-size: 0.85rem;
-                color: #94a3b8;
+                font-size: 0.7rem;
+                color: #4ade80;
                 text-transform: uppercase;
-                letter-spacing: 0.1em;
-                margin-bottom: 32px;
+                letter-spacing: 0.15em;
+                margin-bottom: 25px;
             }
             
-            /* Inputs styling */
+            /* Force White Text on Labels and Inputs */
+            label, p, .stText {
+                color: #ffffff !important;
+                font-weight: 600 !important;
+                font-size: 0.85rem !important;
+            }
+
             div[data-baseweb="input"] {
                 background-color: #1f2937 !important;
-                border-radius: 8px !important;
                 border: 1px solid #374151 !important;
+                border-radius: 6px !important;
             }
+            
             input {
                 color: #ffffff !important;
+                -webkit-text-fill-color: #ffffff !important;
                 font-family: 'Inter', sans-serif !important;
             }
             </style>
             
-            <div class="login-container">
-                <div class="login-title">Louisiana OZ 2.0</div>
-                <div class="login-subtitle">Secure Stakeholder Access</div>
+            <div class="login-card">
+                <div class="login-title">OZ 2.0 Portal</div>
+                <div class="login-tag">Secure Stakeholder Access</div>
             </div>
         """, unsafe_allow_html=True)
         
-        _, col_mid, _ = st.columns([1, 1.1, 1])
+        _, col_mid, _ = st.columns([1, 0.8, 1])
         with col_mid:
-            st.text_input("Username", key="username", placeholder="Enter your ID")
-            st.text_input("Password", type="password", key="password", placeholder="••••••••")
-            st.write("") # Spacer
-            st.button("Authenticate & Enter", on_click=password_entered, use_container_width=True, type="primary")
+            st.text_input("Username", key="username")
+            st.text_input("Password", type="password", key="password")
+            st.write("") # Tighter spacer
+            st.button("Sign In", on_click=password_entered, use_container_width=True, type="primary")
         return False
     return True
 
 if check_password():
     conn = st.connection("gsheets", type=GSheetsConnection)
 
-    # --- 2. GLOBAL STYLING ---
+    # --- 2. GLOBAL STYLING (MATCHING THE LOGIN PRECISION) ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -243,7 +247,7 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTIONS 2-4: FRAMEWORK ---
+    # --- SECTIONS 2, 3, 4: FRAMEWORK ---
     sections_data = [
         ("SECTION 2", "The OZ 2.0 Benefit Framework", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
