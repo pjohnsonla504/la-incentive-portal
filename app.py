@@ -120,6 +120,7 @@ if check_password():
             try: return pd.read_csv(f, encoding='utf-8')
             except: return pd.read_csv(f, encoding='latin1')
 
+        # Load Master Data
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         
         # --- CLEANING & CALCULATIONS ---
@@ -133,7 +134,6 @@ if check_password():
             try: return float(s)
             except: return 0.0
 
-        # Create numeric-only columns for logic checks
         master['_pov_num'] = master[poverty_col].apply(clean_numeric)
         master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
         master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
@@ -163,6 +163,7 @@ if check_password():
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
         
+        # Anchor Data from la_anchors.csv
         anchors = read_csv_safe("la_anchors.csv")
         
         centers = {}
@@ -234,9 +235,15 @@ if check_password():
         if curr in tract_centers:
             lon, lat = tract_centers[curr]
             anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
+            # --- FONT COLOR FIX APPLIED HERE ---
             for _, a in anchors_df.sort_values('dist').head(12).iterrows():
-                list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='font-weight:700;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div></div>"
-        components.html(f"<div style='height: 530px; overflow-y: auto;'>{list_html}</div>", height=550)
+                list_html += f"""
+                <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
+                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div>
+                    <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
+                    <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div>
+                </div>"""
+        components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
     # --- SECTION 6: PERFECT NINE GRID ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
