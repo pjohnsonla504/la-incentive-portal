@@ -67,7 +67,7 @@ def check_password():
 
 if check_password():
 
-    # --- 2. GLOBAL STYLING (Updated with Fixed Card Heights) ---
+    # --- 2. GLOBAL STYLING (Updated with Hover Effects) ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@0,900;1,900&display=swap');
@@ -79,17 +79,25 @@ if check_password():
         .hero-subtitle { font-size: 1rem; color: #4ade80; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; letter-spacing: 0.2em; }
         .narrative-text { font-size: 1.2rem; line-height: 1.8; color: #cbd5e1; max-width: 900px; margin-bottom: 20px; }
         
-        /* UNIFORM BENEFIT CARDS */
+        /* INTERACTIVE BENEFIT CARDS */
         .benefit-card { 
             background: #161b28; 
             padding: 35px; 
             border: 1px solid #2d3748; 
             border-radius: 8px; 
             height: 100%;
-            min-height: 280px; /* Forces cards to be the same height */
+            min-height: 280px;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
+            transition: all 0.3s ease-in-out; /* Smooth transition for hover */
+        }
+        
+        .benefit-card:hover {
+            border: 1px solid #4ade80; /* Green border on hover */
+            transform: translateY(-5px); /* Subtle lift effect */
+            background: #1c2433; /* Slightly lighter background on hover */
+            box-shadow: 0px 10px 20px rgba(74, 222, 128, 0.1); /* Soft green glow */
         }
         
         .metric-card { background: #111827; padding: 20px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; }
@@ -143,10 +151,11 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- SECTION 1 ---
+    # --- SECTIONS 1-4 ---
+    # Section 1
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most.</div></div>""", unsafe_allow_html=True)
 
-    # --- SECTION 2 ---
+    # Section 2
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
@@ -154,7 +163,7 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero federal capital gains tax on appreciation after 10 years.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 3 ---
+    # Section 3
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div><div class='narrative-text'>Regional driven advocacy to amplify local stakeholder needs.</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>Zones will be distributed throughout the state focusing on rural and investment ready tracts.</p></div>", unsafe_allow_html=True)
@@ -162,7 +171,7 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning regional recommendations with tracts likely to receive private investment.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 4 ---
+    # Section 4
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leverage OZ 2.0 capital to catalyze community and economic development.</div></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
@@ -189,8 +198,6 @@ if check_password():
             selection5 = st.plotly_chart(fig5, use_container_width=True, on_select="rerun", key="strat_map_v5")
             if selection5 and selection5.get("selection", {}).get("points"):
                 st.session_state["active_tract"] = str(selection5["selection"]["points"][0]["location"])
-        else:
-            st.error("GeoJSON not found locally.")
 
     with p_col5:
         current_id5 = st.session_state["active_tract"]
