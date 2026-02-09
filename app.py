@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import requests
 import json
 import os
@@ -9,7 +10,7 @@ import ssl
 from math import radians, cos, sin, asin, sqrt
 from streamlit_gsheets import GSheetsConnection
 
-# 0. INITIAL CONFIG (Must be the very first Streamlit command)
+# 0. INITIAL CONFIG
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
 # Force SSL Bypass for Cloud Environments
@@ -20,7 +21,6 @@ except:
 
 # --- 1. AUTHENTICATION ---
 def check_password():
-    """Returns True if the user had the correct password."""
     def password_entered():
         try:
             conn = st.connection("gsheets", type=GSheetsConnection)
@@ -111,12 +111,14 @@ if check_password():
             except: return pd.read_csv(f, encoding='latin1')
 
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
+        anchors = read_csv_safe("la_anchors.csv")
+        
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['Eligibility_Status'] = master[elig_col].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
-        return geojson, master
+        return geojson, master, anchors
 
-    gj, master_df = load_assets()
+    gj, master_df, anchors_df = load_assets()
 
     # --- SECTION 1 ---
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most.</div></div>""", unsafe_allow_html=True)
@@ -145,81 +147,5 @@ if check_password():
     with c3: st.markdown("""<div class='benefit-card'><h3>American Policy Institute</h3><p>Stack incentives to de-risk innovative projects. Historic Tax Credits, New Markets Tax Credits, and LIHTC are available to Louisiana developers.</p></div>""", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
- # --- SECTION 5 ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leverage OZ 2.0 capital to catalyze community and economic development.</div></div>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
-    with c2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Utilizing local educational anchors to provide a skilled labor force.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class='benefit-card'><h3>American Policy Institute</h3><p>Stack incentives to de-risk innovative projects. Historic Tax Credits, New Markets Tax Credits, and LIHTC are available to Louisiana developers.</p></div>""", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # --- SECTION 6: RECOMMENDATION TOOL ---
-    st.markdown("""
-        <div class='content-section' style='border-bottom:none;'>
-            <div class='section-num'>SECTION 5</div>
-            <div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    if "recommendation_log" not in st.session_state:
-        st.session_state["recommendation_log"] = []
-
-    if gj:
-        m_col, p_col = st.columns([7, 3])
-        with m_col:
-            fig = px.choropleth_mapbox(
-                master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
-                color="Eligibility_Status", color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
-                mapbox_style="carto-darkmatter", zoom=6.5, center={"lat": 30.8, "lon": -91.8}, opacity=0.7
-            )
-            fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=600)
-            fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
-            selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
-        
-        with p_col:
-            current_id = "22071001700" 
-            if selection and selection.get("selection", {}).get("points"):
-                current_id = str(selection["selection"]["points"][0]["location"])
-            
-            row = master_df[master_df["geoid_str"] == current_id]
-            if not row.empty:
-                d = row.iloc[0]
-                pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
-                pov_display = pd.to_numeric(d.get(pov_col, 0), errors='coerce')
-                pov_display = 0 if np.isnan(pov_display) else pov_display
-                
-                st.markdown(f"### Tract {current_id}")
-                st.markdown(f"<p style='color:#4ade80; font-weight:800; font-size:1.2rem;'>{str(d.get('Parish', 'LOUISIANA')).upper()} ({str(d.get('Region', 'N/A')).upper()})</p>", unsafe_allow_html=True)
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov_display}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
-                
-                st.write("---")
-                justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Describe why this tract is a priority...", height=150)
-                if st.button("Log Recommendation", use_container_width=True, type="primary"):
-                    if justification:
-                        if current_id not in st.session_state["recommendation_log"]:
-                            st.session_state["recommendation_log"].append(current_id)
-                            st.success(f"Tract {current_id} Logged")
-                            st.rerun()
-                        else:
-                            st.warning("This tract is already in your log.")
-                    else:
-                        st.error("Please provide a justification narrative.")
-
-        st.write("---")
-        st.markdown("### OZ 2.0 Recommendations")
-        if st.session_state["recommendation_log"]:
-            log_df = pd.DataFrame({
-                "Recommendation Number": [str(i+1) for i in range(len(st.session_state["recommendation_log"]))],
-                "Tract Number": [str(x) for x in st.session_state["recommendation_log"]]
-            })
-            st.dataframe(log_df, use_container_width=True, hide_index=True, column_config={
-                "Recommendation Number": st.column_config.TextColumn("Recommendation Number", width="medium"),
-                "Tract Number": st.column_config.TextColumn("Tract Number", width="large")
-            })
-            if st.button("Clear All Recommendations"):
-                st.session_state["recommendation_log"] = []
-                st.rerun()
-        else:
-            st.info("No recommendations added yet. Select a tract on the map to begin.")
-
-    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
+    # --- SECTION 5: ASSET MAP ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Community Assets</div><div class='narrative-text'>Identify proximity to key economic drivers to justify
