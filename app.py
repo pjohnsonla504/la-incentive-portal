@@ -1,5 +1,4 @@
 import streamlit as st
-import pd as pd
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -135,7 +134,6 @@ if check_password():
             color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.4)", "Ineligible": "rgba(30,41,59,0.1)"},
             mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}
         )
-        # Overlay anchors as dots
         fig_assets.add_trace(go.Scattermapbox(
             lat=anchors_df["Lat"], lon=anchors_df["Lon"], mode='markers',
             marker=go.scattermapbox.Marker(size=6, color='#4ade80', opacity=0.5),
@@ -162,10 +160,8 @@ if check_password():
                 st.markdown(f"### Tract: {active_id}")
                 st.markdown(f"<p style='color:#4ade80; font-weight:800; font-size:1.1rem;'>{str(d.get('Parish', 'LOUISIANA')).upper()}</p>", unsafe_allow_html=True)
                 
-                # Show Local Assets in this tract
                 local_assets = anchors_df[anchors_df['Tract'].astype(str) == str(active_id)]
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{len(local_assets)}</div><div class='metric-label'>Industrial/Community Assets</div></div>", unsafe_allow_html=True)
-                
                 st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov_display}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
                 
                 justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Justification for recommendation...", height=100)
@@ -187,7 +183,6 @@ if check_password():
     # --- RECOMMENDATION LIST (TRACKER) ---
     if st.session_state["recommendation_log"]:
         st.markdown("### 📝 Logged Recommendations")
-        # Format the list for a clean display
         rec_df = pd.DataFrame(st.session_state["recommendation_log"])
         st.dataframe(rec_df, use_container_width=True, hide_index=True)
 
