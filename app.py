@@ -67,7 +67,7 @@ def check_password():
 
 if check_password():
 
-    # --- 2. GLOBAL STYLING ---
+    # --- 2. GLOBAL STYLING (Updated with Fixed Card Heights) ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@0,900;1,900&display=swap');
@@ -78,7 +78,20 @@ if check_password():
         .hero-title { font-family: 'Playfair Display', serif; font-size: 4.2rem; font-weight: 900; line-height: 1.1; color: #f8fafc; margin-bottom: 15px; }
         .hero-subtitle { font-size: 1rem; color: #4ade80; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; letter-spacing: 0.2em; }
         .narrative-text { font-size: 1.2rem; line-height: 1.8; color: #cbd5e1; max-width: 900px; margin-bottom: 20px; }
-        .benefit-card { background: #161b28; padding: 35px; border: 1px solid #2d3748; border-radius: 8px; height: 100%; }
+        
+        /* UNIFORM BENEFIT CARDS */
+        .benefit-card { 
+            background: #161b28; 
+            padding: 35px; 
+            border: 1px solid #2d3748; 
+            border-radius: 8px; 
+            height: 100%;
+            min-height: 280px; /* Forces cards to be the same height */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        
         .metric-card { background: #111827; padding: 20px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; }
         .metric-value { font-size: 2.2rem; font-weight: 900; color: #4ade80; }
         .anchor-pill { background: rgba(74, 222, 128, 0.1); border: 1px solid #4ade80; padding: 8px 12px; border-radius: 20px; margin-bottom: 8px; font-size: 0.9rem; color: #f8fafc; }
@@ -154,7 +167,7 @@ if check_password():
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
     with c2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Utilizing local educational anchors to provide a skilled labor force.</p></div>", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class='benefit-card'><h3>American Policy Institute</h3><p>Stack incentives to de-risk innovative projects. Historic Tax Credits, New Markets Tax Credits, and LIHTC are available to Louisiana developers.</p></div>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<div class='benefit-card'><h3>American Policy Institute</h3><p>Stack incentives to de-risk projects. Historic Tax Credits, New Markets Tax Credits, and LIHTC are available to Louisiana developers.</p></div>""", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- SECTION 5: STRATEGIC SELECTION TOOL ---
