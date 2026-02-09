@@ -70,24 +70,21 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
-        /* Force single background color to prevent double-fill look */
         html, body, [class*="stApp"], [data-testid="stVerticalBlock"] { 
             font-family: 'Inter', sans-serif !important; 
             background-color: #0b0f19 !important; 
             color: #ffffff; 
         }
         
-        /* Layout Sections */
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         
-        /* Hero Styling */
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
         .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; }
 
-        /* Benefit Cards - Flattened for single fill */
+        /* Benefit Cards - WITH GREEN HOVER */
         .benefit-card { 
             background-color: #111827 !important; 
             padding: 25px; 
@@ -95,11 +92,17 @@ if check_password():
             border-radius: 8px; 
             min-height: 220px;
             box-shadow: none !important;
+            transition: all 0.3s ease-in-out;
+        }
+        .benefit-card:hover {
+            border-color: #4ade80 !important;
+            transform: translateY(-5px);
+            background-color: #161b28 !important;
         }
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
 
-        /* Metric Cards - Flattened for single fill */
+        /* Metric Cards */
         .metric-card { 
             background-color: #111827 !important; 
             padding: 8px; 
@@ -165,7 +168,6 @@ if check_password():
                 props = feature['properties']
                 geoid = props.get('GEOID') or props.get('GEOID20')
                 try:
-                    # Handle Polygon and MultiPolygon
                     if feature['geometry']['type'] == 'Polygon':
                         coords = np.array(feature['geometry']['coordinates'][0])
                     else:
@@ -195,7 +197,7 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTIONS 2, 3, 4: FRAMEWORK & ADVOCACY ---
+    # --- SECTIONS 2, 3, 4: FRAMEWORK ---
     sections_data = [
         ("SECTION 2", "The OZ 2.0 Benefit Framework", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -229,13 +231,23 @@ if check_password():
     with c5b:
         curr = st.session_state["active_tract"]
         st.markdown(f"<p style='color:#94a3b8; font-weight:800; margin-bottom:10px;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
-        list_html = ""
+        # Adding hover capability to the anchor list items as well
+        anchor_style = """
+        <style>
+        .anchor-item {
+            background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;
+            transition: all 0.2s ease; cursor: default;
+        }
+        .anchor-item:hover { border-color: #4ade80; background: #161b28; }
+        </style>
+        """
+        list_html = anchor_style
         if curr in tract_centers:
             lon, lat = tract_centers[curr]
             anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in anchors_df.sort_values('dist').head(12).iterrows():
-                list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='font-weight:700; color:#f8fafc; font-size:0.9rem;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div></div>"
-        components.html(f"<div style='height: 530px; overflow-y: auto;'>{list_html}</div>", height=550)
+                list_html += f"<div class='anchor-item'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='font-weight:700; color:#f8fafc; font-size:0.9rem;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div></div>"
+        components.html(f"<div style='height: 530px; overflow-y: auto; padding-right:5px;'>{list_html}</div>", height=550)
 
     # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
@@ -258,7 +270,6 @@ if check_password():
                 </div>
             """, unsafe_allow_html=True)
             
-            # Metrics Grid - Ensuring clean, single-fill visuals
             r1 = st.columns(3)
             r1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
             r1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{d.get('Unemployment Rate (%)','0')}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
