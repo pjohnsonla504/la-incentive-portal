@@ -120,40 +120,45 @@ if check_password():
         a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
         return 3956 * 2 * asin(sqrt(a))
 
-    @st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600)
     def load_assets():
-        geojson = None
-        if os.path.exists("tl_2025_22_tract.json"):
-            with open("tl_2025_22_tract.json") as f:
-                geojson = json.load(f)
-        if not geojson:
-            geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
-            try:
-                r = requests.get(geo_url, timeout=10, verify=False)
-                if r.status_code == 200: geojson = r.json()
-            except: pass
-
         def read_csv_safe(f):
             try: return pd.read_csv(f, encoding='utf-8')
             except: return pd.read_csv(f, encoding='latin1')
 
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         anchors = read_csv_safe("la_anchors.csv")
-        master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # ELIGIBILITY: Tracks highlighted green are only those eligible for OZ 2.0
+        # Ensure coordinates are numeric (handles cases where they might be read as strings)
+        anchors['Lat'] = pd.to_numeric(anchors['Lat'], errors='coerce')
+        anchors['Lon'] = pd.to_numeric(anchors['Lon'], errors='coerce')
+        # Drop any rows where coordinates are missing
+        anchors = anchors.dropna(subset=['Lat', 'Lon'])
+
+        # Master Data Processing
+        master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         elig_col = 'Opportunity Zones Insiders Eligibilty'
-        master['Eligibility_Status'] = master[elig_col].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
+        master['Eligibility_Status'] = master[elig_col].apply(
+            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
+        )
+        
+        # Load GeoJSON
+        geojson = None
+        geo_url = "https://raw.githubusercontent.com/arcee123/GIS_GEOJSON_CENSUS_TRACTS/master/22.json"
+        try:
+            r = requests.get(geo_url, timeout=10, verify=False)
+            if r.status_code == 200: geojson = r.json()
+        except: pass
 
         centers = {}
         if geojson:
             for feature in geojson['features']:
-                geoid = str(feature['properties'].get('GEOID', feature.get('id')))
+                geoid = feature['properties'].get('GEOID')
                 geom = feature['geometry']
-                c_coords = geom['coordinates'][0] if geom['type'] == 'Polygon' else geom['coordinates'][0][0]
-                coords_array = np.array(c_coords)
-                centers[geoid] = [np.mean(coords_array[:, 0]), np.mean(coords_array[:, 1])]
-            
+                if geom['type'] == 'Polygon': coords = np.array(geom['coordinates'][0])
+                else: coords = np.array(geom['coordinates'][0][0])
+                centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
+
         return geojson, master, anchors, centers
 
     gj, master_df, anchors_df, tract_centers = load_assets()
@@ -199,61 +204,36 @@ if check_password():
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- SECTION 5: INDUSTRIAL & INSTITUTIONAL ASSET MAP ---
+# --- SECTION 5: ASSET MAP ---
     st.markdown("""
         <div class='content-section'>
             <div class='section-num'>SECTION 5</div>
             <div class='section-title'>Industrial & Institutional Asset Map</div>
-            <p class='narrative-text'>
-                Visualizing the intersection of <b>Opportunity Zone 2.0 Eligibility</b> 
-                and Louisiana's core economic anchors.
-            </p>
         </div>
     """, unsafe_allow_html=True)
 
     if gj:
-        # 1. Base Eligibility Layer
+        # Base Map (Census Tracts)
         fig = px.choropleth_mapbox(
-            master_df, 
-            geojson=gj, 
-            locations="geoid_str", 
-            featureidkey="properties.GEOID",
+            master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
             color="Eligibility_Status", 
-            color_discrete_map={
-                "Eligible": "#1e293b", 
-                "Ineligible": "rgba(15, 23, 42, 0.1)"
-            },
-            mapbox_style="carto-darkmatter", 
-            zoom=6.5, 
-            center={"lat": 31.0, "lon": -92.0}, 
-            opacity=0.6
+            color_discrete_map={"Eligible": "#1e293b", "Ineligible": "rgba(15, 23, 42, 0.1)"},
+            mapbox_style="carto-darkmatter", zoom=6.5, center={"lat": 31.0, "lon": -92.0}, opacity=0.5
         )
 
-        # 2. Add the Anchor Layer (Requires 'import plotly.graph_objects as go')
+        # Overlay Anchor Points (Using your exact headers: Name, Lat, Lon)
         fig.add_trace(go.Scattermapbox(
-            lat=anchors_df['Latitude'],
-            lon=anchors_df['Longitude'],
+            lat=anchors_df['Lat'],
+            lon=anchors_df['Lon'],
             mode='markers',
-            marker=go.scattermapbox.Marker(
-                size=10, 
-                color='#4ade80', 
-                opacity=0.9
-            ),
-            text=anchors_df['Anchor Name'],
+            marker=go.scattermapbox.Marker(size=10, color='#4ade80', opacity=0.9),
+            text=anchors_df['Name'],
             hoverinfo='text',
-            name='Strategic Anchors'
+            name='Economic Anchors'
         ))
 
-        fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)', 
-            height=700, 
-            showlegend=False
-        )
-
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.error("GeoJSON data not found.")
 
 # --- SECTION 6: RECOMMENDATION TOOL (MAP, NARRATIVE & LOG TABLE) ---
     st.markdown("""
