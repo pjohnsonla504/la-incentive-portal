@@ -214,4 +214,4 @@ if check_password():
         st.write("---")
         st.dataframe(pd.DataFrame(st.session_state["recommendation_log"]), use_container_width=True, hide_index=True)
 
-    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear
+    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
