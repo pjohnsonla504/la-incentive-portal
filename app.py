@@ -185,7 +185,7 @@ if check_password():
         for i, (ct, ctx) in enumerate(cards):
             cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: PERFECT ASSET MAPPING ---
+# --- SECTION 5: PERFECT ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
