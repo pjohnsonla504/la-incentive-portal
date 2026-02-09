@@ -148,4 +148,108 @@ if check_password():
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAP ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Community Assets</div><div class='narrative-text'>Identify proximity to key economic drivers to justify
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Community Assets</div><div class='narrative-text'>Identify proximity to key economic drivers to justify tract recommendations. Use the filter below to toggle specific asset types across the state.</div></div>", unsafe_allow_html=True)
+    
+    if not anchors_df.empty:
+        # Global multiselect for Type
+        anchor_types = sorted(anchors_df['Type'].unique().tolist())
+        selected_types = st.multiselect("Filter Map by Asset Type:", options=anchor_types, default=anchor_types)
+        
+        # Filter anchors based on selection
+        filtered_anchors = anchors_df[anchors_df['Type'].isin(selected_types)]
+
+        # Background Map (Tracts)
+        fig_assets = px.choropleth_mapbox(
+            master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
+            color="Eligibility_Status", 
+            color_discrete_map={"Eligible": "rgba(74, 222, 128, 0.15)", "Ineligible": "rgba(30,41,59,0.05)"},
+            mapbox_style="carto-darkmatter", zoom=6.5, center={"lat": 30.8, "lon": -91.8}
+        )
+
+        # Scatter Overlay (Anchors)
+        fig_assets.add_trace(go.Scattermapbox(
+            lat=filtered_anchors["Lat"],
+            lon=filtered_anchors["Lon"],
+            mode='markers',
+            marker=go.scattermapbox.Marker(size=8, color='#4ade80', opacity=0.8),
+            text=filtered_anchors["Name"] + "<br>" + filtered_anchors["Type"],
+            hoverinfo='text',
+            name="Community Anchors"
+        ))
+
+        fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, showlegend=False)
+        st.plotly_chart(fig_assets, use_container_width=True)
+    else:
+        st.warning("Asset data (la_anchors.csv) not found. Please upload to enable Section 5.")
+
+    # --- SECTION 6: RECOMMENDATION TOOL ---
+    st.markdown("""
+        <div class='content-section' style='border-bottom:none;'>
+            <div class='section-num'>SECTION 6</div>
+            <div class='section-title'>Opportunity Zones 2.0 Recommendation Tool</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    if "recommendation_log" not in st.session_state:
+        st.session_state["recommendation_log"] = []
+
+    if gj:
+        m_col, p_col = st.columns([7, 3])
+        with m_col:
+            fig = px.choropleth_mapbox(
+                master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
+                color="Eligibility_Status", color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
+                mapbox_style="carto-darkmatter", zoom=6.5, center={"lat": 30.8, "lon": -91.8}, opacity=0.7
+            )
+            fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=600)
+            fig.update_traces(marker_line_width=0.7, marker_line_color="#475569", showlegend=False)
+            selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", key="recommendation_map")
+        
+        with p_col:
+            current_id = "22071001700" 
+            if selection and selection.get("selection", {}).get("points"):
+                current_id = str(selection["selection"]["points"][0]["location"])
+            
+            row = master_df[master_df["geoid_str"] == current_id]
+            if not row.empty:
+                d = row.iloc[0]
+                pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
+                pov_val = pd.to_numeric(d.get(pov_col, 0), errors='coerce')
+                pov_display = 0 if np.isnan(pov_val) else pov_val
+                
+                st.markdown(f"### Tract {current_id}")
+                st.markdown(f"<p style='color:#4ade80; font-weight:800; font-size:1.2rem;'>{str(d.get('Parish', 'LOUISIANA')).upper()} ({str(d.get('Region', 'N/A')).upper()})</p>", unsafe_allow_html=True)
+                st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov_display}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
+                
+                st.write("---")
+                justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Describe why this tract is a priority...", height=150)
+                
+                btn_col1, btn_col2 = st.columns(2)
+                with btn_col1:
+                    if st.button("Log Recommendation", use_container_width=True, type="primary"):
+                        if justification:
+                            if current_id not in [x['id'] for x in st.session_state["recommendation_log"]]:
+                                st.session_state["recommendation_log"].append({"id": current_id, "notes": justification})
+                                st.success(f"Tract {current_id} Logged")
+                                st.rerun()
+                            else:
+                                st.warning("This tract is already in your log.")
+                        else:
+                            st.error("Please provide a justification.")
+                with btn_col2:
+                    if st.button("Reset Selection", use_container_width=True):
+                        st.rerun()
+
+        st.write("---")
+        st.markdown("### OZ 2.0 Recommendations")
+        if st.session_state["recommendation_log"]:
+            log_df = pd.DataFrame(st.session_state["recommendation_log"])
+            log_df.columns = ["Tract Number", "Justification"]
+            st.dataframe(log_df, use_container_width=True, hide_index=True)
+            if st.button("Clear All Recommendations"):
+                st.session_state["recommendation_log"] = []
+                st.rerun()
+        else:
+            st.info("No recommendations added yet. Select a tract on the map to begin.")
+
+    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
