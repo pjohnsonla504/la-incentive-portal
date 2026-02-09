@@ -91,7 +91,7 @@ if check_password():
             anchors['Tract'] = "Not Assigned"
             
         elig_col = 'Opportunity Zones Insiders Eligibilty'
-        # Tracks highlighted green are only those eligible for Opportunity Zone 2.0
+        # Logic: Tracks highlighted green are only those eligible for OZ 2.0
         master['Eligibility_Status'] = master[elig_col].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -99,9 +99,10 @@ if check_password():
 
     gj, master_df, anchors_df = load_assets()
 
-    # --- RESTORED SECTIONS 1-4 ---
+    # --- SECTION 1 ---
     st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div><div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, housing, and innovation in the communities that need it most.</div></div>""", unsafe_allow_html=True)
 
+    # --- SECTION 2 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
@@ -109,6 +110,7 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero federal capital gains tax on appreciation after 10 years.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # --- SECTION 3 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>Zones will be distributed throughout the state focusing on rural and investment ready tracts.</p></div>", unsafe_allow_html=True)
@@ -116,6 +118,7 @@ if check_password():
     with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning regional recommendations with tracts likely to receive private investment.</p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # --- SECTION 4 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>Proximity to ports and manufacturing hubs ensures long-term tenant demand.</p></div>", unsafe_allow_html=True)
