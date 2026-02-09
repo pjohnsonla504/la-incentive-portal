@@ -51,14 +51,16 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@0,900;1,900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #ffffff; }
-        .content-section { padding: 25px 0; border-bottom: 1px solid #1e293b; width: 100%; }
+        .content-section { padding: 30px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.7rem; font-weight: 900; color: #4ade80; margin-bottom: 2px; letter-spacing: 0.1em; }
         .section-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
-        .narrative-text { font-size: 1.1rem; line-height: 1.5; color: #cbd5e1; margin-bottom: 15px; }
-        .benefit-card { background: #161b28; padding: 20px; border: 1px solid #2d3748; border-radius: 8px; height: 100%; }
-        .metric-card { background: #111827; padding: 15px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; margin-bottom: 10px; }
+        .hero-title { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 900; color: #f8fafc; margin-bottom: 10px; }
+        .hero-subtitle { font-size: 0.9rem; color: #4ade80; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.2em; }
+        .narrative-text { font-size: 1.1rem; line-height: 1.6; color: #cbd5e1; max-width: 900px; }
+        .benefit-card { background: #161b28; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; height: 100%; }
+        .metric-card { background: #111827; padding: 15px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; margin-bottom: 15px; }
         .metric-value { font-size: 1.8rem; font-weight: 900; color: #4ade80; }
-        .asset-list-item { font-size: 0.85rem; padding: 6px; border-bottom: 1px solid #1e293b; color: #94a3b8; }
+        .asset-item { font-size: 0.85rem; padding: 8px; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -82,8 +84,6 @@ if check_password():
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         anchors = read_csv_safe("la_anchors.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
-        # Handle cases where anchors might not have Tract IDs by providing a default or mapping logic
-        if 'Tract' not in anchors.columns: anchors['Tract'] = "22071001700" # Dummy if missing
         
         elig_col = 'Opportunity Zones Insiders Eligibilty'
         master['Eligibility_Status'] = master[elig_col].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible')
@@ -92,17 +92,34 @@ if check_password():
     gj, master_df, anchors_df = load_assets()
 
     # --- SECTIONS 1-4 (Fixed Content) ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1-4</div><div class='section-title'>Executive Summary & Framework</div><p class='narrative-text'>Louisiana OZ 2.0 leverages federal tax incentives to drive capital into high-impact census tracts.</p></div>", unsafe_allow_html=True)
+    st.markdown("""<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-subtitle'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Recommendation Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs, housing, and innovation.</div></div>""", unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAP WITH METRIC CARD ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='benefit-card'><h3>Deferral</h3><p>Defer taxes on original capital gains for 5 years.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Step-Up</h3><p>10% basis step-up (30% if rural).</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Exclusion</h3><p>Zero federal capital gains tax after 10 years.</p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='benefit-card'><h3>Disbursed</h3><p>Zones distributed throughout rural and urban tracts.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>Distressed</h3><p>Focus on low-income community definitions.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Aligning recommendations with private investment.</p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1: st.markdown("<div class='benefit-card'><h3>EIG</h3><p>Proximity to ports ensures tenant demand.</p></div>", unsafe_allow_html=True)
+    with c2: st.markdown("<div class='benefit-card'><h3>FBT</h3><p>Utilizing educational anchors for labor.</p></div>", unsafe_allow_html=True)
+    with c3: st.markdown("<div class='benefit-card'><h3>API</h3><p>Stack incentives to de-risk projects.</p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: ASSET MAP (500PX) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Industrial & Community Assets</div></div>", unsafe_allow_html=True)
-    
     a_col_left, a_col_right = st.columns([7, 3])
     
     with a_col_left:
-        selected_types = st.multiselect("Filter Asset Type:", options=sorted(anchors_df['Type'].unique().tolist()), default=sorted(anchors_df['Type'].unique().tolist()), key="asset_filter")
-        filtered_anchors = anchors_df[anchors_df['Type'].isin(selected_types)]
-
         fig_assets = px.choropleth_mapbox(
             master_df, geojson=gj, locations="geoid_str", featureidkey="properties.GEOID",
             color="Eligibility_Status", 
@@ -110,37 +127,33 @@ if check_password():
             mapbox_style="carto-darkmatter", zoom=6.2, center={"lat": 30.8, "lon": -91.8}
         )
         fig_assets.add_trace(go.Scattermapbox(
-            lat=filtered_anchors["Lat"], lon=filtered_anchors["Lon"], mode='markers',
-            marker=go.scattermapbox.Marker(size=7, color='#4ade80', opacity=0.8),
-            text=filtered_anchors["Name"] + " (" + filtered_anchors["Type"] + ")",
-            customdata=filtered_anchors["Tract"] if "Tract" in filtered_anchors.columns else [None]*len(filtered_anchors),
-            hoverinfo='text'
+            lat=anchors_df["Lat"], lon=anchors_df["Lon"], mode='markers',
+            marker=go.scattermapbox.Marker(size=6, color='#4ade80', opacity=0.5),
+            hoverinfo='none'
         ))
-        fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=450, showlegend=False)
+        fig_assets.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=500, showlegend=False)
         asset_selection = st.plotly_chart(fig_assets, use_container_width=True, on_select="rerun", key="asset_map")
 
     with a_col_right:
-        # Default tract if nothing selected
         active_tract = "22071001700" 
         if asset_selection and asset_selection.get("selection", {}).get("points"):
-            # Try to get Tract from customdata or location
-            point = asset_selection["selection"]["points"][0]
-            active_tract = point.get("location") or point.get("customdata") or active_tract
+            active_tract = str(asset_selection["selection"]["points"][0]["location"])
         
-        # Filter anchors specifically for this tract
-        tract_assets = anchors_df[anchors_df['Tract'].astype(str) == str(active_tract)]
+        st.markdown(f"### Tract: {active_tract}")
+        local_assets = anchors_df[anchors_df['Tract'].astype(str) == str(active_tract)]
         
-        st.markdown(f"#### Assets in Tract {active_tract}")
-        st.markdown(f"<div class='metric-card'><div class='metric-value'>{len(tract_assets)}</div><div class='metric-label'>Total Proximate Assets</div></div>", unsafe_allow_html=True)
+        type_options = ["All Types"] + sorted(anchors_df['Type'].unique().tolist())
+        selected_cat = st.selectbox("Filter Assets:", options=type_options)
         
-        if not tract_assets.empty:
-            for cat in tract_assets['Type'].unique():
-                count = len(tract_assets[tract_assets['Type'] == cat])
-                st.markdown(f"<div class='asset-list-item'><b>{cat}:</b> {count} found</div>", unsafe_allow_html=True)
-        else:
-            st.info("Select a tract on the map to see local assets.")
+        display_assets = local_assets if selected_cat == "All Types" else local_assets[local_assets['Type'] == selected_cat]
+        st.markdown(f"<div class='metric-card'><div class='metric-value'>{len(display_assets)}</div><div class='metric-label'>Assets Nearby</div></div>", unsafe_allow_html=True)
+        
+        st.markdown("<div style='max-height: 200px; overflow-y: auto;'>", unsafe_allow_html=True)
+        for _, asset in display_assets.iterrows():
+            st.markdown(f"<div class='asset-item'><b>{asset['Name']}</b><br><small>{asset['Type']}</small></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- SECTION 6: RECOMMENDATION TOOL ---
+    # --- SECTION 6: RECOMMENDATION TOOL (RESTORED PROFILE) ---
     st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>SECTION 6</div><div class='section-title'>OZ 2.0 Recommendation Tool</div></div>", unsafe_allow_html=True)
     
     if "recommendation_log" not in st.session_state:
@@ -153,23 +166,34 @@ if check_password():
             color="Eligibility_Status", color_discrete_map={"Eligible": "#4ade80", "Ineligible": "rgba(30,41,59,0.2)"},
             mapbox_style="carto-darkmatter", zoom=6.0, center={"lat": 30.8, "lon": -91.8}, opacity=0.7
         )
-        fig_rec.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=400)
+        fig_rec.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=450)
         rec_selection = st.plotly_chart(fig_rec, use_container_width=True, on_select="rerun", key="rec_map")
     
     with p_col:
-        current_id = "22071001700"
+        rec_id = "22071001700"
         if rec_selection and rec_selection.get("selection", {}).get("points"):
-            current_id = str(rec_selection["selection"]["points"][0]["location"])
+            rec_id = str(rec_selection["selection"]["points"][0]["location"])
         
-        st.markdown(f"**Tract {current_id}**")
-        justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Justification...", height=100)
-        
-        if st.button("Log", use_container_width=True, type="primary"):
-            if justification and current_id not in [x['Tract'] for x in st.session_state["recommendation_log"]]:
-                st.session_state["recommendation_log"].append({"Tract": current_id, "Narrative": justification})
-                st.rerun()
+        row = master_df[master_df["geoid_str"] == rec_id]
+        if not row.empty:
+            d = row.iloc[0]
+            pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
+            pov_val = pd.to_numeric(d.get(pov_col, 0), errors='coerce')
+            pov_display = 0 if np.isnan(pov_val) else pov_val
+            
+            st.markdown(f"### Tract {rec_id}")
+            st.markdown(f"<p style='color:#4ade80; font-weight:800; font-size:1.1rem;'>{str(d.get('Parish', 'LOUISIANA')).upper()} — {str(d.get('Region', 'N/A')).upper()}</p>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><div class='metric-value'>{pov_display}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
+            
+            justification = st.text_area("Narrative Input", label_visibility="collapsed", placeholder="Provide justification...", height=120)
+            
+            if st.button("Log Recommendation", use_container_width=True, type="primary"):
+                if justification and rec_id not in [x['Tract'] for x in st.session_state["recommendation_log"]]:
+                    st.session_state["recommendation_log"].append({"Tract": rec_id, "Narrative": justification, "Parish": d.get('Parish')})
+                    st.rerun()
 
     if st.session_state["recommendation_log"]:
+        st.write("---")
         st.dataframe(pd.DataFrame(st.session_state["recommendation_log"]), use_container_width=True, hide_index=True)
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
