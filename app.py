@@ -28,18 +28,6 @@ try:
 except:
     pass
 
-# --- REGION MAPPING DATA ---
-REGION_MAP = {
-    "Region 1 - Greater New Orleans": ["Jefferson", "Orleans", "Plaquemines", "St. Bernard", "St. Charles", "St. James", "St. John the Baptist", "St. Tammany"],
-    "Region 2 - Capital Region": ["Ascension", "East Baton Rouge", "East Feliciana", "Iberville", "Livingston", "Pointe Coupee", "St. Helena", "Tangipahoa", "Washington", "West Baton Rouge", "West Feliciana"],
-    "Region 3 - Bayou Region": ["Assumption", "Lafourche", "St. Mary", "Terrebonne"],
-    "Region 4 - Acadiana": ["Acadia", "Evangeline", "Iberia", "Lafayette", "St. Landry", "St. Martin", "Vermilion"],
-    "Region 5 - Southwest": ["Allen", "Beauregard", "Calcasieu", "Cameron", "Jefferson Davis"],
-    "Region 6 - Central": ["Avoyelles", "Catahoula", "Concordia", "Grant", "LaSalle", "Rapides", "Vernon", "Winn"],
-    "Region 7 - Northwest": ["Bienville", "Bossier", "Caddo", "Claiborne", "De Soto", "Lincoln", "Natchitoches", "Red River", "Sabine", "Webster"],
-    "Region 8 - Northeast": ["Caldwell", "East Carroll", "Franklin", "Jackson", "Madison", "Morehouse", "Ouachita", "Richland", "Tensas", "Union", "West Carroll"]
-}
-
 # --- 1. AUTHENTICATION ---
 def check_password():
     def password_entered():
@@ -100,30 +88,21 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
-        
-        label[data-testid="stWidgetLabel"] p { 
-            color: #ffffff !important; 
-            font-size: 0.95rem !important; 
-            font-weight: 700 !important; 
-        }
-
+        label[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 0.95rem !important; font-weight: 700 !important; }
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
         .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
-        
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
-        
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
         .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
-        
         .stSelectbox div[data-baseweb="select"], .stTextArea textarea { background-color: #111827 !important; color: #ffffff !important; border: 1px solid #1e293b !important; }
         [data-testid="stDataFrame"] { background-color: #111827; border-radius: 8px; border: 1px solid #1e293b; }
         </style>
@@ -198,17 +177,15 @@ if check_password():
     gj, master_df, anchors_df, tract_centers = load_assets()
 
     def render_map(df, is_filtered=False, height=600):
-        # Default Louisiana Statewide Center
         center = {"lat": 30.8, "lon": -91.8}
-        zoom = 6.2 # Statewide view
-        
+        zoom = 6.2 
         if is_filtered and not df.empty:
             active_ids = df['geoid_str'].tolist()
             subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
             if subset_centers:
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                zoom = 8.5 # FIXED ZOOM applied for regions/parishes
+                zoom = 8.5 
         
         fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
@@ -230,7 +207,6 @@ if check_password():
 
     # --- SECTION 2: BENEFIT FRAMEWORK ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
     cols2 = st.columns(3)
     cards2 = [
         ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -242,7 +218,6 @@ if check_password():
 
     # --- SECTION 3: CENSUS TRACT ADVOCACY ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
     cols3 = st.columns(3)
     cards3 = [
         ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
@@ -254,7 +229,6 @@ if check_password():
 
     # --- SECTION 4: BEST PRACTICES ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
     cols4 = st.columns(3)
     cards4 = [
         ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
@@ -264,19 +238,24 @@ if check_password():
     for i, (ct, ctx) in enumerate(cards4):
         cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAPPING (FILTER AREA) ---
+    # --- SECTION 5: ASSET MAPPING (DYNAMIC HIERARCHY) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # TRIPLE FILTERS
+    # Extract hierarchy from Master Data File
+    unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
+    
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
-        selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + list(REGION_MAP.keys()))
+        selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions)
+    
     with f_col2:
         if selected_region == "All Louisiana":
             available_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
         else:
-            available_parishes = sorted(REGION_MAP[selected_region])
+            # Filter available parishes based on selected region in Master Data
+            available_parishes = sorted(master_df[master_df['Region'] == selected_region]['Parish'].dropna().unique().tolist())
         selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
+    
     with f_col3:
         asset_types = sorted(anchors_df['Type'].unique().tolist())
         selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + asset_types)
@@ -285,7 +264,7 @@ if check_password():
     filtered_df = master_df.copy()
     is_actively_filtering = False
     if selected_region != "All Louisiana":
-        filtered_df = filtered_df[filtered_df['Parish'].isin(REGION_MAP[selected_region])]
+        filtered_df = filtered_df[filtered_df['Region'] == selected_region]
         is_actively_filtering = True
     if selected_parish != "All in Region":
         filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
