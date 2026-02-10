@@ -206,9 +206,41 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2-4: Framework, Advocacy, Best Practices (Omitted for brevity, kept in actual code) ---
-    # [Sections 2, 3, 4 remain identical to your original provided code]
-    # (Re-inserting them mentally here)
+    # --- SECTION 2: BENEFIT FRAMEWORK ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
+    cols2 = st.columns(3)
+    cards2 = [
+        ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
+        ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
+        ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
+    ]
+    for i, (ct, ctx) in enumerate(cards2):
+        cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 3: CENSUS TRACT ADVOCACY ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
+    cols3 = st.columns(3)
+    cards3 = [
+        ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
+        ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
+        ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
+    ]
+    for i, (ct, ctx) in enumerate(cards3):
+        cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 4: BEST PRACTICES ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
+    cols4 = st.columns(3)
+    cards4 = [
+        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
+        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
+        ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+    ]
+    for i, (ct, ctx) in enumerate(cards4):
+        cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- GLOBAL PARISH FILTER ---
     st.markdown("<br>", unsafe_allow_html=True)
@@ -238,14 +270,15 @@ if check_password():
             lon, lat = tract_centers[curr]
             anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in anchors_df.sort_values('dist').head(12).iterrows():
-                list_html += f"""<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
-                                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div>
-                                    <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
-                                    <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div>
-                                 </div>"""
+                list_html += f"""
+                <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
+                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div>
+                    <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
+                    <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div>
+                </div>"""
         components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
-    # --- SECTION 6: PERFECT NINE GRID & INPUT ---
+    # --- SECTION 6: PERFECT NINE GRID ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
@@ -283,7 +316,6 @@ if check_password():
             just = st.text_area("Narrative Justification")
             
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
-                # We save locally to Session State instead of Google Sheets
                 st.session_state["session_recs"].append({
                     "Date": datetime.now().strftime("%I:%M %p"),
                     "Tract ID": str(st.session_state["active_tract"]),
@@ -294,12 +326,11 @@ if check_password():
                 st.success(f"Tract {st.session_state['active_tract']} added to your list.")
                 st.rerun()
 
-    # --- SECTION 7: USER-ONLY SPREADSHEET ---
+    # --- SECTION 7: USER SESSION SPREADSHEET ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My Recommended Tracts</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Review the tracts you have selected during this session. Note: This list will clear if you refresh the page or log out.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Review the tracts you have selected during this session. This list is temporary and will be cleared when you close the browser or log out.</div>", unsafe_allow_html=True)
     
     if st.session_state["session_recs"]:
-        # Display the local session list as a dataframe
         local_df = pd.DataFrame(st.session_state["session_recs"])
         
         st.dataframe(
@@ -312,11 +343,12 @@ if check_password():
             }
         )
         
-        # Optional: Button to clear the session list
-        if st.button("Clear My List"):
-            st.session_state["session_recs"] = []
-            st.rerun()
+        c7_left, c7_right = st.columns([0.2, 0.8])
+        with c7_left:
+            if st.button("Clear My List", use_container_width=True):
+                st.session_state["session_recs"] = []
+                st.rerun()
     else:
-        st.info("You haven't added any tracts to your recommendation list yet. Select a tract above and click 'Add to My Recommendations'.")
+        st.info("Your recommendation list is currently empty. Navigate to a tract on the map and add it to see it appear here.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
