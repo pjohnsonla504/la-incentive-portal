@@ -14,10 +14,8 @@ from datetime import datetime
 # --- 0. INITIAL CONFIG & STATE INITIALIZATION ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
-# Persistent storage for the current session's recommendations
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
-
 if "active_tract" not in st.session_state:
     st.session_state["active_tract"] = "22071001700" 
 if "current_user" not in st.session_state:
@@ -29,6 +27,18 @@ try:
     ssl._create_default_https_context = ssl._create_unverified_context
 except:
     pass
+
+# --- REGION MAPPING DATA ---
+REGION_MAP = {
+    "Region 1 - Greater New Orleans": ["Jefferson", "Orleans", "Plaquemines", "St. Bernard", "St. Charles", "St. James", "St. John the Baptist", "St. Tammany"],
+    "Region 2 - Capital Region": ["Ascension", "East Baton Rouge", "East Feliciana", "Iberville", "Livingston", "Pointe Coupee", "St. Helena", "Tangipahoa", "Washington", "West Baton Rouge", "West Feliciana"],
+    "Region 3 - Bayou Region": ["Assumption", "Lafourche", "St. Mary", "Terrebonne"],
+    "Region 4 - Acadiana": ["Acadia", "Evangeline", "Iberia", "Lafayette", "St. Landry", "St. Martin", "Vermilion"],
+    "Region 5 - Southwest": ["Allen", "Beauregard", "Calcasieu", "Cameron", "Jefferson Davis"],
+    "Region 6 - Central": ["Avoyelles", "Catahoula", "Concordia", "Grant", "LaSalle", "Rapides", "Vernon", "Winn"],
+    "Region 7 - Northwest": ["Bienville", "Bossier", "Caddo", "Claiborne", "De Soto", "Lincoln", "Natchitoches", "Red River", "Sabine", "Webster"],
+    "Region 8 - Northeast": ["Caldwell", "East Carroll", "Franklin", "Jackson", "Madison", "Morehouse", "Ouachita", "Richland", "Tensas", "Union", "West Carroll"]
+}
 
 # --- 1. AUTHENTICATION ---
 def check_password():
@@ -159,8 +169,6 @@ if check_password():
         ).map({True: 'Yes', False: 'No'})
 
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
-        
-        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -242,17 +250,27 @@ if check_password():
     for i, (ct, ctx) in enumerate(cards4):
         cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- GLOBAL PARISH FILTER ---
-    st.markdown("<br>", unsafe_allow_html=True)
-    all_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
-    selected_parish = st.selectbox("Global Parish Filter", ["All Louisiana"] + all_parishes)
-
-    filtered_df = master_df.copy()
-    if selected_parish != "All Louisiana":
-        filtered_df = master_df[master_df['Parish'] == selected_parish]
-
-    # --- SECTION 5: ASSET MAPPING ---
+    # --- SECTION 5: ASSET MAPPING (FILTER AREA) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
+    
+    # REGION AND PARISH FILTERS
+    f_col1, f_col2 = st.columns(2)
+    with f_col1:
+        selected_region = st.selectbox("1. Filter by Region", ["All Louisiana"] + list(REGION_MAP.keys()))
+    with f_col2:
+        if selected_region == "All Louisiana":
+            available_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
+        else:
+            available_parishes = sorted(REGION_MAP[selected_region])
+        selected_parish = st.selectbox("2. Filter by Parish", ["All in Region"] + available_parishes)
+
+    # Apply Filter Logic
+    filtered_df = master_df.copy()
+    if selected_region != "All Louisiana":
+        filtered_df = filtered_df[filtered_df['Parish'].isin(REGION_MAP[selected_region])]
+    if selected_parish != "All in Region":
+        filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
+
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
         f5 = render_map(filtered_df)
@@ -328,27 +346,13 @@ if check_password():
 
     # --- SECTION 7: USER SESSION SPREADSHEET ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My Recommended Tracts</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Review the tracts you have selected during this session. This list is temporary and will be cleared when you close the browser or log out.</div>", unsafe_allow_html=True)
-    
     if st.session_state["session_recs"]:
         local_df = pd.DataFrame(st.session_state["session_recs"])
-        
-        st.dataframe(
-            local_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Justification": st.column_config.TextColumn("Rationale", width="large"),
-                "Tract ID": st.column_config.TextColumn("GEOID")
-            }
-        )
-        
-        c7_left, c7_right = st.columns([0.2, 0.8])
-        with c7_left:
-            if st.button("Clear My List", use_container_width=True):
-                st.session_state["session_recs"] = []
-                st.rerun()
+        st.dataframe(local_df, use_container_width=True, hide_index=True)
+        if st.button("Clear My List"):
+            st.session_state["session_recs"] = []
+            st.rerun()
     else:
-        st.info("Your recommendation list is currently empty. Navigate to a tract on the map and add it to see it appear here.")
+        st.info("Your recommendation list is currently empty.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
