@@ -100,22 +100,31 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
+        
+        /* Forces all widget labels (like Region and Parish filters) to white */
+        label[data-testid="stWidgetLabel"] p { 
+            color: #ffffff !important; 
+            font-size: 1rem !important; 
+            font-weight: 700 !important; 
+        }
+
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
         .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
+        
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
+        
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
         .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
         
-        label[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 0.9rem !important; font-weight: 700 !important; }
         .stSelectbox div[data-baseweb="select"], .stTextArea textarea { background-color: #111827 !important; color: #ffffff !important; border: 1px solid #1e293b !important; }
         [data-testid="stDataFrame"] { background-color: #111827; border-radius: 8px; border: 1px solid #1e293b; }
         </style>
@@ -253,16 +262,16 @@ if check_password():
     # --- SECTION 5: ASSET MAPPING (FILTER AREA) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # REGION AND PARISH FILTERS
+    # FILTERS WITH WHITE LABELS
     f_col1, f_col2 = st.columns(2)
     with f_col1:
-        selected_region = st.selectbox("1. Filter by Region", ["All Louisiana"] + list(REGION_MAP.keys()))
+        selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + list(REGION_MAP.keys()))
     with f_col2:
         if selected_region == "All Louisiana":
             available_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
         else:
             available_parishes = sorted(REGION_MAP[selected_region])
-        selected_parish = st.selectbox("2. Filter by Parish", ["All in Region"] + available_parishes)
+        selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
 
     # Apply Filter Logic
     filtered_df = master_df.copy()
