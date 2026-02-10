@@ -200,7 +200,7 @@ if check_password():
     def render_map(df, is_filtered=False, height=600):
         # Default Louisiana Statewide Center
         center = {"lat": 30.8, "lon": -91.8}
-        zoom = 6.2 # Statewide zoom
+        zoom = 6.2 # Statewide view
         
         if is_filtered and not df.empty:
             active_ids = df['geoid_str'].tolist()
@@ -208,7 +208,7 @@ if check_password():
             if subset_centers:
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                zoom = 8.5 # FIXED ZOOM for regions/parishes
+                zoom = 8.5 # FIXED ZOOM applied for regions/parishes
         
         fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
@@ -288,7 +288,7 @@ if check_password():
         filtered_df = filtered_df[filtered_df['Parish'].isin(REGION_MAP[selected_region])]
         is_actively_filtering = True
     if selected_parish != "All in Region":
-        filtered_df = filtered_df[filtered_df['Parish'] == selected_par parish]
+        filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
         is_actively_filtering = True
 
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
