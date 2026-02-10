@@ -101,10 +101,8 @@ if check_password():
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
         .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
         
-        /* Table and Input styling */
         label[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 0.9rem !important; font-weight: 700 !important; }
         .stSelectbox div[data-baseweb="select"], .stTextArea textarea { background-color: #111827 !important; color: #ffffff !important; border: 1px solid #1e293b !important; }
-        [data-testid="stDataFrame"] { background-color: #111827 !important; border-radius: 8px; border: 1px solid #1e293b; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -156,6 +154,8 @@ if check_password():
         ).map({True: 'Yes', False: 'No'})
 
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        
+        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -201,34 +201,47 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2, 3, 4: RESTORED ---
-    sections = [
-        ("SECTION 2", "The OZ 2.0 Benefit Framework", "The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development...", [
-            ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
-            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
-            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
-        ]),
-        ("SECTION 3", "Census Tract Advocacy", "Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need...", [
-            ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
-            ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
-            ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
-        ]),
-        ("SECTION 4", "Best Practices", "Successful Opportunity Zone projects leverage institutional knowledge and local assets...", [
-            ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
-            ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
-            ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
-        ])
+    # --- SECTION 2: BENEFIT FRAMEWORK ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
+    cols2 = st.columns(3)
+    cards2 = [
+        ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
+        ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
+        ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
     ]
-    for num, title, narr, cards in sections:
-        st.markdown(f"<div class='content-section'><div class='section-num'>{num}</div><div class='section-title'>{title}</div><div class='narrative-text'>{narr}</div>", unsafe_allow_html=True)
-        cols = st.columns(3)
-        for i, (ct, ctx) in enumerate(cards):
-            cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    for i, (ct, ctx) in enumerate(cards2):
+        cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 3: CENSUS TRACT ADVOCACY ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
+    cols3 = st.columns(3)
+    cards3 = [
+        ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
+        ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
+        ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
+    ]
+    for i, (ct, ctx) in enumerate(cards3):
+        cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 4: BEST PRACTICES ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
+    cols4 = st.columns(3)
+    cards4 = [
+        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
+        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
+        ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+    ]
+    for i, (ct, ctx) in enumerate(cards4):
+        cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- GLOBAL PARISH FILTER ---
     st.markdown("<br>", unsafe_allow_html=True)
     all_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
     selected_parish = st.selectbox("Global Parish Filter", ["All Louisiana"] + all_parishes)
+
     filtered_df = master_df.copy()
     if selected_parish != "All Louisiana":
         filtered_df = master_df[master_df['Parish'] == selected_parish]
@@ -240,8 +253,10 @@ if check_password():
         f5 = render_map(filtered_df)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
         if s5 and "selection" in s5 and s5["selection"]["points"]:
-            st.session_state["active_tract"] = str(s5["selection"]["points"][0]["location"])
-            st.rerun()
+            new_id = str(s5["selection"]["points"][0]["location"])
+            if st.session_state["active_tract"] != new_id:
+                st.session_state["active_tract"] = new_id
+                st.rerun()
     with c5b:
         curr = st.session_state["active_tract"]
         st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
@@ -250,29 +265,47 @@ if check_password():
             lon, lat = tract_centers[curr]
             anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in anchors_df.sort_values('dist').head(12).iterrows():
-                list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div></div>"
+                list_html += f"""
+                <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
+                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div>
+                    <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
+                    <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div>
+                </div>"""
         components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
-    # --- SECTION 6: PERFECT NINE GRID & USER RECS ---
+    # --- SECTION 6: PERFECT NINE GRID ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
         f6 = render_map(filtered_df, height=750)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
         if s6 and "selection" in s6 and s6["selection"]["points"]:
-            st.session_state["active_tract"] = str(s6["selection"]["points"][0]["location"])
-            st.rerun()
+            new_id = str(s6["selection"]["points"][0]["location"])
+            if st.session_state["active_tract"] != new_id:
+                st.session_state["active_tract"] = new_id
+                st.rerun()
 
     with c6b:
         row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]]
         if not row.empty:
             d = row.iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size:2rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color:#94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
+            
             m_cols = [st.columns(3) for _ in range(3)]
-            metrics = [(d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"), (d.get('NMTC_Eligible', 'No'), "NMTC Eligible"), (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"), (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"), (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"), (f"${d.get('_mfi_num', 0):,.0f}", "Median Income"), (d.get('Median Home Value', 'N/A'), "Home Value"), (d.get('Population 65 years and over', '0'), "Pop 65+"), (f"{d.get('Broadband Internet (%)','0')}", "Broadband")]
+            metrics = [
+                (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"),
+                (d.get('NMTC_Eligible', 'No'), "NMTC Eligible"),
+                (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"),
+                (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
+                (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
+                (f"${d.get('_mfi_num', 0):,.0f}", "Median Income"),
+                (d.get('Median Home Value', 'N/A'), "Home Value"),
+                (d.get('Population 65 years and over', '0'), "Pop 65+"),
+                (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
+            ]
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
-            
+
             st.write("---")
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification")
@@ -280,19 +313,5 @@ if check_password():
                 new_rec = pd.DataFrame([{"Date": datetime.now().strftime("%Y-%m-%d"), "GEOID": str(st.session_state["active_tract"]), "Category": cat, "Justification": just, "User": st.session_state["current_user"]}])
                 conn.create(worksheet="Sheet1", data=new_rec)
                 st.success("Recommendation logged.")
-            
-            # --- NEW: USER RECOMMENDATIONS TABLE ---
-            st.markdown("<br><p style='color:#ffffff; font-weight:700; font-size:1.1rem;'>Your Recent Recommendations</p>", unsafe_allow_html=True)
-            try:
-                all_recs = conn.read(worksheet="Sheet1", ttl="10s")
-                user_recs = all_recs[all_recs['User'] == st.session_state["current_user"]].sort_index(ascending=False)
-                if not user_recs.empty:
-                    # Clean up for display
-                    display_recs = user_recs[['Date', 'GEOID', 'Category', 'Justification']].head(5)
-                    st.dataframe(display_recs, use_container_width=True, hide_index=True)
-                else:
-                    st.info("You haven't submitted any recommendations yet.")
-            except:
-                st.warning("Could not load recommendation history.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
