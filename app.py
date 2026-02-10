@@ -1,4 +1,5 @@
 import streamlit as st
+import pd as pd
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -91,7 +92,7 @@ if check_password():
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
         .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
-        .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; }
+        .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 20px; }
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
@@ -101,7 +102,7 @@ if check_password():
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
         .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
         
-        /* Specific Fix for Section 6 Inputs */
+        /* Input styling for Section 6 */
         label[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 0.9rem !important; font-weight: 700 !important; }
         .stSelectbox div[data-baseweb="select"], .stTextArea textarea { background-color: #111827 !important; color: #ffffff !important; border: 1px solid #1e293b !important; }
         </style>
@@ -202,29 +203,45 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTIONS 2, 3, 4: FRAMEWORK ---
-    sections_data = [
-        ("SECTION 2", "The OZ 2.0 Benefit Framework", [
-            ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
-            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
-            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
-        ]),
-        ("SECTION 3", "Census Tract Advocacy", [
-            ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
-            ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
-            ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
-        ]),
-        ("SECTION 4", "Best Practices", [
-            ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
-            ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
-            ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
-        ])
+    # --- SECTION 2: BENEFIT FRAMEWORK ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
+    cols2 = st.columns(3)
+    cards2 = [
+        ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
+        ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
+        ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
     ]
-    for num, title, cards in sections_data:
-        st.markdown(f"<div class='content-section'><div class='section-num'>{num}</div><div class='section-title'>{title}</div>", unsafe_allow_html=True)
-        cols = st.columns(3)
-        for i, (ct, ctx) in enumerate(cards):
-            cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    for i, (ct, ctx) in enumerate(cards2):
+        cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    
+    # NEW NARRATIVE BOX BELOW CARDS
+    st.markdown("""
+        <div class='narrative-text' style='margin-top:25px;'>
+            The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.
+        </div>
+    """, unsafe_allow_html=True)
+
+    # --- SECTION 3: CENSUS TRACT ADVOCACY ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    cols3 = st.columns(3)
+    cards3 = [
+        ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
+        ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
+        ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
+    ]
+    for i, (ct, ctx) in enumerate(cards3):
+        cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 4: BEST PRACTICES ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    cols4 = st.columns(3)
+    cards4 = [
+        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
+        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
+        ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+    ]
+    for i, (ct, ctx) in enumerate(cards4):
+        cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- GLOBAL PARISH FILTER ---
     st.markdown("<br>", unsafe_allow_html=True)
@@ -296,7 +313,6 @@ if check_password():
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
             st.write("---")
-            # These labels and backgrounds are now styled white/high-contrast via the CSS block in section 2
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification")
             if st.button("Submit Recommendation", type="primary", use_container_width=True):
