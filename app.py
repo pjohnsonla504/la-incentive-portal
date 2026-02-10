@@ -120,10 +120,8 @@ if check_password():
             try: return pd.read_csv(f, encoding='utf-8')
             except: return pd.read_csv(f, encoding='latin1')
 
-        # Load Master Data
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         
-        # --- CLEANING & CALCULATIONS ---
         poverty_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
         unemployment_col = 'Unemployment Rate (%)'
         mfi_col = 'Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)'
@@ -138,18 +136,15 @@ if check_password():
         master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
         master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
 
-        # Benchmarks
         NAT_UNEMP = 5.3
         STATE_MFI = 86934 
 
-        # NMTC Calculation
         master['NMTC_Eligible'] = (
             (master['_pov_num'] >= 20) | 
             (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
             (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
-        # Deep Distress Calculation
         master['Deeply_Distressed'] = (
             (master['_pov_num'] > 40) | 
             (master['_mfi_num'] <= (0.4 * STATE_MFI)) | 
@@ -158,12 +153,10 @@ if check_password():
 
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Tracks highlighted green are ONLY those eligible for Opportunity Zone 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
         
-        # Anchor Data from la_anchors.csv
         anchors = read_csv_safe("la_anchors.csv")
         
         centers = {}
@@ -178,12 +171,26 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
+    # Helper function to render maps with dynamic centering
     def render_map(df, height=600):
+        # Default Louisiana Center
+        center = {"lat": 30.8, "lon": -91.8}
+        zoom = 6.2
+
+        # If filtered to a specific area, adjust view
+        if not df.empty and df['geoid_str'].nunique() < 100:
+            active_ids = df['geoid_str'].tolist()
+            subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
+            if subset_centers:
+                lons, lats = zip(*subset_centers)
+                center = {"lat": np.mean(lats), "lon": np.mean(lons)}
+                zoom = 9.5
+
         fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Eligibility_Status", 
                                      color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1"},
-                                     mapbox_style="carto-positron", zoom=6.2, center={"lat": 30.8, "lon": -91.8}, opacity=0.5)
+                                     mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
         fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height)
         return fig
 
@@ -221,13 +228,25 @@ if check_password():
         for i, (ct, ctx) in enumerate(cards):
             cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
+    # --- GLOBAL FILTERS ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    all_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
+    selected_parish = st.selectbox("Filter Maps by Parish (Sections 5 & 6)", ["All Louisiana"] + all_parishes)
+
+    filtered_df = master_df.copy()
+    if selected_parish != "All Louisiana":
+        filtered_df = master_df[master_df['Parish'] == selected_parish]
+
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
-        f5 = render_map(master_df)
+        f5 = render_map(filtered_df)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
-        if s5 and s5.get("selection", {}).get("points"): st.session_state["active_tract"] = str(s5["selection"]["points"][0]["location"])
+        if s5 and s5.get("selection", {}).get("points"): 
+            st.session_state["active_tract"] = str(s5["selection"]["points"][0]["location"])
+            st.rerun() # Refresh to update the Sidebar/Asset List
+            
     with c5b:
         curr = st.session_state["active_tract"]
         st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
@@ -235,7 +254,6 @@ if check_password():
         if curr in tract_centers:
             lon, lat = tract_centers[curr]
             anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            # --- FONT COLOR FIX APPLIED HERE ---
             for _, a in anchors_df.sort_values('dist').head(12).iterrows():
                 list_html += f"""
                 <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
@@ -249,9 +267,12 @@ if check_password():
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
-        f6 = render_map(master_df, height=750)
+        f6 = render_map(filtered_df, height=750)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
-        if s6 and s6.get("selection", {}).get("points"): st.session_state["active_tract"] = str(s6["selection"]["points"][0]["location"])
+        if s6 and s6.get("selection", {}).get("points"): 
+            st.session_state["active_tract"] = str(s6["selection"]["points"][0]["location"])
+            st.rerun()
+
     with c6b:
         row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]]
         if not row.empty:
