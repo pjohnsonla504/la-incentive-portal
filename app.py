@@ -103,6 +103,8 @@ if check_password():
         
         label[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 0.9rem !important; font-weight: 700 !important; }
         .stSelectbox div[data-baseweb="select"], .stTextArea textarea { background-color: #111827 !important; color: #ffffff !important; border: 1px solid #1e293b !important; }
+        /* Custom styling for the dataframe to match the dark theme */
+        [data-testid="stDataFrame"] { background-color: #111827; border-radius: 8px; border: 1px solid #1e293b; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -313,5 +315,36 @@ if check_password():
                 new_rec = pd.DataFrame([{"Date": datetime.now().strftime("%Y-%m-%d"), "GEOID": str(st.session_state["active_tract"]), "Category": cat, "Justification": just, "User": st.session_state["current_user"]}])
                 conn.create(worksheet="Sheet1", data=new_rec)
                 st.success("Recommendation logged.")
+                st.rerun()
+
+    # --- SECTION 7: RECOMMENDATION SPREADSHEET ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>Regional Recommendation Database</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>View all stakeholder recommendations submitted to date. Use the search and filter tools within the table to explore specific justifications and categories.</div>", unsafe_allow_html=True)
+    
+    try:
+        # Pull the latest data from the recommendations sheet
+        recs_df = conn.read(worksheet="Sheet1", ttl="0")
+        
+        if not recs_df.empty:
+            # Sort by date descending so newest are on top
+            if "Date" in recs_df.columns:
+                recs_df = recs_df.sort_values(by="Date", ascending=False)
+            
+            st.dataframe(
+                recs_df, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config={
+                    "Date": st.column_config.TextColumn("Submission Date"),
+                    "GEOID": st.column_config.TextColumn("Tract ID"),
+                    "Category": st.column_config.TextColumn("Investment Category"),
+                    "Justification": st.column_config.TextColumn("Rationale", width="large"),
+                    "User": st.column_config.TextColumn("Submitted By")
+                }
+            )
+        else:
+            st.info("No recommendations have been submitted yet.")
+    except Exception as e:
+        st.warning(f"Could not load recommendation table: {e}")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
