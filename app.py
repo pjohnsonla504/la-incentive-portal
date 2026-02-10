@@ -182,7 +182,6 @@ if check_password():
         )
         
         anchors = read_csv_safe("la_anchors.csv")
-        # Ensure 'Type' column is cleaned
         if 'Type' in anchors.columns:
             anchors['Type'] = anchors['Type'].fillna('Other')
         
@@ -198,16 +197,19 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    def render_map(df, height=600):
+    def render_map(df, is_filtered=False, height=600):
+        # Default Louisiana Statewide Center
         center = {"lat": 30.8, "lon": -91.8}
-        zoom = 6.2
-        if not df.empty and df['geoid_str'].nunique() < 200:
+        zoom = 6.2 # Statewide zoom
+        
+        if is_filtered and not df.empty:
             active_ids = df['geoid_str'].tolist()
             subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
             if subset_centers:
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                zoom = 9.5
+                zoom = 8.5 # FIXED ZOOM for regions/parishes
+        
         fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Eligibility_Status", 
@@ -281,14 +283,17 @@ if check_password():
 
     # Apply Filter Logic
     filtered_df = master_df.copy()
+    is_actively_filtering = False
     if selected_region != "All Louisiana":
         filtered_df = filtered_df[filtered_df['Parish'].isin(REGION_MAP[selected_region])]
+        is_actively_filtering = True
     if selected_parish != "All in Region":
-        filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
+        filtered_df = filtered_df[filtered_df['Parish'] == selected_par parish]
+        is_actively_filtering = True
 
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
-        f5 = render_map(filtered_df)
+        f5 = render_map(filtered_df, is_filtered=is_actively_filtering)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
         if s5 and "selection" in s5 and s5["selection"]["points"]:
             new_id = str(s5["selection"]["points"][0]["location"])
@@ -301,14 +306,10 @@ if check_password():
         list_html = ""
         if curr in tract_centers:
             lon, lat = tract_centers[curr]
-            
-            # Filter anchors by distance and asset type
             working_anchors = anchors_df.copy()
             if selected_asset_type != "All Assets":
                 working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
-            
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
                 list_html += f"""
                 <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
@@ -316,17 +317,15 @@ if check_password():
                     <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
                     <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div>
                 </div>"""
-        
         if not list_html:
             list_html = "<div style='color:#94a3b8; padding:20px;'>No assets of this type found nearby.</div>"
-            
         components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
     # --- SECTION 6: PERFECT NINE GRID ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
-        f6 = render_map(filtered_df, height=750)
+        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=750)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
         if s6 and "selection" in s6 and s6["selection"]["points"]:
             new_id = str(s6["selection"]["points"][0]["location"])
@@ -339,7 +338,6 @@ if check_password():
         if not row.empty:
             d = row.iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size:2rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color:#94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
-            
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"),
@@ -358,7 +356,6 @@ if check_password():
             st.write("---")
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification")
-            
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
                 st.session_state["session_recs"].append({
                     "Date": datetime.now().strftime("%I:%M %p"),
