@@ -153,6 +153,7 @@ if check_password():
 
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
+        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -175,7 +176,7 @@ if check_password():
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2
 
-        if not df.empty and df['geoid_str'].nunique() < 100:
+        if not df.empty and df['geoid_str'].nunique() < 200:
             active_ids = df['geoid_str'].tolist()
             subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
             if subset_centers:
@@ -189,7 +190,6 @@ if check_password():
                                      color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1"},
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
         
-        # Ensure clickmode includes select to trigger events
         fig.update_layout(
             margin={"r":0,"t":0,"l":0,"b":0}, 
             paper_bgcolor='rgba(0,0,0,0)', 
@@ -205,16 +205,38 @@ if check_password():
             <div class='section-num'>SECTION 1</div>
             <div class='hero-subtitle'>Opportunity Zones 2.0</div>
             <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
+            <div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, and innovation in the communities that need it most.</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTIONS 2, 3, 4: FRAMEWORK ---
-    # (Condensed for brevity - same logic as before)
-    
-    # --- GLOBAL FILTERS ---
+    # --- SECTION 2, 3, 4: RESTORED FRAMEWORK ---
+    sections_data = [
+        ("SECTION 2", "The OZ 2.0 Benefit Framework", [
+            ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
+            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
+            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
+        ]),
+        ("SECTION 3", "Census Tract Advocacy", [
+            ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
+            ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
+            ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
+        ]),
+        ("SECTION 4", "Best Practices", [
+            ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
+            ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
+            ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+        ])
+    ]
+    for num, title, cards in sections_data:
+        st.markdown(f"<div class='content-section'><div class='section-num'>{num}</div><div class='section-title'>{title}</div>", unsafe_allow_html=True)
+        cols = st.columns(3)
+        for i, (ct, ctx) in enumerate(cards):
+            cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
+    # --- GLOBAL PARISH FILTER ---
     st.markdown("<br>", unsafe_allow_html=True)
     all_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
-    selected_parish = st.selectbox("Filter Maps by Parish", ["All Louisiana"] + all_parishes)
+    selected_parish = st.selectbox("Global Parish Filter", ["All Louisiana"] + all_parishes)
 
     filtered_df = master_df.copy()
     if selected_parish != "All Louisiana":
@@ -223,10 +245,8 @@ if check_password():
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
-    
     with c5a:
         f5 = render_map(filtered_df)
-        # Using on_select="rerun" and explicit selection handling
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
         
         if s5 and "selection" in s5 and s5["selection"]["points"]:
@@ -234,7 +254,7 @@ if check_password():
             if st.session_state["active_tract"] != new_id:
                 st.session_state["active_tract"] = new_id
                 st.rerun()
-            
+                
     with c5b:
         curr = st.session_state["active_tract"]
         st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
