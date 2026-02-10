@@ -206,7 +206,13 @@ if check_password():
     """, unsafe_allow_html=True)
 
     # --- SECTION 2: BENEFIT FRAMEWORK ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 2</div>
+            <div class='section-title'>The OZ 2.0 Benefit Framework</div>
+            <div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts.</div>
+        </div>
+    """, unsafe_allow_html=True)
     cols2 = st.columns(3)
     cards2 = [
         ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -217,7 +223,13 @@ if check_password():
         cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 3: CENSUS TRACT ADVOCACY ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 3</div>
+            <div class='section-title'>Census Tract Advocacy</div>
+            <div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential.</div>
+        </div>
+    """, unsafe_allow_html=True)
     cols3 = st.columns(3)
     cards3 = [
         ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
@@ -228,7 +240,13 @@ if check_password():
         cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 4: BEST PRACTICES ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 4</div>
+            <div class='section-title'>Best Practices</div>
+            <div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors.</div>
+        </div>
+    """, unsafe_allow_html=True)
     cols4 = st.columns(3)
     cards4 = [
         ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
@@ -241,26 +259,21 @@ if check_password():
     # --- SECTION 5: ASSET MAPPING (DYNAMIC HIERARCHY) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # Extract hierarchy from Master Data File
     unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
     
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
         selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions)
-    
     with f_col2:
         if selected_region == "All Louisiana":
             available_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
         else:
-            # Filter available parishes based on selected region in Master Data
             available_parishes = sorted(master_df[master_df['Region'] == selected_region]['Parish'].dropna().unique().tolist())
         selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
-    
     with f_col3:
         asset_types = sorted(anchors_df['Type'].unique().tolist())
         selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + asset_types)
 
-    # Apply Filter Logic
     filtered_df = master_df.copy()
     is_actively_filtering = False
     if selected_region != "All Louisiana":
@@ -343,7 +356,7 @@ if check_password():
                     "Category": cat,
                     "Justification": just
                 })
-                st.success(f"Tract {st.session_state['active_tract']} added to your list.")
+                st.success(f"Tract {st.session_state['active_tract']} added.")
                 st.rerun()
 
     # --- SECTION 7: USER SESSION SPREADSHEET ---
