@@ -100,6 +100,10 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
         .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
+        
+        /* Specific Fix for Section 6 Inputs */
+        label[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 0.9rem !important; font-weight: 700 !important; }
+        .stSelectbox div[data-baseweb="select"], .stTextArea textarea { background-color: #111827 !important; color: #ffffff !important; border: 1px solid #1e293b !important; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -121,7 +125,6 @@ if check_password():
             except: return pd.read_csv(f, encoding='latin1')
 
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
-        
         poverty_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
         unemployment_col = 'Unemployment Rate (%)'
         mfi_col = 'Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)'
@@ -159,7 +162,6 @@ if check_password():
         )
         
         anchors = read_csv_safe("la_anchors.csv")
-        
         centers = {}
         if geojson:
             for feature in geojson['features']:
@@ -175,7 +177,6 @@ if check_password():
     def render_map(df, height=600):
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2
-
         if not df.empty and df['geoid_str'].nunique() < 200:
             active_ids = df['geoid_str'].tolist()
             subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
@@ -183,20 +184,12 @@ if check_password():
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
                 zoom = 9.5
-
         fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Eligibility_Status", 
                                      color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1"},
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
-        
-        fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)', 
-            showlegend=False, 
-            height=height,
-            clickmode='event+select'
-        )
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height, clickmode='event+select')
         return fig
 
     # --- SECTION 1: HERO ---
@@ -209,7 +202,7 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2, 3, 4: RESTORED FRAMEWORK ---
+    # --- SECTIONS 2, 3, 4: FRAMEWORK ---
     sections_data = [
         ("SECTION 2", "The OZ 2.0 Benefit Framework", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -248,13 +241,11 @@ if check_password():
     with c5a:
         f5 = render_map(filtered_df)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
-        
         if s5 and "selection" in s5 and s5["selection"]["points"]:
             new_id = str(s5["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
                 st.session_state["active_tract"] = new_id
                 st.rerun()
-                
     with c5b:
         curr = st.session_state["active_tract"]
         st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
@@ -277,7 +268,6 @@ if check_password():
     with c6a:
         f6 = render_map(filtered_df, height=750)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
-        
         if s6 and "selection" in s6 and s6["selection"]["points"]:
             new_id = str(s6["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
@@ -306,6 +296,7 @@ if check_password():
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
             st.write("---")
+            # These labels and backgrounds are now styled white/high-contrast via the CSS block in section 2
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification")
             if st.button("Submit Recommendation", type="primary", use_container_width=True):
