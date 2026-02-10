@@ -101,10 +101,9 @@ if check_password():
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
         
-        /* Forces all widget labels (like Region and Parish filters) to white */
         label[data-testid="stWidgetLabel"] p { 
             color: #ffffff !important; 
-            font-size: 1rem !important; 
+            font-size: 0.95rem !important; 
             font-weight: 700 !important; 
         }
 
@@ -183,6 +182,10 @@ if check_password():
         )
         
         anchors = read_csv_safe("la_anchors.csv")
+        # Ensure 'Type' column is cleaned
+        if 'Type' in anchors.columns:
+            anchors['Type'] = anchors['Type'].fillna('Other')
+        
         centers = {}
         if geojson:
             for feature in geojson['features']:
@@ -262,8 +265,8 @@ if check_password():
     # --- SECTION 5: ASSET MAPPING (FILTER AREA) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # FILTERS WITH WHITE LABELS
-    f_col1, f_col2 = st.columns(2)
+    # TRIPLE FILTERS
+    f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
         selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + list(REGION_MAP.keys()))
     with f_col2:
@@ -272,6 +275,9 @@ if check_password():
         else:
             available_parishes = sorted(REGION_MAP[selected_region])
         selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
+    with f_col3:
+        asset_types = sorted(anchors_df['Type'].unique().tolist())
+        selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + asset_types)
 
     # Apply Filter Logic
     filtered_df = master_df.copy()
@@ -295,14 +301,25 @@ if check_password():
         list_html = ""
         if curr in tract_centers:
             lon, lat = tract_centers[curr]
-            anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            for _, a in anchors_df.sort_values('dist').head(12).iterrows():
+            
+            # Filter anchors by distance and asset type
+            working_anchors = anchors_df.copy()
+            if selected_asset_type != "All Assets":
+                working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
+            
+            working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
+            
+            for _, a in working_anchors.sort_values('dist').head(12).iterrows():
                 list_html += f"""
                 <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
                     <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div>
                     <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
                     <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div>
                 </div>"""
+        
+        if not list_html:
+            list_html = "<div style='color:#94a3b8; padding:20px;'>No assets of this type found nearby.</div>"
+            
         components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
     # --- SECTION 6: PERFECT NINE GRID ---
