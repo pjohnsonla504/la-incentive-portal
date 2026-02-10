@@ -203,14 +203,7 @@ if check_password():
 
     # --- SECTION 2: BENEFIT FRAMEWORK ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
-    
-    # NARRATIVE TEXT PLACED BETWEEN TITLE AND CARDS
-    st.markdown("""
-        <div class='narrative-text'>
-            The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.
-        </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
     cols2 = st.columns(3)
     cards2 = [
         ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -219,11 +212,10 @@ if check_password():
     ]
     for i, (ct, ctx) in enumerate(cards2):
         cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True) # Close content-section div
 
     # --- SECTION 3: CENSUS TRACT ADVOCACY ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
     cols3 = st.columns(3)
     cards3 = [
         ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
@@ -235,6 +227,7 @@ if check_password():
 
     # --- SECTION 4: BEST PRACTICES ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
     cols4 = st.columns(3)
     cards4 = [
         ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
