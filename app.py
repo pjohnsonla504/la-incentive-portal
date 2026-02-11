@@ -23,6 +23,12 @@ if "current_user" not in st.session_state:
 if "password_correct" not in st.session_state:
     st.session_state["password_correct"] = False
 
+# Initialize filter states for override logic
+if "region_filter" not in st.session_state:
+    st.session_state["region_filter"] = "All Louisiana"
+if "parish_filter" not in st.session_state:
+    st.session_state["parish_filter"] = "All in Region"
+
 try:
     ssl._create_default_https_context = ssl._create_unverified_context
 except:
@@ -241,32 +247,67 @@ if check_password():
     for i, (ct, ctx) in enumerate(cards4):
         cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAPPING (DYNAMIC HIERARCHY) ---
+    # --- SECTION 5: STRATEGIC ASSET MAPPING + INTERNAL FUZZY SEARCH ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
+    # INTERNAL DATA SEARCH (No External API required)
+    search_query = st.text_input("🔍 Search by Parish Name or Tract ID", placeholder="e.g., 'Orleans', 'East Baton', or '22071012...'")
+    
+    if search_query:
+        query = search_query.strip().lower()
+        # Search for exact Tract ID match or partial Parish name match
+        match = master_df[
+            (master_df['geoid_str'].str.contains(query)) | 
+            (master_df['Parish'].str.lower().str.contains(query))
+        ]
+        
+        if not match.empty:
+            # If multiple results (like searching 'Orleans'), we pick the first one to highlight
+            # But the map will show all matching tracks if we are in "Filtering" mode.
+            found_id = str(match.iloc[0]['geoid_str'])
+            st.session_state["active_tract"] = found_id
+            
+            # Reset dropdowns to show the search results on the map
+            st.session_state["region_filter"] = "All Louisiana"
+            st.session_state["parish_filter"] = "All in Region"
+            
+            st.success(f"Found {len(match)} matches. Viewing: {match.iloc[0]['Parish']} (Tract {found_id})")
+        else:
+            st.warning("No Parish or Tract ID matches that search.")
+
     unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
     
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
-        selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions)
+        selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions, key="region_filter")
     with f_col2:
         if selected_region == "All Louisiana":
             available_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
         else:
             available_parishes = sorted(master_df[master_df['Region'] == selected_region]['Parish'].dropna().unique().tolist())
-        selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
+        selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes, key="parish_filter")
     with f_col3:
         asset_types = sorted(anchors_df['Type'].unique().tolist())
         selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + asset_types)
 
+    # If user searched, we show the search results on map
     filtered_df = master_df.copy()
     is_actively_filtering = False
-    if selected_region != "All Louisiana":
-        filtered_df = filtered_df[filtered_df['Region'] == selected_region]
+
+    if search_query:
+        query = search_query.strip().lower()
+        filtered_df = filtered_df[
+            (filtered_df['geoid_str'].str.contains(query)) | 
+            (filtered_df['Parish'].str.lower().str.contains(query))
+        ]
         is_actively_filtering = True
-    if selected_parish != "All in Region":
-        filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
-        is_actively_filtering = True
+    else:
+        if selected_region != "All Louisiana":
+            filtered_df = filtered_df[filtered_df['Region'] == selected_region]
+            is_actively_filtering = True
+        if selected_parish != "All in Region":
+            filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
+            is_actively_filtering = True
 
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
