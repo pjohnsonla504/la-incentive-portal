@@ -4,3 +4,4 @@ numpy
 plotly>=5.15.0
 requests
 st-gsheets-connection
+geopy
