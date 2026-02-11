@@ -212,61 +212,78 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2, 3, 4: (Same as before) ---
+    # --- SECTION 2: BENEFIT FRAMEWORK ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
     cols2 = st.columns(3)
-    cards2 = [("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."), ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."), ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")]
-    for i, (ct, ctx) in enumerate(cards2): cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    cards2 = [
+        ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
+        ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
+        ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
+    ]
+    for i, (ct, ctx) in enumerate(cards2):
+        cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
+    # --- SECTION 3: CENSUS TRACT ADVOCACY ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
     cols3 = st.columns(3)
-    cards3 = [("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."), ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."), ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")]
-    for i, (ct, ctx) in enumerate(cards3): cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    cards3 = [
+        ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
+        ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
+        ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
+    ]
+    for i, (ct, ctx) in enumerate(cards3):
+        cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
+    # --- SECTION 4: BEST PRACTICES ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
     cols4 = st.columns(3)
-    cards4 = [("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."), ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."), ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")]
-    for i, (ct, ctx) in enumerate(cards4): cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    cards4 = [
+        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
+        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
+        ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+    ]
+    for i, (ct, ctx) in enumerate(cards4):
+        cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAPPING + SEARCH BAR ---
+    # --- SECTION 5: STRATEGIC ASSET MAPPING + SEARCH ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # 🔍 SEARCH BAR LOGIC
-    search_query = st.text_input("🔍 Search by Address, Tract ID, or Landmark (e.g., '123 Main St, New Orleans' or 'Caesars Superdome')", placeholder="Enter search term...")
+    # SEARCH INTERFACE
+    search_query = st.text_input("🔍 Search by Address, Tract ID, or Landmark", placeholder="e.g., 'Baton Rouge', 'Caesars Superdome', or an 11-digit FIPS")
     
     if search_query:
         found_tract = None
-        # 1. Check if it's a direct Tract ID
+        # Check Tract ID first
         if search_query.isdigit() and len(search_query) >= 11:
             if search_query in master_df['geoid_str'].values:
                 found_tract = search_query
         
-        # 2. Geocode Address/Landmark
+        # Geocode Landmark/Address
         if not found_tract:
             try:
-                geolocator = Nominatim(user_agent="louisiana_oz_portal")
-                # Append Louisiana to narrow search scope
+                geolocator = Nominatim(user_agent="LA_OZ_Portal_V2_Search", timeout=10)
                 location = geolocator.geocode(f"{search_query}, Louisiana")
                 if location:
-                    # Find closest tract center
                     best_dist = float('inf')
                     for gid, coords in tract_centers.items():
                         d = haversine(location.longitude, location.latitude, coords[0], coords[1])
                         if d < best_dist:
                             best_dist = d
                             found_tract = gid
-                    # Optional: Threshold check (ensure it's actually in LA)
-                    if best_dist > 50: found_tract = None
-            except:
-                st.warning("Search service temporarily unavailable.")
+                    if best_dist > 40: found_tract = None # Ensure it's in/near LA
+            except Exception as e:
+                st.error("Search service temporarily busy. Please try again.")
 
         if found_tract:
             st.session_state["active_tract"] = found_tract
             st.session_state["region_filter"] = "All Louisiana"
             st.session_state["parish_filter"] = "All in Region"
-            st.success(f"Located: Tract {found_tract}")
+            st.success(f"📍 Located: Tract {found_tract}")
         else:
-            st.error("Could not find a matching location in Louisiana.")
+            st.warning("Location not found. Try adding a city name or checking the FIPS ID.")
 
     unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
     
