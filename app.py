@@ -10,7 +10,6 @@ from math import radians, cos, sin, asin, sqrt
 from streamlit_gsheets import GSheetsConnection
 import streamlit.components.v1 as components
 from datetime import datetime
-from geopy.geocoders import Nominatim
 
 # --- 0. INITIAL CONFIG & STATE INITIALIZATION ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
@@ -23,12 +22,6 @@ if "current_user" not in st.session_state:
     st.session_state["current_user"] = None
 if "password_correct" not in st.session_state:
     st.session_state["password_correct"] = False
-
-# Initialize filter states for override logic
-if "region_filter" not in st.session_state:
-    st.session_state["region_filter"] = "All Louisiana"
-if "parish_filter" not in st.session_state:
-    st.session_state["parish_filter"] = "All in Region"
 
 try:
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -248,54 +241,20 @@ if check_password():
     for i, (ct, ctx) in enumerate(cards4):
         cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: STRATEGIC ASSET MAPPING + SEARCH ---
+    # --- SECTION 5: ASSET MAPPING (DYNAMIC HIERARCHY) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # SEARCH INTERFACE
-    search_query = st.text_input("🔍 Search by Address, Tract ID, or Landmark", placeholder="e.g., 'Baton Rouge', 'Caesars Superdome', or an 11-digit FIPS")
-    
-    if search_query:
-        found_tract = None
-        # Check Tract ID first
-        if search_query.isdigit() and len(search_query) >= 11:
-            if search_query in master_df['geoid_str'].values:
-                found_tract = search_query
-        
-        # Geocode Landmark/Address
-        if not found_tract:
-            try:
-                geolocator = Nominatim(user_agent="LA_OZ_Portal_V2_Search", timeout=10)
-                location = geolocator.geocode(f"{search_query}, Louisiana")
-                if location:
-                    best_dist = float('inf')
-                    for gid, coords in tract_centers.items():
-                        d = haversine(location.longitude, location.latitude, coords[0], coords[1])
-                        if d < best_dist:
-                            best_dist = d
-                            found_tract = gid
-                    if best_dist > 40: found_tract = None # Ensure it's in/near LA
-            except Exception as e:
-                st.error("Search service temporarily busy. Please try again.")
-
-        if found_tract:
-            st.session_state["active_tract"] = found_tract
-            st.session_state["region_filter"] = "All Louisiana"
-            st.session_state["parish_filter"] = "All in Region"
-            st.success(f"📍 Located: Tract {found_tract}")
-        else:
-            st.warning("Location not found. Try adding a city name or checking the FIPS ID.")
-
     unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
     
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
-        selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions, key="region_filter")
+        selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions)
     with f_col2:
         if selected_region == "All Louisiana":
             available_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
         else:
             available_parishes = sorted(master_df[master_df['Region'] == selected_region]['Parish'].dropna().unique().tolist())
-        selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes, key="parish_filter")
+        selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
     with f_col3:
         asset_types = sorted(anchors_df['Type'].unique().tolist())
         selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + asset_types)
