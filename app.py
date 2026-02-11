@@ -132,6 +132,13 @@ if check_password():
             except: return pd.read_csv(f, encoding='latin1')
 
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
+        
+        # Load Crosswalk for Smart Search
+        try:
+            crosswalk = read_csv_safe("city-parish-region-crosswalk.csv")
+        except:
+            crosswalk = pd.DataFrame(columns=['City-Town', 'Parish', 'Region'])
+
         poverty_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
         unemployment_col = 'Unemployment Rate (%)'
         mfi_col = 'Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)'
@@ -178,9 +185,9 @@ if check_password():
                     coords = np.array(feature['geometry']['coordinates'][0]) if feature['geometry']['type'] == 'Polygon' else np.array(feature['geometry']['coordinates'][0][0])
                     centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
                 except: continue
-        return geojson, master, anchors, centers
+        return geojson, master, anchors, centers, crosswalk
 
-    gj, master_df, anchors_df, tract_centers = load_assets()
+    gj, master_df, anchors_df, tract_centers, crosswalk_df = load_assets()
 
     def render_map(df, is_filtered=False, height=600):
         center = {"lat": 30.8, "lon": -91.8}
@@ -211,83 +218,62 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2: BENEFIT FRAMEWORK ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
-    cols2 = st.columns(3)
-    cards2 = [
-        ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
-        ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
-        ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
-    ]
-    for i, (ct, ctx) in enumerate(cards2):
-        cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    # --- SECTION 2, 3, 4 (Benefits, Advocacy, Best Practices) ---
+    def render_cards(section_num, title, text, cards):
+        st.markdown(f"<div class='content-section'><div class='section-num'>SECTION {section_num}</div><div class='section-title'>{title}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='narrative-text'>{text}</div>", unsafe_allow_html=True)
+        cols = st.columns(3)
+        for i, (ct, ctx) in enumerate(cards):
+            cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 3: CENSUS TRACT ADVOCACY ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
-    cols3 = st.columns(3)
-    cards3 = [
-        ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
-        ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
-        ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
-    ]
-    for i, (ct, ctx) in enumerate(cards3):
-        cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    render_cards(2, "The OZ 2.0 Benefit Framework", "Providing federal tax relief to incentivize long-term equity investments.", 
+                 [("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."), 
+                  ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."), 
+                  ("Permanent Exclusion", "Zero federal capital gains tax after 10 years.")])
 
-    # --- SECTION 4: BEST PRACTICES ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
-    cols4 = st.columns(3)
-    cards4 = [
-        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
-        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
-        ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
-    ]
-    for i, (ct, ctx) in enumerate(cards4):
-        cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    render_cards(3, "Census Tract Advocacy", "Focusing on community need and strong investment potential.", 
+                 [("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."), 
+                  ("Distressed Communities", "Eligibility is dependent on low-income definitions."), 
+                  ("Project Ready", "Aligning recommendations with tracts likely to receive investment.")])
 
-    # --- SECTION 5: STRATEGIC ASSET MAPPING + INTERNAL SMART SEARCH ---
+    render_cards(4, "Best Practices", "Leveraging institutional knowledge to minimize risk.", 
+                 [("Economic Innovation Group", "Proximity to ports ensures long-term tenant demand."), 
+                  ("Frost Brown Todd", "Utilizing local anchors for a skilled labor force."), 
+                  ("American Policy Institute", "Stack incentives to de-risk projects.")])
+
+    # --- SECTION 5: STRATEGIC ASSET MAPPING + CROSSWALK SEARCH ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # SMART SEARCH BOX
-    search_query = st.text_input("🔍 Search by City, Parish, or Tract ID", placeholder="e.g., 'New Orleans', 'Baton Rouge', 'Lafayette', or an 11-digit FIPS")
+    # ENHANCED SMART SEARCH BOX
+    search_query = st.text_input("🔍 Search by City, Parish, or Tract ID", placeholder="e.g., 'New Orleans', 'East Baton Rouge', or an 11-digit FIPS")
     
-    # Internal mapping for common city-to-parish intent
-    city_to_parish = {
-        "new orleans": "orleans",
-        "baton rouge": "east baton rouge",
-        "shreveport": "caddo",
-        "metairie": "jefferson",
-        "houma": "terrebonne",
-        "monroe": "ouachita",
-        "alexandria": "rapides",
-        "lake charles": "calcasieu",
-        "bossier city": "bossier",
-        "kenner": "jefferson"
-    }
-
+    # Internal logic for Crosswalk lookup
+    target_parish = None
     if search_query:
         query = search_query.strip().lower()
-        target_parish = city_to_parish.get(query, query)
         
-        # Search against Tract ID and Parish columns
+        # 1. Check if query is a City/Town in the crosswalk
+        city_match = crosswalk_df[crosswalk_df['City-Town'].str.lower() == query]
+        if not city_match.empty:
+            target_parish = city_match.iloc[0]['Parish']
+        else:
+            # 2. If no city match, assume they typed a Parish or ID
+            target_parish = query
+
+        # Apply filtering to Master DF
         match_df = master_df[
             (master_df['geoid_str'].str.contains(query)) | 
-            (master_df['Parish'].str.lower().str.contains(target_parish))
+            (master_df['Parish'].str.lower().str.contains(target_parish.lower()))
         ]
         
         if not match_df.empty:
             found_id = str(match_df.iloc[0]['geoid_str'])
             st.session_state["active_tract"] = found_id
-            
-            # Reset dropdowns to "All" so the searched area is visible on the map
             st.session_state["region_filter"] = "All Louisiana"
             st.session_state["parish_filter"] = "All in Region"
-            
-            st.success(f"Located {len(match_df)} results in the {match_df.iloc[0]['Parish']} area.")
+            st.success(f"Located results for '{search_query}' in {match_df.iloc[0]['Parish']} Parish.")
         else:
-            st.warning("No Parish or Tract ID matches that search.")
+            st.warning("No matches found for that City, Parish, or Tract ID.")
 
     unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
     
@@ -308,16 +294,9 @@ if check_password():
     filtered_df = master_df.copy()
     is_actively_filtering = False
 
-    # Priority 1: Search Query Results
-    if search_query:
-        query = search_query.strip().lower()
-        target_parish = city_to_parish.get(query, query)
-        filtered_df = filtered_df[
-            (filtered_df['geoid_str'].str.contains(query)) | 
-            (filtered_df['Parish'].str.lower().str.contains(target_parish))
-        ]
+    if search_query and not match_df.empty:
+        filtered_df = match_df
         is_actively_filtering = True
-    # Priority 2: Dropdown Selectors
     else:
         if selected_region != "All Louisiana":
             filtered_df = filtered_df[filtered_df['Region'] == selected_region]
@@ -356,7 +335,7 @@ if check_password():
             list_html = "<div style='color:#94a3b8; padding:20px;'>No assets of this type found nearby.</div>"
         components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
-    # --- SECTION 6: PERFECT NINE GRID ---
+    # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
