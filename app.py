@@ -247,31 +247,45 @@ if check_password():
     for i, (ct, ctx) in enumerate(cards4):
         cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: STRATEGIC ASSET MAPPING + INTERNAL FUZZY SEARCH ---
+    # --- SECTION 5: STRATEGIC ASSET MAPPING + INTERNAL SMART SEARCH ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # INTERNAL DATA SEARCH (No External API required)
-    search_query = st.text_input("🔍 Search by Parish Name or Tract ID", placeholder="e.g., 'Orleans', 'East Baton', or '22071012...'")
+    # SMART SEARCH BOX
+    search_query = st.text_input("🔍 Search by City, Parish, or Tract ID", placeholder="e.g., 'New Orleans', 'Baton Rouge', 'Lafayette', or an 11-digit FIPS")
     
+    # Internal mapping for common city-to-parish intent
+    city_to_parish = {
+        "new orleans": "orleans",
+        "baton rouge": "east baton rouge",
+        "shreveport": "caddo",
+        "metairie": "jefferson",
+        "houma": "terrebonne",
+        "monroe": "ouachita",
+        "alexandria": "rapides",
+        "lake charles": "calcasieu",
+        "bossier city": "bossier",
+        "kenner": "jefferson"
+    }
+
     if search_query:
         query = search_query.strip().lower()
-        # Search for exact Tract ID match or partial Parish name match
-        match = master_df[
+        target_parish = city_to_parish.get(query, query)
+        
+        # Search against Tract ID and Parish columns
+        match_df = master_df[
             (master_df['geoid_str'].str.contains(query)) | 
-            (master_df['Parish'].str.lower().str.contains(query))
+            (master_df['Parish'].str.lower().str.contains(target_parish))
         ]
         
-        if not match.empty:
-            # If multiple results (like searching 'Orleans'), we pick the first one to highlight
-            # But the map will show all matching tracks if we are in "Filtering" mode.
-            found_id = str(match.iloc[0]['geoid_str'])
+        if not match_df.empty:
+            found_id = str(match_df.iloc[0]['geoid_str'])
             st.session_state["active_tract"] = found_id
             
-            # Reset dropdowns to show the search results on the map
+            # Reset dropdowns to "All" so the searched area is visible on the map
             st.session_state["region_filter"] = "All Louisiana"
             st.session_state["parish_filter"] = "All in Region"
             
-            st.success(f"Found {len(match)} matches. Viewing: {match.iloc[0]['Parish']} (Tract {found_id})")
+            st.success(f"Located {len(match_df)} results in the {match_df.iloc[0]['Parish']} area.")
         else:
             st.warning("No Parish or Tract ID matches that search.")
 
@@ -290,17 +304,20 @@ if check_password():
         asset_types = sorted(anchors_df['Type'].unique().tolist())
         selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + asset_types)
 
-    # If user searched, we show the search results on map
+    # FINAL FILTER LOGIC
     filtered_df = master_df.copy()
     is_actively_filtering = False
 
+    # Priority 1: Search Query Results
     if search_query:
         query = search_query.strip().lower()
+        target_parish = city_to_parish.get(query, query)
         filtered_df = filtered_df[
             (filtered_df['geoid_str'].str.contains(query)) | 
-            (filtered_df['Parish'].str.lower().str.contains(query))
+            (filtered_df['Parish'].str.lower().str.contains(target_parish))
         ]
         is_actively_filtering = True
+    # Priority 2: Dropdown Selectors
     else:
         if selected_region != "All Louisiana":
             filtered_df = filtered_df[filtered_df['Region'] == selected_region]
