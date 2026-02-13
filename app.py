@@ -94,9 +94,6 @@ if check_password():
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
-        .benefit-card a { color: #4ade80; text-decoration: none; }
-        .benefit-card a:hover { text-decoration: underline; color: #ffffff; }
-        .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
@@ -139,13 +136,14 @@ if check_password():
         NAT_UNEMP = 5.3
         STATE_MFI = 86934 
 
+        # Standard Eligibility
         master['NMTC_Eligible'] = (
             (master['_pov_num'] >= 20) | 
             (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
             (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
-        # Added for Section 6 Metrics
+        # Deeply Distressed Definition
         master['Deeply_Distressed'] = (
             (master['_pov_num'] >= 30) | 
             (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
@@ -207,13 +205,12 @@ if check_password():
             <div class='section-num'>SECTION 1</div>
             <div class='hero-subtitle'>Opportunity Zones 2.0</div>
             <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
-            <div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, and innovation in the communities that need it most.</div>
+            <div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, and innovation.</div>
         </div>
     """, unsafe_allow_html=True)
 
     # --- SECTION 2: BENEFIT FRAMEWORK ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
     cols2 = st.columns(3)
     cards2 = [
         ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -225,7 +222,6 @@ if check_password():
 
     # --- SECTION 3: CENSUS TRACT ADVOCACY ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
     cols3 = st.columns(3)
     cards3 = [
         ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
@@ -237,12 +233,11 @@ if check_password():
 
     # --- SECTION 4: BEST PRACTICES ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
     cols4 = st.columns(3)
     cards4 = [
-        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"),
-        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"),
-        ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
+        ("Economic Innovation Group", "National insights on OZ implementation.", "https://eig.org/ozs-guidance/"),
+        ("Frost Brown Todd", "State-level blueprint for legal and economic impact.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"),
+        ("America First Policy Institute", "Case studies on de-risking community investment.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
     ]
     for i, (ct, ctx, url) in enumerate(cards4):
         cols4[i].markdown(f"<div class='benefit-card'><h3><a href='{url}' target='_blank'>{ct}</a></h3><p>{ctx}</p></div>", unsafe_allow_html=True)
@@ -313,8 +308,23 @@ if check_password():
         if not row.empty:
             d = row.iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size:2rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color:#94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
-            m_cols = [st.columns(3) for _ in range(3)]
-            metrics = [(d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"), (d.get('NMTC_Eligible', 'No'), "NMTC Eligible"), (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"), (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"), (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"), (f"${d.get('_mfi_num', 0):,.0f}", "Median Income"), (d.get('Median Home Value', 'N/A'), "Home Value"), (d.get('Population 65 years and over', '0'), "Pop 65+"), (f"{d.get('Broadband Internet (%)','0')}", "Broadband")]
+            
+            # Updated metric layout to include Population and Population 18-24
+            m_cols = [st.columns(3) for _ in range(4)]
+            metrics = [
+                (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"), 
+                (f"{d.get('Population (Total)', 0):,.0f}", "Tract Pop"), 
+                (f"{d.get('Population 18 to 24 years', 0):,.0f}", "Pop 18-24"),
+                (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"), 
+                (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"), 
+                (f"${d.get('_mfi_num', 0):,.0f}", "Median Income"),
+                (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"),
+                (d.get('NMTC_Eligible', 'No'), "NMTC Eligible"), 
+                (d.get('Eligibility_Base', 'Ineligible'), "OZ Eligible"),
+                (d.get('Median Home Value', 'N/A'), "Home Value"), 
+                (d.get('Population 65 years and over', '0'), "Pop 65+"), 
+                (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
+            ]
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
