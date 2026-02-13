@@ -329,7 +329,7 @@ if check_password():
 
     # --- SECTION 6: PERFECT NINE GRID & INPUTS ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
-    c6a, c6b = st.columns([0.6, 0.38], gap="large") 
+    c6a, c6b = st.columns([0.6, 0.4], gap="large") 
     with c6a:
         f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6", config=chart_config)
@@ -344,7 +344,7 @@ if check_password():
         if not row.empty:
             d = row.iloc[0]
             
-            # Pull Population from specific column provided by user
+            # Pull Total Population from specific column provided by user
             pop_col = 'Estimate!!Total!!Population for whom poverty status is determined'
             pop_val = d.get(pop_col, 0)
             formatted_pop = f"{int(clean_currency(pop_val)):,}"
@@ -365,6 +365,10 @@ if check_password():
                 </div>
             """, unsafe_allow_html=True)
             
+            # Formatting for 18-24 population metric
+            pop_1824_val = d.get('Population 18 to 24', 0)
+            formatted_1824 = f"{int(clean_currency(pop_1824_val)):,}"
+
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"),
@@ -373,7 +377,7 @@ if check_password():
                 (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
                 (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
                 (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"),
-                (f"${clean_currency(d.get('Median Home Value', 0)):,.0f}", "Median Home Value"),
+                (formatted_1824, "Pop 18-24"), # REPLACED MEDIAN HOME VALUE
                 (d.get('Population 65 years and over', '0'), "Pop 65+"),
                 (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
             ]
