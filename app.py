@@ -142,18 +142,15 @@ if check_password():
         master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
         master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
 
-        # Benchmarks
         NAT_UNEMP = 5.3
         STATE_MFI = 86934 
 
-        # NMTC Eligibility (20% Poverty or 80% MFI)
         master['NMTC_Eligible'] = (
             (master['_pov_num'] >= 20) | 
             (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
             (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
-        # Deeply Distressed (Pov >= 30% OR MFI <= 60% OR Unemp >= 1.5x Nat)
         master['Deeply_Distressed'] = (
             (master['_pov_num'] >= 30) | 
             (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
@@ -283,9 +280,8 @@ if check_password():
         filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
         is_actively_filtering = True
 
-    c5a, c5b = st.columns([0.6, 0.4], gap="large")
+    c5a, c5b = st.columns([0.6, 0.4], gap="large") # Fixed Ratio
     with c5a:
-        # MAP HEIGHT SET TO 600
         f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
         if s5 and "selection" in s5 and s5["selection"]["points"]:
@@ -313,8 +309,8 @@ if check_password():
                     link_btn = f"""
                     <div style='margin-top:10px;'>
                         <a href='{asset_link}' target='_blank' 
-                           style='display:inline-block; background:#4ade80; color:#0b0f19; padding:5px 12px; border-radius:4px; font-size:0.7rem; font-weight:900; text-decoration:none;'>
-                           VIEW SITE 🔗
+                            style='display:inline-block; background:#4ade80; color:#0b0f19; padding:5px 12px; border-radius:4px; font-size:0.7rem; font-weight:900; text-decoration:none;'>
+                            VIEW SITE 🔗
                         </a>
                     </div>"""
 
@@ -329,11 +325,10 @@ if check_password():
             list_html = "<div style='color:#94a3b8; padding:20px;'>No assets of this type found nearby.</div>"
         components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
-    # --- SECTION 6: PERFECT NINE GRID ---
+    # --- SECTION 6: PERFECT NINE GRID & INPUTS ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
-    c6a, c6b = st.columns([0.45, 0.55])
+    c6a, c6b = st.columns([0.6, 0.4], gap="large") # Matched Ratio with Section 5
     with c6a:
-        # MAP HEIGHT SET TO 600 (Matched Section 5)
         f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
         if s6 and "selection" in s6 and s6["selection"]["points"]:
@@ -347,6 +342,7 @@ if check_password():
         if not row.empty:
             d = row.iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size:2rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color:#94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
+            
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"),
@@ -362,9 +358,9 @@ if check_password():
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
-            st.write("---")
+            # --- INPUTS MOVED UP ---
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
-            just = st.text_area("Narrative Justification")
+            just = st.text_area("Narrative Justification", height=100)
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
                 st.session_state["session_recs"].append({
                     "Date": datetime.now().strftime("%I:%M %p"),
