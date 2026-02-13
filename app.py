@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -37,7 +36,6 @@ def clean_currency(val):
     if isinstance(val, (int, float)):
         return float(val)
     try:
-        # Remove $, commas, and whitespace
         return float(str(val).replace('$', '').replace(',', '').strip())
     except:
         return 0.0
@@ -166,9 +164,9 @@ if check_password():
         ).map({True: 'Yes', False: 'No'})
 
         master['Deeply_Distressed'] = (
-            (master['_pov_num'] >= 30) | 
-            (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
-            (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
+            (master['_pov_num'] >= 40) | 
+            (master['_mfi_num'] <= (0.4 * STATE_MFI)) | 
+            (master['_unemp_num'] >= (2.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
@@ -310,6 +308,7 @@ if check_password():
             if st.session_state["active_tract"] != new_id:
                 st.session_state["active_tract"] = new_id
                 st.rerun()
+
     with c5b:
         curr = st.session_state["active_tract"]
         st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
@@ -344,19 +343,14 @@ if check_password():
         row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]]
         if not row.empty:
             d = row.iloc[0]
-            
-            # Pull Total Population from specific column provided by user
             pop_col = 'Estimate!!Total!!Population for whom poverty status is determined'
             pop_val = d.get(pop_col, 0)
             formatted_pop = f"{int(clean_currency(pop_val)):,}"
 
-            # Updated Header with Flexbox for Population on the Right
             st.markdown(f"""
                 <div class='tract-header-container'>
                     <div style='display: flex; justify-content: space-between; align-items: baseline;'>
-                        <div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>
-                            {str(d.get('Parish','')).upper()}
-                        </div>
+                        <div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>{str(d.get('Parish','')).upper()}</div>
                         <div style='text-align: right;'>
                             <div style='color: #94a3b8; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;'>Tract Population</div>
                             <div style='font-size: 1.5rem; font-weight: 900; color: #ffffff;'>{formatted_pop}</div>
@@ -366,7 +360,6 @@ if check_password():
                 </div>
             """, unsafe_allow_html=True)
             
-            # Formatting for 18-24 population metric
             pop_1824_val = d.get('Population 18 to 24', 0)
             formatted_1824 = f"{int(clean_currency(pop_1824_val)):,}"
 
@@ -378,17 +371,23 @@ if check_password():
                 (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
                 (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
                 (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"),
-                (formatted_1824, "Pop 18-24"), # REPLACED MEDIAN HOME VALUE
+                (formatted_1824, "Pop 18-24"),
                 (d.get('Population 65 years and over', '0'), "Pop 65+"),
                 (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
             ]
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
-            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
-            just = st.text_area("Narrative Justification", height=100)
+            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"], key="cat_select")
+            just = st.text_area("Narrative Justification", height=100, key="just_text")
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
-                st.session_state["session_recs"].append({"Date": datetime.now().strftime("%I:%M %p"), "Tract ID": str(st.session_state["active_tract"]), "Parish": str(d.get('Parish', 'N/A')), "Category": cat, "Justification": just})
+                st.session_state["session_recs"].append({
+                    "Date": datetime.now().strftime("%I:%M %p"), 
+                    "Tract ID": str(st.session_state["active_tract"]), 
+                    "Parish": str(d.get('Parish', 'N/A')), 
+                    "Category": cat, 
+                    "Justification": just
+                })
                 st.success(f"Tract {st.session_state['active_tract']} added.")
                 st.rerun()
 
