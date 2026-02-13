@@ -361,11 +361,11 @@ if check_password():
                 (d.get('NMTC_Eligible', 'No'), "NMTC Eligible"),
                 (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"),
                 (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
-                (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
+                (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment Rate"),
                 (f"${d.get('_mfi_num', 0):,.0f}", "Median Income"),
-                (d.get('Median Home Value', 'N/A'), "Home Value"),
-                (d.get('Population 65 years and over', '0'), "Pop 65+"),
-                (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
+                (d.get('Median Home Value', 'N/A'), "Median Home Value"),
+                (d.get('Population 65 years and over', '0'), "Population 65+"),
+                (f"{d.get('Broadband Internet (%)','0')}%", "Broadband Accessibility")
             ]
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
