@@ -98,6 +98,8 @@ if check_password():
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+        .benefit-card a { color: #4ade80; text-decoration: none; }
+        .benefit-card a:hover { text-decoration: underline; color: #ffffff; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
@@ -234,12 +236,17 @@ if check_password():
     st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
     cols4 = st.columns(3)
     cards4 = [
-        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
-        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
-        ("American Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
+        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"),
+        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force.", "https://www.frostbrowntodd.com/"),
+        ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://americafirstpolicy.com/")
     ]
-    for i, (ct, ctx) in enumerate(cards4):
-        cols4[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    for i, (ct, ctx, url) in enumerate(cards4):
+        cols4[i].markdown(f"""
+            <div class='benefit-card'>
+                <h3><a href='{url}' target='_blank'>{ct}</a></h3>
+                <p>{ctx}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAPPING (DYNAMIC HIERARCHY) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
