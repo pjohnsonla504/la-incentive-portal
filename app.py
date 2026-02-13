@@ -329,7 +329,7 @@ if check_password():
 
     # --- SECTION 6: PERFECT NINE GRID & INPUTS ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
-    c6a, c6b = st.columns([0.6, 0.3], gap="large") 
+    c6a, c6b = st.columns([0.6, 0.38], gap="large") 
     with c6a:
         f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6", config=chart_config)
