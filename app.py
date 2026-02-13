@@ -69,12 +69,33 @@ if check_password():
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
+        
+        html, body, [class*="stApp"] { 
+            font-family: 'Inter', sans-serif !important; 
+            background-color: #0b0f19 !important; 
+            color: #ffffff; 
+        }
+
+        /* Improved Dropdown Selectbox Styling */
+        div[data-baseweb="select"] > div {
+            background-color: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: white !important;
+            border-radius: 8px !important;
+        }
+        label[data-testid="stWidgetLabel"] { 
+            color: #94a3b8 !important; 
+            font-weight: 600 !important; 
+            text-transform: uppercase; 
+            font-size: 0.75rem !important; 
+        }
+
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; }
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
+        
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 200px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; }
         .benefit-card h3 { color: #f8fafc; margin-bottom: 10px; font-weight: 800; }
@@ -85,27 +106,25 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         
-        .tract-header-container { background-color: #111827 !important; padding: 20px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 15px;}
-        
         /* High Contrast Anchor List Styling */
-        .anchor-card { background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; }
-        .anchor-type { color:#4ade80; font-size:0.75rem; font-weight:900; letter-spacing:0.12em; text-transform: uppercase; }
-        .anchor-name { color:#ffffff; font-weight:800; font-size:1.15rem; margin-top:4px; margin-bottom:2px; }
-        .anchor-dist { color:#94a3b8; font-size:0.85rem; }
+        .anchor-card { background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; font-family: 'Inter', sans-serif; }
+        .anchor-type { color:#4ade80; font-size:0.7rem; font-weight:900; letter-spacing:0.12em; text-transform: uppercase; margin-bottom: 4px; }
+        .anchor-name { color:#ffffff; font-weight:800; font-size:1.1rem; line-height: 1.2; margin-bottom:4px; }
+        .anchor-dist { color:#94a3b8; font-size:0.85rem; margin-bottom: 12px; }
         
         .view-site-btn { 
-            display: inline-block; 
+            display: block; 
             background-color: #4ade80; 
-            color: #ffffff !important; 
-            padding: 10px 22px; 
-            border-radius: 6px; 
+            color: #0b0f19 !important; 
+            padding: 8px 0; 
+            border-radius: 4px; 
             text-decoration: none !important; 
-            font-size: 0.9rem; 
+            font-size: 0.75rem; 
             font-weight: 900; 
-            margin-top: 15px;
             transition: all 0.2s ease;
             text-align: center;
             border: 2px solid #4ade80;
+            width: 100%;
         }
         .view-site-btn:hover { 
             background-color: transparent; 
@@ -134,6 +153,7 @@ if check_password():
 
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        # Apply Logic: Tracks highlighted green are only those eligible for OZ 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -162,7 +182,7 @@ if check_password():
             geojson=gj, locations=map_df['geoid_str'],
             z=np.where(map_df['Eligibility_Status'] == 'Eligible', 1, 0),
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#cbd5e1'], [1, '#4ade80']], showscale=False,
+            colorscale=[[0, '#1e293b'], [1, '#4ade80']], showscale=False,
             marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx,
             selected=dict(marker=dict(opacity=1.0)),
@@ -170,7 +190,7 @@ if check_password():
             hoverinfo="location"
         ))
         fig.update_layout(
-            mapbox=dict(style="carto-positron", zoom=6.0, center={"lat": 30.9, "lon": -91.8}),
+            mapbox=dict(style="carto-darkmatter", zoom=6.0, center={"lat": 30.9, "lon": -91.8}),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
             height=600, clickmode='event+select', uirevision="constant"
         )
@@ -179,7 +199,7 @@ if check_password():
     # --- SECTION 1: HERO ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs, housing, and innovation in Louisiana's most promising census tracts.</div></div>", unsafe_allow_html=True)
 
-    # --- SECTION 2, 3, 4: NARRATIVES ---
+    # --- SECTIONS 2, 3, 4: NARRATIVES ---
     narratives = [
         (2, "Benefit Framework", "Strategic federal tax incentives to de-risk projects and encourage long-term equity investment.", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years.", "#"), 
@@ -225,7 +245,7 @@ if check_password():
                 st.rerun()
     with c5b:
         curr = st.session_state["active_tract"]
-        st.markdown(f"<p style='color:#94a3b8; font-weight:800; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:20px;'>ANCHOR ASSETS NEAR {curr if curr else 'SELECT TRACT'}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>ANCHOR ASSETS NEAR {curr if curr else 'SELECT TRACT'}</p>", unsafe_allow_html=True)
         list_html = ""
         if curr and curr in tract_centers:
             lon, lat = tract_centers[curr]
@@ -234,26 +254,35 @@ if check_password():
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
                 btn_html = ""
-                if str(a.get('Type', '')).lower() in ['land', 'building'] and pd.notna(a.get('Link')):
+                if pd.notna(a.get('Link')) and str(a['Link']).strip() != "":
                     btn_html = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>"
                 list_html += f"<div class='anchor-card'><div class='anchor-type'>{str(a['Type']).upper()}</div><div class='anchor-name'>{a['Name']}</div><div class='anchor-dist'>{a['dist']:.1f} miles away</div>{btn_html}</div>"
-        components.html(f"<div style='height: 520px; overflow-y: auto; font-family: sans-serif; padding-right: 10px;'>{list_html if list_html else '<p style=color:#475569;>Select a tract on the map to view nearby anchors.</p>'}</div>", height=540)
+        
+        components.html(f"""
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+                body {{ font-family: 'Inter', sans-serif; background: transparent; margin: 0; padding: 0; overflow-x: hidden; }}
+                ::-webkit-scrollbar {{ width: 5px; }}
+                ::-webkit-scrollbar-track {{ background: transparent; }}
+                ::-webkit-scrollbar-thumb {{ background: #334155; border-radius: 10px; }}
+                .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; }}
+                .anchor-type {{ color:#4ade80; font-size:0.7rem; font-weight:900; letter-spacing:0.12em; text-transform: uppercase; margin-bottom: 4px; }}
+                .anchor-name {{ color:#ffffff; font-weight:800; font-size:1.1rem; line-height: 1.2; margin-bottom:4px; }}
+                .anchor-dist {{ color:#94a3b8; font-size:0.85rem; margin-bottom: 12px; }}
+                .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; width: 100%; border: 2px solid #4ade80; }}
+            </style>
+            <div>{list_html if list_html else '<p style=color:#475569;>Select a tract on the map to view nearby anchors.</p>'}</div>
+        """, height=540)
 
     # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.65, 0.35], gap="large") 
     with c6a:
-        s6 = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="map6")
-        if s6 and "selection" in s6 and s6["selection"]["points"]:
-            new_id = str(s6["selection"]["points"][0]["location"])
-            if st.session_state["active_tract"] != new_id:
-                st.session_state["active_tract"] = new_id
-                st.rerun()
+        st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="map6")
     with c6b:
         if st.session_state["active_tract"]:
             row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]].iloc[0]
-            pop_val = safe_int(row.get('Estimate!!Total population', 0))
-            st.markdown(f"<div class='tract-header-container'><div style='display: flex; justify-content: space-between; align-items: flex-end;'><div><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {st.session_state['active_tract']}</div></div><div style='text-align: right;'><div style='color: #94a3b8; font-size: 0.65rem; text-transform: uppercase;'>Total Population</div><div style='font-size: 1.3rem; font-weight: 900; color: white;'>{pop_val:,}</div></div></div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='tract-header-container'><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%", "Unemployment"), (f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "Poverty Rate"), (f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "MFI"),
