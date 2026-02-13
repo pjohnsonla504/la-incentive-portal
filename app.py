@@ -237,8 +237,8 @@ if check_password():
     cols4 = st.columns(3)
     cards4 = [
         ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"),
-        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force.", "https://www.frostbrowntodd.com/"),
-        ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://americafirstpolicy.com/")
+        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"),
+        ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
     ]
     for i, (ct, ctx, url) in enumerate(cards4):
         cols4[i].markdown(f"""
