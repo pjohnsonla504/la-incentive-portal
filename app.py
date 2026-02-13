@@ -17,7 +17,7 @@ st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
-    st.session_state["active_tract"] = None # Start with no selection
+    st.session_state["active_tract"] = "22071001700" 
 if "current_user" not in st.session_state:
     st.session_state["current_user"] = None
 if "password_correct" not in st.session_state:
@@ -39,7 +39,7 @@ def clean_currency(val):
     except:
         return 0.0
 
-# --- 1. AUTHENTICATION (Standard logic) ---
+# --- 1. AUTHENTICATION ---
 def check_password():
     def password_entered():
         try:
@@ -61,8 +61,13 @@ def check_password():
     if not st.session_state["password_correct"]:
         st.markdown("""
             <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
             .stApp { background-color: #0b0f19; }
-            .login-card { max-width: 360px; margin: 140px auto 20px auto; padding: 30px; background: #111827; border: 1px solid #1e293b; border-top: 4px solid #4ade80; border-radius: 12px; text-align: center; }
+            .login-card {
+                max-width: 360px; margin: 140px auto 20px auto; padding: 30px;
+                background: #111827; border: 1px solid #1e293b;
+                border-top: 4px solid #4ade80; border-radius: 12px; text-align: center;
+            }
             .login-title { font-family: 'Inter', sans-serif; font-size: 1.5rem; font-weight: 900; color: #ffffff; margin-bottom: 4px; }
             label, p, .stText { color: #ffffff !important; font-weight: 600 !important; }
             input { color: #000000 !important; }
@@ -86,13 +91,18 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
-        .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
+        .content-section { padding: 60px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
-        .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
+        .hero-title { font-size: 3.5rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
+        .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
+        .narrative-text { font-size: 1.15rem; color: #94a3b8; line-height: 1.6; max-width: 900px; margin-bottom: 30px; }
+        .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #1e293b; border-radius: 12px; min-height: 200px; }
+        .benefit-card h3 { color: #4ade80; font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; }
+        .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -116,11 +126,31 @@ if check_password():
         master = read_csv_safe("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Track Eligibility for highlighting
+        # Flag Eligibility based on instructions: Only those in the file show as Green
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
         
+        poverty_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
+        unemployment_col = 'Unemployment Rate (%)'
+        mfi_col = 'Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)'
+        
+        def clean_numeric(s):
+            if pd.isna(s): return 0.0
+            s = str(s).replace('%', '').replace('$', '').replace(',', '').strip()
+            try: return float(s)
+            except: return 0.0
+
+        master['_pov_num'] = master[poverty_col].apply(clean_numeric)
+        master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
+        master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
+
+        # NMTC & Distress Calculations
+        NAT_UNEMP = 5.3
+        STATE_MFI = 86934 
+        master['NMTC_Eligible'] = ((master['_pov_num'] >= 20) | (master['_mfi_num'] <= (0.8 * STATE_MFI)) | (master['_unemp_num'] >= (1.5 * NAT_UNEMP))).map({True: 'Yes', False: 'No'})
+        master['Deeply_Distressed'] = ((master['_pov_num'] >= 30) | (master['_mfi_num'] <= (0.6 * STATE_MFI)) | (master['_unemp_num'] >= (1.5 * NAT_UNEMP))).map({True: 'Yes', False: 'No'})
+
         anchors = read_csv_safe("la_anchors.csv")
         centers = {}
         if geojson:
@@ -134,19 +164,17 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- UPDATED RENDERER FOR MIRRORED SELECTION ---
+    # --- MAP RENDERER (SYNCED) ---
     def render_map(df, is_filtered=False, height=600):
         recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
         map_df = df.copy().reset_index(drop=True)
-        
         map_df.loc[map_df['geoid_str'].isin(recs), 'Eligibility_Status'] = "Recommended"
 
-        # Determine which index is currently active to force the Plotly selection highlight
+        # Force mirrored visual selection
         selected_indices = []
         if st.session_state["active_tract"]:
             matches = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
-            if matches:
-                selected_indices = matches
+            if matches: selected_indices = matches
 
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
@@ -164,16 +192,37 @@ if check_password():
                                      color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1", "Recommended": "#f97316"},
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
         
-        # This core line enables the mirroring of the "Interactive Cross-filtering" look
         fig.update_traces(selectedpoints=selected_indices, selector=dict(type='choropleth_mapbox'))
-
         fig.update_layout(
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', 
             showlegend=True, height=height, clickmode='event+select', uirevision="constant" 
         )
         return fig
 
-    chart_config = {"scrollZoom": True}
+    # --- SECTION 1: HERO ---
+    st.markdown("""
+        <div class='content-section'>
+            <div class='hero-subtitle'>State of Louisiana</div>
+            <div class='hero-title'>Opportunity Zone 2.0<br/>Data Intelligence Portal</div>
+            <div class='narrative-text'>
+                A centralized framework for identifying, analyzing, and activating high-impact investment tracts across the state. 
+                Integrating demographic distressed data with anchor institution proximity to drive economic growth.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # --- SECTION 2: VISION ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Strategic Vision</div>", unsafe_allow_html=True)
+    v1, v2, v3 = st.columns(3)
+    with v1: st.markdown("<div class='benefit-card'><h3>Capital Activation</h3><p>Streamlining the pipeline between institutional capital and eligible census tracts to ensure funding reaches areas with maximum growth potential.</p></div>", unsafe_allow_html=True)
+    with v2: st.markdown("<div class='benefit-card'><h3>Anchor Integration</h3><p>Leveraging proximity to universities, hospitals, and ports to create resilient economic ecosystems and job clusters.</p></div>", unsafe_allow_html=True)
+    with v3: st.markdown("<div class='benefit-card'><h3>Data Clarity</h3><p>Providing stakeholders with real-time metrics on poverty, income, and broadband access to inform site selection and project narrative.</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 3: REFORM FRAMEWORK ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>OZ 2.0 Reform Framework</div><div class='narrative-text'>The 2026 Opportunity Zone updates focus on transparency and impact. Our framework evaluates tracts based on the <b>Distress Index</b> and <b>Asset Proximity</b> to ensure long-term sustainability for both investors and communities.</div></div>", unsafe_allow_html=True)
+
+    # --- SECTION 4: ELIGIBILITY ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Eligibility Analysis</div><div class='narrative-text'>Tracts highlighted in <b>Green</b> represent the prioritized Opportunity Zone 2.0 candidates based on current legislative eligibility and historical performance.</div></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
@@ -194,19 +243,19 @@ if check_password():
     c5a, c5b = st.columns([0.6, 0.4], gap="large") 
     with c5a:
         f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
-        s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5", config=chart_config)
+        s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
         if s5 and "selection" in s5 and s5["selection"]["points"]:
-            new_id = str(s5["selection"]["points"][0]["location"])
-            st.session_state["active_tract"] = new_id
+            st.session_state["active_tract"] = str(s5["selection"]["points"][0]["location"])
             st.rerun()
 
     with c5b:
         curr = st.session_state["active_tract"]
-        st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr if curr else 'SELECTION'}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
         list_html = ""
         if curr and curr in tract_centers:
             lon, lat = tract_centers[curr]
             working_anchors = anchors_df.copy()
+            if selected_asset_type != "All Assets": working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
                 list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles away</div></div>"
@@ -217,10 +266,9 @@ if check_password():
     c6a, c6b = st.columns([0.6, 0.4], gap="large") 
     with c6a:
         f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
-        s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6", config=chart_config)
+        s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
         if s6 and "selection" in s6 and s6["selection"]["points"]:
-            new_id = str(s6["selection"]["points"][0]["location"])
-            st.session_state["active_tract"] = new_id
+            st.session_state["active_tract"] = str(s6["selection"]["points"][0]["location"])
             st.rerun()
 
     with c6b:
@@ -229,8 +277,23 @@ if check_password():
             if not row.empty:
                 d = row.iloc[0]
                 st.markdown(f"<div class='tract-header-container'><div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color: #94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
-                # (Metrics and recommendation buttons would follow here as in previous script)
-        else:
-            st.info("Select a tract on the map to view data profiling.")
+                
+                m_cols = [st.columns(3) for _ in range(3)]
+                metrics = [(d.get('NMTC_Eligible', 'No'), "NMTC Eligible"), (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"), (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"), (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"), (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"), (f"{d.get('Broadband Internet (%)','0')}", "Broadband")]
+                for i, (val, lbl) in enumerate(metrics): m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
+
+                cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
+                just = st.text_area("Narrative Justification", height=100)
+                if st.button("Add to My Recommendations", type="primary", use_container_width=True):
+                    st.session_state["session_recs"].append({"Date": datetime.now().strftime("%I:%M %p"), "Tract ID": str(st.session_state["active_tract"]), "Parish": str(d.get('Parish', 'N/A')), "Category": cat, "Justification": just})
+                    st.success(f"Tract {st.session_state['active_tract']} added.")
+                    st.rerun()
+
+    # --- SECTION 7: RECS ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>Session Recommendations</div>", unsafe_allow_html=True)
+    if st.session_state["session_recs"]:
+        st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True)
+    else:
+        st.info("No recommendations added yet.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
