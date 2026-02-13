@@ -145,14 +145,14 @@ if check_password():
         NAT_UNEMP = 5.3
         STATE_MFI = 86934 
 
-        # NMTC Eligibility (Aligning with PolicyMap)
+        # NMTC Eligibility logic
         master['NMTC_Eligible'] = (
             (master['_pov_num'] >= 20) | 
             (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
             (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
-        # Deeply Distressed (Aligning with PolicyMap/CDFI benchmarks)
+        # Deeply Distressed (Poverty >= 30%)
         master['Deeply_Distressed'] = (
             (master['_pov_num'] >= 30) | 
             (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
@@ -165,13 +165,8 @@ if check_password():
         )
         
         anchors = read_csv_safe("la_anchors.csv")
-        if 'Type' in anchors.columns:
-            anchors['Type'] = anchors['Type'].fillna('Other')
-            
-        if 'Link' in anchors.columns:
-            anchors['Link'] = anchors['Link'].fillna("")
-        else:
-            anchors['Link'] = ""
+        anchors['Type'] = anchors['Type'].fillna('Other')
+        anchors['Link'] = anchors['Link'].fillna("")
             
         centers = {}
         if geojson:
@@ -185,7 +180,7 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    def render_map(df, is_filtered=False, height=700):
+    def render_map(df, is_filtered=False, height=700, width=800):
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
         if is_filtered and not df.empty:
@@ -202,85 +197,29 @@ if check_password():
                                      color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1"},
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
         
-        # ADDED scrollZoom: True
         fig.update_layout(
             margin={"r":0,"t":0,"l":0,"b":0}, 
             paper_bgcolor='rgba(0,0,0,0)', 
             showlegend=False, 
             height=height, 
-            clickmode='event+select',
-            mapbox_config={"scrollZoom": True}
+            width=width,  # Fixed Width
+            clickmode='event+select'
         )
+        fig.update_mapboxes(zoom=zoom, center=center)
         return fig
 
-    # --- SECTION 1: HERO ---
-    st.markdown("""
-        <div class='content-section'>
-            <div class='section-num'>SECTION 1</div>
-            <div class='hero-subtitle'>Opportunity Zones 2.0</div>
-            <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
-            <div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, and innovation in the communities that need it most.</div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # --- SECTION 2: BENEFIT FRAMEWORK ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>The OZ 2.0 framework is designed to bridge the gap between traditional investment and community development. By providing significant federal tax relief, the program incentivizes long-term equity investments in designated census tracts, ensuring that capital remains active within the Louisiana economy for a minimum of ten years.</div>", unsafe_allow_html=True)
-    cols2 = st.columns(3)
-    cards2 = [
-        ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
-        ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
-        ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
-    ]
-    for i, (ct, ctx) in enumerate(cards2):
-        cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
-
-    # --- SECTION 3: CENSUS TRACT ADVOCACY ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Effective advocacy requires a data-driven approach to selecting tracts that demonstrate both high community need and strong investment potential. By focusing on rural and deeply distressed areas, we can ensure that the Opportunity Zone benefits are distributed equitably across all of Louisiana's diverse economic landscapes.</div>", unsafe_allow_html=True)
-    cols3 = st.columns(3)
-    cards3 = [
-        ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
-        ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
-        ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
-    ]
-    for i, (ct, ctx) in enumerate(cards3):
-        cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
-
-    # --- SECTION 4: BEST PRACTICES ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
-    st.markdown("<div class='narrative-text'>Successful Opportunity Zone projects leverage institutional knowledge and local assets to minimize risk for private investors. These best practices represent a synthesis of national policy research and localized economic development strategies tailored for the Louisiana market.</div>", unsafe_allow_html=True)
-    cols4 = st.columns(3)
-    cards4 = [
-        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"),
-        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"),
-        ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
-    ]
-    for i, (ct, ctx, url) in enumerate(cards4):
-        cols4[i].markdown(f"""
-            <div class='benefit-card'>
-                <h3><a href='{url}' target='_blank'>{ct}</a></h3>
-                <p>{ctx}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    # --- SECTION 5: ASSET MAPPING (DYNAMIC HIERARCHY) ---
+    # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
     unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
-    
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1:
         selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions)
     with f_col2:
-        if selected_region == "All Louisiana":
-            available_parishes = sorted(master_df['Parish'].dropna().unique().tolist())
-        else:
-            available_parishes = sorted(master_df[master_df['Region'] == selected_region]['Parish'].dropna().unique().tolist())
+        available_parishes = sorted(master_df[master_df['Region'] == selected_region]['Parish'].dropna().unique().tolist()) if selected_region != "All Louisiana" else sorted(master_df['Parish'].dropna().unique().tolist())
         selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
     with f_col3:
-        asset_types = sorted(anchors_df['Type'].unique().tolist())
-        selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + asset_types)
+        selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
 
     filtered_df = master_df.copy()
     is_actively_filtering = False
@@ -291,11 +230,11 @@ if check_password():
         filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
         is_actively_filtering = True
 
-    c5a, c5b = st.columns([0.6, 0.4], gap="large")
+    c5a, c5b = st.columns([0.65, 0.35], gap="large")
     with c5a:
-        # STANDARDIZED HEIGHT = 700
-        f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=700)
-        s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
+        # Fixed 700x800 map
+        f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=700, width=800)
+        s5 = st.plotly_chart(f5, use_container_width=False, on_select="rerun", key="map5", config={'scrollZoom': True})
         if s5 and "selection" in s5 and s5["selection"]["points"]:
             new_id = str(s5["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
@@ -314,36 +253,26 @@ if check_password():
             
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
                 link_btn = ""
-                asset_type_clean = str(a.get('Type',''))
                 asset_link = str(a.get('Link',''))
-                
-                if asset_type_clean in ['Land', 'Buildings'] and asset_link.strip() != "":
-                    link_btn = f"""
-                    <div style='margin-top:10px;'>
-                        <a href='{asset_link}' target='_blank' 
-                           style='display:inline-block; background:#4ade80; color:#0b0f19; padding:5px 12px; border-radius:4px; font-size:0.7rem; font-weight:900; text-decoration:none;'>
-                           VIEW SITE 🔗
-                        </a>
-                    </div>"""
+                if str(a.get('Type','')) in ['Land', 'Buildings'] and asset_link.strip() != "":
+                    link_btn = f"<div style='margin-top:10px;'><a href='{asset_link}' target='_blank' style='display:inline-block; background:#4ade80; color:#0b0f19; padding:5px 12px; border-radius:4px; font-size:0.7rem; font-weight:900; text-decoration:none;'>VIEW SITE 🔗</a></div>"
 
                 list_html += f"""
                 <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
-                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{asset_type_clean.upper()}</div>
+                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div>
                     <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
                     <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles away</div>
                     {link_btn}
                 </div>"""
-        if not list_html:
-            list_html = "<div style='color:#94a3b8; padding:20px;'>No assets of this type found nearby.</div>"
-        components.html(f"<div style='height: 630px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=650)
+        components.html(f"<div style='height: 630px; overflow-y: auto; font-family: sans-serif;'>{list_html or 'No assets found.'}</div>", height=650)
 
-    # --- SECTION 6: PERFECT NINE GRID ---
+    # --- SECTION 6: PROFILE GRID ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
-    c6a, c6b = st.columns([0.45, 0.55])
+    c6a, c6b = st.columns([0.55, 0.45])
     with c6a:
-        # STANDARDIZED HEIGHT = 700
-        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=700)
-        s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
+        # Identical 700x800 fixed size
+        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=700, width=800)
+        s6 = st.plotly_chart(f6, use_container_width=False, on_select="rerun", key="map6", config={'scrollZoom': True})
         if s6 and "selection" in s6 and s6["selection"]["points"]:
             new_id = str(s6["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
@@ -374,25 +303,8 @@ if check_password():
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification")
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
-                st.session_state["session_recs"].append({
-                    "Date": datetime.now().strftime("%I:%M %p"),
-                    "Tract ID": str(st.session_state["active_tract"]),
-                    "Parish": str(d.get('Parish', 'N/A')),
-                    "Category": cat,
-                    "Justification": just
-                })
+                st.session_state["session_recs"].append({"Date": datetime.now().strftime("%I:%M %p"), "Tract ID": str(st.session_state["active_tract"]), "Parish": str(d.get('Parish', 'N/A')), "Category": cat, "Justification": just})
                 st.success(f"Tract {st.session_state['active_tract']} added.")
                 st.rerun()
-
-    # --- SECTION 7: USER SESSION SPREADSHEET ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My Recommended Tracts</div>", unsafe_allow_html=True)
-    if st.session_state["session_recs"]:
-        local_df = pd.DataFrame(st.session_state["session_recs"])
-        st.dataframe(local_df, use_container_width=True, hide_index=True)
-        if st.button("Clear My List"):
-            st.session_state["session_recs"] = []
-            st.rerun()
-    else:
-        st.info("Your recommendation list is currently empty.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
