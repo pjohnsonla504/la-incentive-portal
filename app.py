@@ -1,4 +1,5 @@
 import streamlit as st
+import pd as pd
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -147,11 +148,9 @@ if check_password():
                 except: continue
             return pd.read_csv(path)
 
-        # Map eligibility and metrics from Master File
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Only highlight tracks eligible for OZ 2.0 in green
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -164,16 +163,11 @@ if check_password():
             pov = safe_float(row.get(pov_col, 0))
             mfi_pct = safe_float(row.get(mfi_ratio_col, 0)) if mfi_ratio_col in row else 100
             unemp_ratio = safe_float(row.get(unemp_ratio_col, 0)) if unemp_ratio_col in row else 1.0
-
-            if pov > 40 or mfi_pct <= 40 or unemp_ratio >= 2.5:
-                return "Deep Distress"
-            elif pov >= 20 or mfi_pct <= 80 or unemp_ratio >= 1.5:
-                return "Eligible"
+            if pov > 40 or mfi_pct <= 40 or unemp_ratio >= 2.5: return "Deep Distress"
+            elif pov >= 20 or mfi_pct <= 80 or unemp_ratio >= 1.5: return "Eligible"
             return "Ineligible"
 
         master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
-        
-        # Anchor data from LA anchors CSV
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         centers = {}
@@ -216,14 +210,13 @@ if check_password():
         center, zoom = get_zoom_center(geoids)
         sel_idx = []
         
-        # Get list of currently recommended tracts to color orange
+        # RECOMMENDED LOGIC
         recommended_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
         
-        # Logic for coloring: 2 = Orange (Recommended), 1 = Green (Eligible), 0 = Gray (Ineligible)
         def determine_color_val(row):
             if row['geoid_str'] in recommended_geoids:
-                return 2
-            return 1 if row['Eligibility_Status'] == 'Eligible' else 0
+                return 2  # Orange
+            return 1 if row['Eligibility_Status'] == 'Eligible' else 0 # Green or Gray
 
         map_df['map_color_val'] = map_df.apply(determine_color_val, axis=1)
 
@@ -234,7 +227,6 @@ if check_password():
             geojson=gj, locations=map_df['geoid_str'],
             z=map_df['map_color_val'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            # ColorScale: 0=Gray, 1=Green, 2=Orange
             colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#fb923c']], 
             showscale=False,
             marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
@@ -250,7 +242,7 @@ if check_password():
         )
         return fig
 
-    # --- SECTIONS 1-4 ---
+    # --- SECTIONS ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking capital to fuel Louisiana's promising census tracts.</div></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div><div class='narrative-text'>Strategic federal tax incentives.</div>", unsafe_allow_html=True)
     c2cols = st.columns(3); c2cols[0].markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes for 5 years.</p></div>", unsafe_allow_html=True); c2cols[1].markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>10% basis step-up.</p></div>", unsafe_allow_html=True); c2cols[2].markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero gains tax after 10 years.</p></div>", unsafe_allow_html=True)
@@ -350,59 +342,28 @@ if check_password():
             m_row3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
             st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
-            justification = st.text_area(
-                "Narrative Justification", 
-                placeholder=f"Enter strategic justification for Tract {st.session_state['active_tract']}...",
-                height=120,
-                key="tract_justification"
-            )
+            justification = st.text_area("Narrative Justification", placeholder=f"Enter strategic justification for Tract {st.session_state['active_tract']}...", height=120, key="tract_justification")
 
             if st.button("Add to Selection", use_container_width=True, type="primary"):
-                # Check if already in list to avoid duplicates
                 if not any(d['Tract'] == st.session_state["active_tract"] for d in st.session_state["session_recs"]):
-                    st.session_state["session_recs"].append({
-                        "Tract": st.session_state["active_tract"], 
-                        "Parish": row['Parish'],
-                        "Justification": justification
-                    })
-                    st.toast("Tract Added to Recommendation Report!")
-                    st.rerun() # Rerun to update map colors
-                else:
-                    st.warning("Tract is already in your selection.")
-        else: st.info("Select a tract on the map to begin profiling.")
+                    st.session_state["session_recs"].append({"Tract": st.session_state["active_tract"], "Parish": row['Parish'], "Justification": justification})
+                    st.toast("Tract Recommended!")
+                    st.rerun()
+                else: st.warning("Tract is already recommended.")
+        else: st.info("Select a tract on the map.")
 
     # --- SECTION 7: RECOMMENDATION REPORT ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>Recommendation Report</div><div class='narrative-text'>Summary of selected high-readiness tracts and project-specific justifications.</div>", unsafe_allow_html=True)
-    
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
-        
-        st.dataframe(
-            report_df, 
-            use_container_width=True, 
-            hide_index=True,
-            column_config={
-                "Tract": st.column_config.TextColumn("Census Tract (GEOID)", width="medium"),
-                "Parish": st.column_config.TextColumn("Parish", width="medium"),
-                "Justification": st.column_config.TextColumn("Strategic Justification", width="large")
-            }
-        )
-        
+        st.dataframe(report_df, use_container_width=True, hide_index=True)
         c7_act1, c7_act2, _ = st.columns([0.2, 0.2, 0.6])
         with c7_act1:
             if st.button("Clear Report", use_container_width=True):
-                st.session_state["session_recs"] = []
-                st.rerun()
+                st.session_state["session_recs"] = []; st.rerun()
         with c7_act2:
             csv = report_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Export to CSV",
-                data=csv,
-                file_name="oz_recommendation_report.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-    else:
-        st.info("No tracts selected yet. Use Section 6 to add tracts to this report.")
+            st.download_button("Export to CSV", data=csv, file_name="oz_report.csv", mime="text/csv", use_container_width=True)
+    else: st.info("No tracts selected yet.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
