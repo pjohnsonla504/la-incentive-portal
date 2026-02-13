@@ -142,18 +142,17 @@ if check_password():
         master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
         master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
 
-        # Benchmarks
         NAT_UNEMP = 5.3
         STATE_MFI = 86934 
 
-        # NMTC Eligibility (20% Poverty or 80% MFI)
+        # NMTC Eligibility (Aligning with PolicyMap)
         master['NMTC_Eligible'] = (
             (master['_pov_num'] >= 20) | 
             (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
             (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
-        # Deeply Distressed (Pov >= 30% OR MFI <= 60% OR Unemp >= 1.5x Nat)
+        # Deeply Distressed (Aligning with PolicyMap/CDFI benchmarks)
         master['Deeply_Distressed'] = (
             (master['_pov_num'] >= 30) | 
             (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
@@ -186,7 +185,7 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    def render_map(df, is_filtered=False, height=600):
+    def render_map(df, is_filtered=False, height=700):
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
         if is_filtered and not df.empty:
@@ -202,7 +201,16 @@ if check_password():
                                      color="Eligibility_Status", 
                                      color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1"},
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height, clickmode='event+select')
+        
+        # ADDED scrollZoom: True
+        fig.update_layout(
+            margin={"r":0,"t":0,"l":0,"b":0}, 
+            paper_bgcolor='rgba(0,0,0,0)', 
+            showlegend=False, 
+            height=height, 
+            clickmode='event+select',
+            mapbox_config={"scrollZoom": True}
+        )
         return fig
 
     # --- SECTION 1: HERO ---
@@ -285,8 +293,8 @@ if check_password():
 
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
-        # MAP HEIGHT SET TO 600
-        f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
+        # STANDARDIZED HEIGHT = 700
+        f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=700)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
         if s5 and "selection" in s5 and s5["selection"]["points"]:
             new_id = str(s5["selection"]["points"][0]["location"])
@@ -327,14 +335,14 @@ if check_password():
                 </div>"""
         if not list_html:
             list_html = "<div style='color:#94a3b8; padding:20px;'>No assets of this type found nearby.</div>"
-        components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
+        components.html(f"<div style='height: 630px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=650)
 
     # --- SECTION 6: PERFECT NINE GRID ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
-        # MAP HEIGHT SET TO 600 (Matched Section 5)
-        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
+        # STANDARDIZED HEIGHT = 700
+        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=700)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
         if s6 and "selection" in s6 and s6["selection"]["points"]:
             new_id = str(s6["selection"]["points"][0]["location"])
