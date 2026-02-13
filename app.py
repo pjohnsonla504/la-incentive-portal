@@ -142,19 +142,23 @@ if check_password():
         master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
         master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
 
+        # UPDATED BENCHMARKS (Aligning with PolicyMap/NMTC Standards)
         NAT_UNEMP = 5.3
         STATE_MFI = 86934 
 
+        # NMTC Eligibility (PolicyMap logic uses higher of Metro/State MFI, but we'll use 80% State as baseline)
         master['NMTC_Eligible'] = (
             (master['_pov_num'] >= 20) | 
             (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
             (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
+        # Deeply Distressed (CDFI Fund Standard: Pov >= 30% OR MFI <= 60% OR Unemp >= 1.5x Nat)
+        # Note: PolicyMap often defines 'Severe' or 'Deeply' Distressed at the 30% Poverty mark.
         master['Deeply_Distressed'] = (
-            (master['_pov_num'] > 40) | 
-            (master['_mfi_num'] <= (0.4 * STATE_MFI)) | 
-            (master['_unemp_num'] >= (2.5 * NAT_UNEMP))
+            (master['_pov_num'] >= 30) | 
+            (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
+            (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
