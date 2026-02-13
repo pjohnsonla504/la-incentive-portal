@@ -192,22 +192,17 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    def render_map(df, is_filtered=False, height=600):
-        recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
+    def render_map(df, map_id):
+        # We reset index to ensure consistency for selectedpoints
         map_df = df.copy().reset_index(drop=True)
+        recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
         map_df.loc[map_df['geoid_str'].isin(recs), 'Eligibility_Status'] = "Recommended"
 
+        # Determine if there's a match for the active tract in the current view
         active_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
 
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
-        if is_filtered and not map_df.empty:
-            active_ids = map_df['geoid_str'].tolist()
-            subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
-            if subset_centers:
-                lons, lats = zip(*subset_centers)
-                center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                zoom = 8.5 
         
         fig = px.choropleth_mapbox(map_df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
@@ -219,11 +214,13 @@ if check_password():
                                      },
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.8)
         
+        # This triggers the "pop" by selecting the tract and dimming others natively
         fig.update_traces(
             selectedpoints=active_idx,
+            unselected={'marker': {'opacity': 0.15}}, # Controls the dim level
+            selected={'marker': {'opacity': 1.0}},
             marker_line_width=0.5,
-            marker_line_color="white",
-            unselected={'marker': {'opacity': 0.15}} 
+            marker_line_color="white"
         )
 
         fig.update_layout(
@@ -231,13 +228,11 @@ if check_password():
             paper_bgcolor='rgba(0,0,0,0)', 
             showlegend=True, 
             legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, bgcolor="rgba(17, 24, 39, 0.8)", font=dict(color="white", size=10)),
-            height=height, 
+            height=600, 
             clickmode='event+select',
-            uirevision="constant" 
+            uirevision=str(st.session_state.get('active_tract')) # Keeps view steady during selection
         )
         return fig
-
-    chart_config = {"scrollZoom": True}
 
     # --- SECTION 1: HERO ---
     st.markdown("""
@@ -287,30 +282,29 @@ if check_password():
             </div>
             """, unsafe_allow_html=True)
 
-    # --- SECTION 5: ASSET MAPPING ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
-    
-    unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
-    f_col1, f_col2, f_col3 = st.columns(3)
-    with f_col1: selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions)
-    with f_col2:
-        available_parishes = sorted(master_df[master_df['Region'] == selected_region]['Parish'].dropna().unique().tolist()) if selected_region != "All Louisiana" else sorted(master_df['Parish'].dropna().unique().tolist())
-        selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
-    with f_col3: selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
-
+    # --- GLOBAL FILTERS ---
     filtered_df = master_df.copy()
-    is_actively_filtering = False
+    unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
+    st.markdown("<div style='padding-top:20px;'></div>", unsafe_allow_html=True)
+    f_col1, f_col2, f_col3 = st.columns(3)
+    with f_col1: selected_region = st.selectbox("Filter Region", ["All Louisiana"] + unique_regions)
     if selected_region != "All Louisiana":
         filtered_df = filtered_df[filtered_df['Region'] == selected_region]
-        is_actively_filtering = True
+    
+    with f_col2:
+        available_parishes = sorted(filtered_df['Parish'].dropna().unique().tolist())
+        selected_parish = st.selectbox("Filter Parish", ["All in Region"] + available_parishes)
     if selected_parish != "All in Region":
         filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
-        is_actively_filtering = True
+    
+    with f_col3: selected_asset_type = st.selectbox("Filter Anchor Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
 
+    # --- SECTION 5: ASSET MAPPING ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large") 
     with c5a:
-        f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
-        s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5", config=chart_config)
+        f5 = render_map(filtered_df, "map5")
+        s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5_comp")
         if s5 and "selection" in s5 and s5["selection"]["points"]:
             new_id = str(s5["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
@@ -328,19 +322,15 @@ if check_password():
                 working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
-                link_btn = ""
-                asset_link = str(a.get('Link',''))
-                if str(a.get('Type','')) in ['Land', 'Buildings'] and asset_link.strip() != "":
-                    link_btn = f"<div style='margin-top:10px;'><a href='{asset_link}' target='_blank' style='display:inline-block; background:#4ade80; color:#0b0f19; padding:5px 12px; border-radius:4px; font-size:0.7rem; font-weight:900; text-decoration:none;'>VIEW SITE 🔗</a></div>"
-                list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles away</div>{link_btn}</div>"
+                list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div><div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles away</div></div>"
         components.html(f"<div style='height: 530px; overflow-y: auto; font-family: sans-serif;'>{list_html}</div>", height=550)
 
-    # --- SECTION 6: PERFECT NINE GRID & INPUTS ---
+    # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.6, 0.4], gap="large") 
     with c6a:
-        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
-        s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6", config=chart_config)
+        f6 = render_map(filtered_df, "map6")
+        s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6_comp")
         if s6 and "selection" in s6 and s6["selection"]["points"]:
             new_id = str(s6["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
@@ -351,26 +341,8 @@ if check_password():
         row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]]
         if not row.empty:
             d = row.iloc[0]
-            pop_col = 'Estimate!!Total!!Population for whom poverty status is determined'
-            pop_val = d.get(pop_col, 0)
-            formatted_pop = f"{int(clean_currency(pop_val)):,}"
-
-            st.markdown(f"""
-                <div class='tract-header-container'>
-                    <div style='display: flex; justify-content: space-between; align-items: baseline;'>
-                        <div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>{str(d.get('Parish','')).upper()}</div>
-                        <div style='text-align: right;'>
-                            <div style='color: #94a3b8; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;'>Tract Population</div>
-                            <div style='font-size: 1.5rem; font-weight: 900; color: #ffffff;'>{formatted_pop}</div>
-                        </div>
-                    </div>
-                    <div style='color: #94a3b8; font-size: 0.8rem; margin-top: -5px;'>TRACT: {st.session_state['active_tract']}</div>
-                </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f"<div class='tract-header-container'><div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color: #94a3b8; font-size: 0.8rem;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
             
-            pop_1824_val = d.get('Population 18 to 24', 0)
-            formatted_1824 = f"{int(clean_currency(pop_1824_val)):,}"
-
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"),
@@ -379,34 +351,25 @@ if check_password():
                 (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
                 (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
                 (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"),
-                (formatted_1824, "Pop 18-24"),
+                (f"{int(clean_currency(d.get('Population 18 to 24', 0))):,}", "Pop 18-24"),
                 (d.get('Population 65 years and over', '0'), "Pop 65+"),
                 (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
             ]
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
-            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"], key="cat_select")
-            just = st.text_area("Narrative Justification", height=100, key="just_text")
+            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
+            just = st.text_area("Narrative Justification", height=100)
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
-                st.session_state["session_recs"].append({
-                    "Date": datetime.now().strftime("%I:%M %p"), 
-                    "Tract ID": str(st.session_state["active_tract"]), 
-                    "Parish": str(d.get('Parish', 'N/A')), 
-                    "Category": cat, 
-                    "Justification": just
-                })
-                st.success(f"Tract {st.session_state['active_tract']} added.")
+                st.session_state["session_recs"].append({"Date": datetime.now().strftime("%I:%M %p"), "Tract ID": str(st.session_state["active_tract"]), "Parish": str(d.get('Parish', 'N/A')), "Category": cat, "Justification": just})
                 st.rerun()
 
-    # --- SECTION 7: USER SESSION SPREADSHEET ---
+    # --- SECTION 7: SPREADSHEET ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My Recommended Tracts</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True, hide_index=True)
         if st.button("Clear My List"):
             st.session_state["session_recs"] = []
             st.rerun()
-    else:
-        st.info("Your recommendation list is currently empty.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
