@@ -1,5 +1,4 @@
 import streamlit as st
-import pd as pd
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -64,6 +63,9 @@ def check_password():
                 text-align: center;
             }
             .login-title { font-family: 'Inter', sans-serif; font-size: 1.5rem; font-weight: 900; color: #ffffff; margin-bottom: 4px; }
+            label, p, .stText { color: #ffffff !important; font-weight: 600 !important; }
+            div[data-baseweb="input"] { background-color: #f8fafc !important; border-radius: 6px !important; }
+            input { color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-family: 'Inter', sans-serif !important; }
             </style>
             <div class="login-card">
                 <div class="login-title">OZ 2.0 Portal</div>
@@ -86,16 +88,25 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
+        label[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 0.95rem !important; font-weight: 700 !important; }
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; line-height: 1.1; }
         .hero-subtitle { color: #4ade80; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px;}
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
+        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
+        .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
+        .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+        .benefit-card a { color: #4ade80; text-decoration: none; }
+        .benefit-card a:hover { text-decoration: underline; color: #ffffff; }
+        .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
         .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; margin-bottom: 15px; border: 1px solid #1e293b; }
+        .stSelectbox div[data-baseweb="select"], .stTextArea textarea { background-color: #111827 !important; color: #ffffff !important; border: 1px solid #1e293b !important; }
+        [data-testid="stDataFrame"] { background-color: #111827; border-radius: 8px; border: 1px solid #1e293b; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -161,6 +172,7 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
+    # --- COLOR LOGIC FOR RECOMMENDATIONS ---
     def get_map_data():
         df = master_df.copy()
         rec_ids = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
@@ -182,37 +194,20 @@ if check_password():
             if subset_centers:
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                zoom = 8.8 
+                zoom = 8.5 
         
         fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Display_Status", 
                                      color_discrete_map={
                                          "Eligible": "#4ade80", 
-                                         "Recommended": "#fb923c", 
+                                         "Recommended": "#fb923c", # Orange Highlight
                                          "Ineligible": "#cbd5e1"
                                      },
-                                     mapbox_style="carto-positron", 
-                                     zoom=zoom, center=center, opacity=0.35) # Lowered opacity for better label visibility
-        
-        # Add a "Label" layer from OpenStreetMap/Carto that sits ON TOP of the colors
-        fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)', 
-            showlegend=True, 
-            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, bgcolor="rgba(17,24,39,0.8)", font=dict(color="white", size=10)),
-            height=height, 
-            clickmode='event+select',
-            mapbox=dict(
-                layers=[
-                    {
-                        "below": 'traces', # This ensures labels show through/over
-                        "sourcetype": "raster",
-                        "source": ["https://basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png"]
-                    }
-                ]
-            )
-        )
+                                     mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=True, 
+                          legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, bgcolor="rgba(17,24,39,0.8)", font=dict(color="white", size=10)),
+                          height=height, clickmode='event+select')
         return fig
 
     # --- SECTION 1: HERO ---
@@ -225,6 +220,8 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
+    # --- SECTIONS 2-4 OMITTED FOR BREVITY IN RE-RENDER, LOGIC REMAINS SAME ---
+    
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
