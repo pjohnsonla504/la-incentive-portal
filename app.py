@@ -17,7 +17,7 @@ st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
-    st.session_state["active_tract"] = "22071001700" 
+    st.session_state["active_tract"] = None 
 if "current_user" not in st.session_state:
     st.session_state["current_user"] = None
 if "password_correct" not in st.session_state:
@@ -153,84 +153,60 @@ if check_password():
         master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
         master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
 
-        NAT_UNEMP = 5.3
-        STATE_MFI = 86934 
-
-        master['NMTC_Eligible'] = (
-            (master['_pov_num'] >= 20) | 
-            (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
-            (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
-        ).map({True: 'Yes', False: 'No'})
-
-        master['Deeply_Distressed'] = (
-            (master['_pov_num'] >= 30) | 
-            (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
-            (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
-        ).map({True: 'Yes', False: 'No'})
-
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
         
         anchors = read_csv_safe("la_anchors.csv")
-        if 'Type' in anchors.columns:
-            anchors['Type'] = anchors['Type'].fillna('Other')
-            
-        if 'Link' in anchors.columns:
-            anchors['Link'] = anchors['Link'].fillna("")
+        anchors['Type'] = anchors['Type'].fillna('Other')
+        anchors['Link'] = anchors['Link'].fillna("")
         
         centers = {}
         if geojson:
             for feature in geojson['features']:
                 geoid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
                 try:
-                    coords = np.array(feature['geometry']['coordinates'][0]) if feature['geometry']['type'] == 'Polygon' else np.array(feature['geometry']['coordinates'][0][0])
+                    # Simplify to point center
+                    if feature['geometry']['type'] == 'Polygon':
+                        coords = np.array(feature['geometry']['coordinates'][0])
+                    else:
+                        coords = np.array(feature['geometry']['coordinates'][0][0])
                     centers[geoid] = [np.mean(coords[:, 0]), np.mean(coords[:, 1])]
                 except: continue
         return geojson, master, anchors, centers
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    def render_map(df, map_id):
-        # We reset index to ensure consistency for selectedpoints
+    def render_map(df, map_key):
+        # Important: Use fixed index so selectedpoints are identical across both maps
         map_df = df.copy().reset_index(drop=True)
-        recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
-        map_df.loc[map_df['geoid_str'].isin(recs), 'Eligibility_Status'] = "Recommended"
-
-        # Determine if there's a match for the active tract in the current view
-        active_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
-
-        center = {"lat": 30.8, "lon": -91.8}
-        zoom = 6.2 
         
-        fig = px.choropleth_mapbox(map_df, geojson=gj, locations="geoid_str", 
-                                     featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-                                     color="Eligibility_Status", 
-                                     color_discrete_map={
-                                         "Eligible": "#4ade80", 
-                                         "Ineligible": "#cbd5e1",
-                                         "Recommended": "#f97316"
-                                     },
-                                     mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.8)
+        # Determine selection index
+        sel_idx = []
+        if st.session_state["active_tract"]:
+            sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
+
+        fig = px.choropleth_mapbox(
+            map_df, geojson=gj, locations="geoid_str", 
+            featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
+            color="Eligibility_Status", 
+            color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1"},
+            mapbox_style="carto-positron", 
+            zoom=6.2, center={"lat": 30.8, "lon": -91.8}, opacity=0.8
+        )
         
-        # This triggers the "pop" by selecting the tract and dimming others natively
+        # Apply the "Pop" behavior
         fig.update_traces(
-            selectedpoints=active_idx,
-            unselected={'marker': {'opacity': 0.15}}, # Controls the dim level
-            selected={'marker': {'opacity': 1.0}},
-            marker_line_width=0.5,
-            marker_line_color="white"
+            selectedpoints=sel_idx,
+            unselected={'marker': {'opacity': 0.1}},
+            selected={'marker': {'opacity': 1.0, 'line': {'color': 'white', 'width': 2}}},
         )
 
         fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)', 
-            showlegend=True, 
-            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, bgcolor="rgba(17, 24, 39, 0.8)", font=dict(color="white", size=10)),
-            height=600, 
-            clickmode='event+select',
-            uirevision=str(st.session_state.get('active_tract')) # Keeps view steady during selection
+            margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', 
+            showlegend=False, height=600, clickmode='event+select',
+            uirevision="constant"
         )
         return fig
 
@@ -245,7 +221,13 @@ if check_password():
     """, unsafe_allow_html=True)
 
     # --- SECTION 2: BENEFIT FRAMEWORK ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 2</div>
+            <div class='section-title'>The OZ 2.0 Benefit Framework</div>
+            <div class='narrative-text'>Our strategic framework leverages federal tax incentives to de-risk projects and encourage long-term equity investment in Louisiana's future.</div>
+        </div>
+    """, unsafe_allow_html=True)
     cols2 = st.columns(3)
     cards2 = [
         ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
@@ -256,7 +238,13 @@ if check_password():
         cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 3: CENSUS TRACT ADVOCACY ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 3</div>
+            <div class='section-title'>Census Tract Advocacy</div>
+            <div class='narrative-text'>We focus on identifying tracts with high "Project Readiness"—pairing distressed community data with existing industrial and educational infrastructure.</div>
+        </div>
+    """, unsafe_allow_html=True)
     cols3 = st.columns(3)
     cards3 = [
         ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
@@ -267,7 +255,13 @@ if check_password():
         cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 4: BEST PRACTICES ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 4</div>
+            <div class='section-title'>Best Practices</div>
+            <div class='narrative-text'>Leveraging national expertise to ensure Louisiana's Opportunity Zones 2.0 implementation is best-in-class.</div>
+        </div>
+    """, unsafe_allow_html=True)
     cols4 = st.columns(3)
     cards4 = [
         ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"),
@@ -275,32 +269,28 @@ if check_password():
         ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
     ]
     for i, (ct, ctx, url) in enumerate(cards4):
-        cols4[i].markdown(f"""
-            <div class='benefit-card'>
-                <h3><a href='{url}' target='_blank'>{ct}</a></h3>
-                <p>{ctx}</p>
-            </div>
-            """, unsafe_allow_html=True)
+        cols4[i].markdown(f"<div class='benefit-card'><h3><a href='{url}' target='_blank'>{ct}</a></h3><p>{ctx}</p></div>", unsafe_allow_html=True)
 
-    # --- GLOBAL FILTERS ---
-    filtered_df = master_df.copy()
+    # --- SECTION 5: ASSET MAPPING & FILTERS ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
+    
+    # RELOCATED FILTERS
     unique_regions = sorted(master_df['Region'].dropna().unique().tolist())
-    st.markdown("<div style='padding-top:20px;'></div>", unsafe_allow_html=True)
     f_col1, f_col2, f_col3 = st.columns(3)
-    with f_col1: selected_region = st.selectbox("Filter Region", ["All Louisiana"] + unique_regions)
+    with f_col1: selected_region = st.selectbox("Filter by Region", ["All Louisiana"] + unique_regions)
+    
+    filtered_df = master_df.copy()
     if selected_region != "All Louisiana":
         filtered_df = filtered_df[filtered_df['Region'] == selected_region]
-    
+        
     with f_col2:
         available_parishes = sorted(filtered_df['Parish'].dropna().unique().tolist())
-        selected_parish = st.selectbox("Filter Parish", ["All in Region"] + available_parishes)
+        selected_parish = st.selectbox("Filter by Parish", ["All in Region"] + available_parishes)
     if selected_parish != "All in Region":
         filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
-    
-    with f_col3: selected_asset_type = st.selectbox("Filter Anchor Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
+        
+    with f_col3: selected_asset_type = st.selectbox("Filter by Anchor Asset Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
 
-    # --- SECTION 5: ASSET MAPPING ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large") 
     with c5a:
         f5 = render_map(filtered_df, "map5")
@@ -313,9 +303,9 @@ if check_password():
 
     with c5b:
         curr = st.session_state["active_tract"]
-        st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>ANCHOR ASSETS NEAR {curr if curr else 'SELECTED TRACT'}</p>", unsafe_allow_html=True)
         list_html = ""
-        if curr in tract_centers:
+        if curr and curr in tract_centers:
             lon, lat = tract_centers[curr]
             working_anchors = anchors_df.copy()
             if selected_asset_type != "All Assets":
@@ -338,31 +328,34 @@ if check_password():
                 st.rerun()
 
     with c6b:
-        row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]]
-        if not row.empty:
-            d = row.iloc[0]
-            st.markdown(f"<div class='tract-header-container'><div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color: #94a3b8; font-size: 0.8rem;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
-            
-            m_cols = [st.columns(3) for _ in range(3)]
-            metrics = [
-                (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"),
-                (d.get('NMTC_Eligible', 'No'), "NMTC Eligible"),
-                (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"),
-                (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
-                (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
-                (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"),
-                (f"{int(clean_currency(d.get('Population 18 to 24', 0))):,}", "Pop 18-24"),
-                (d.get('Population 65 years and over', '0'), "Pop 65+"),
-                (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
-            ]
-            for i, (val, lbl) in enumerate(metrics):
-                m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
+        if st.session_state["active_tract"]:
+            row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]]
+            if not row.empty:
+                d = row.iloc[0]
+                st.markdown(f"<div class='tract-header-container'><div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color: #94a3b8; font-size: 0.8rem;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
+                
+                m_cols = [st.columns(3) for _ in range(3)]
+                metrics = [
+                    (d.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Tract Status"),
+                    (d.get('NMTC_Eligible', 'No'), "NMTC Eligible"),
+                    (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"),
+                    (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
+                    (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
+                    (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"),
+                    (f"{int(clean_currency(d.get('Population 18 to 24', 0))):,}", "Pop 18-24"),
+                    (d.get('Population 65 years and over', '0'), "Pop 65+"),
+                    (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
+                ]
+                for i, (val, lbl) in enumerate(metrics):
+                    m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
-            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
-            just = st.text_area("Narrative Justification", height=100)
-            if st.button("Add to My Recommendations", type="primary", use_container_width=True):
-                st.session_state["session_recs"].append({"Date": datetime.now().strftime("%I:%M %p"), "Tract ID": str(st.session_state["active_tract"]), "Parish": str(d.get('Parish', 'N/A')), "Category": cat, "Justification": just})
-                st.rerun()
+                cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
+                just = st.text_area("Narrative Justification", height=100)
+                if st.button("Add to My Recommendations", type="primary", use_container_width=True):
+                    st.session_state["session_recs"].append({"Date": datetime.now().strftime("%I:%M %p"), "Tract ID": str(st.session_state["active_tract"]), "Parish": str(d.get('Parish', 'N/A')), "Category": cat, "Justification": just})
+                    st.rerun()
+        else:
+            st.info("Select a tract on the map to view data profiling.")
 
     # --- SECTION 7: SPREADSHEET ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My Recommended Tracts</div>", unsafe_allow_html=True)
