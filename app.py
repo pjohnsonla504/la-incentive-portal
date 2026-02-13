@@ -184,22 +184,44 @@ if check_password():
     gj, master_df, anchors_df, tract_centers = load_assets()
 
     def render_map(df, is_filtered=False, height=600):
+        # 1. Update status for recommended tracts
+        recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
+        map_df = df.copy()
+        map_df.loc[map_df['geoid_str'].isin(recs), 'Eligibility_Status'] = "Recommended"
+
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
-        if is_filtered and not df.empty:
-            active_ids = df['geoid_str'].tolist()
+        if is_filtered and not map_df.empty:
+            active_ids = map_df['geoid_str'].tolist()
             subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
             if subset_centers:
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
                 zoom = 8.5 
         
-        fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
+        fig = px.choropleth_mapbox(map_df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Eligibility_Status", 
-                                     color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1"},
+                                     color_discrete_map={
+                                         "Eligible": "#4ade80", 
+                                         "Ineligible": "#cbd5e1",
+                                         "Recommended": "#f97316" # ORANGE
+                                     },
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height, clickmode='event+select')
+        
+        # 2. Add Legend & Enable Scroll Zoom
+        fig.update_layout(
+            margin={"r":0,"t":0,"l":0,"b":0}, 
+            paper_bgcolor='rgba(0,0,0,0)', 
+            showlegend=True, 
+            legend=dict(
+                yanchor="top", y=0.99, xanchor="left", x=0.01,
+                bgcolor="rgba(17, 24, 39, 0.8)", font=dict(color="white", size=10)
+            ),
+            height=height, 
+            clickmode='event+select',
+            mapbox_scrollzoom=True  # ENABLE SCROLL ZOOM
+        )
         return fig
 
     # --- SECTION 1: HERO ---
@@ -280,7 +302,7 @@ if check_password():
         filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
         is_actively_filtering = True
 
-    c5a, c5b = st.columns([0.6, 0.4], gap="large") # Fixed Ratio
+    c5a, c5b = st.columns([0.6, 0.4], gap="large") 
     with c5a:
         f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
@@ -327,7 +349,7 @@ if check_password():
 
     # --- SECTION 6: PERFECT NINE GRID & INPUTS ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
-    c6a, c6b = st.columns([0.6, 0.4], gap="large") # Matched Ratio with Section 5
+    c6a, c6b = st.columns([0.6, 0.4], gap="large") 
     with c6a:
         f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
@@ -358,7 +380,7 @@ if check_password():
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
-            # --- INPUTS MOVED UP ---
+            # --- INPUTS ---
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification", height=100)
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
