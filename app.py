@@ -354,8 +354,8 @@ if check_password():
                 (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
                 (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"),
                 (f"${clean_currency(d.get('Median Home Value', 0)):,.0f}", "Median Home Value"),
-                (d.get('Population 65 years and over', '0'), "Pop 65+"),
-                (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
+                (d.get('Population 65 years and over', '0'), "Population over 65"),
+                (f"{d.get('Broadband Internet (%)','0')}%", "Broadband Accessibility")
             ]
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
