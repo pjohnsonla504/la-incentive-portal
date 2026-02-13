@@ -150,6 +150,11 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
+        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
+        master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
+            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
+        )
+
         pov_col = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
         mfi_ratio_col = "Percentage of Benchmarked Median Family Income" 
         unemp_ratio_col = "Unemployment Ratio" 
@@ -166,9 +171,6 @@ if check_password():
             return "Ineligible"
 
         master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
-        master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
-            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
-        )
         
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
@@ -231,7 +233,7 @@ if check_password():
         )
         return fig
 
-    # --- SECTIONS 1-4 (Same as original) ---
+    # --- SECTIONS 1-4 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking capital to fuel Louisiana's promising census tracts.</div></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div><div class='narrative-text'>Strategic federal tax incentives.</div>", unsafe_allow_html=True)
     c2cols = st.columns(3); c2cols[0].markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes for 5 years.</p></div>", unsafe_allow_html=True); c2cols[1].markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>10% basis step-up.</p></div>", unsafe_allow_html=True); c2cols[2].markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero gains tax after 10 years.</p></div>", unsafe_allow_html=True)
@@ -240,7 +242,7 @@ if check_password():
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leveraging national expertise.</div>", unsafe_allow_html=True)
     c4cols = st.columns(3); c4cols[0].markdown("<div class='benefit-card'><h3><a href='https://eig.org/ozs-guidance/' target='_blank'>Economic Innovation Group ↗</a></h3><p>OZ Guidance.</p></div>", unsafe_allow_html=True); c4cols[1].markdown("<div class='benefit-card'><h3><a href='https://fbtgibbons.com/' target='_blank'>Frost Brown Todd ↗</a></h3><p>Strategic Selection.</p></div>", unsafe_allow_html=True); c4cols[2].markdown("<div class='benefit-card'><h3><a href='https://americafirstpolicy.com/' target='_blank'>America First ↗</a></h3><p>State Blueprint.</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: STRATEGIC ASSET MAPPING ---
+    # --- SECTION 5 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
@@ -260,15 +262,15 @@ if check_password():
                 st.rerun()
     with c5b:
         curr = st.session_state["active_tract"]
-        st.markdown(f"<p style='color:#94a3b8; font-weight:800; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>TOP 15 ANCHORS NEAR {curr if curr else 'SELECT TRACT'}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>ANCHOR ASSETS NEAR {curr if curr else 'SELECT TRACT'}</p>", unsafe_allow_html=True)
         list_html = ""
         if curr and curr in tract_centers:
             lon, lat = tract_centers[curr]
             working_anchors = anchors_df.copy()
             if selected_asset_type != "All Assets": working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            # UPDATED: Pulling head(15) instead of 12
-            for _, a in working_anchors.sort_values('dist').head(15).iterrows():
+            # Removed the head() limit to allow full scrolling
+            for _, a in working_anchors.sort_values('dist').iterrows():
                 btn_html = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>" if pd.notna(a.get('Link')) and str(a['Link']).strip() != "" else ""
                 list_html += f"<div class='anchor-card'><div class='anchor-type'>{str(a['Type']).upper()}</div><div class='anchor-name'>{a['Name']}</div><div class='anchor-dist'>{a['dist']:.1f} miles away</div>{btn_html}</div>"
         
@@ -276,19 +278,21 @@ if check_password():
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
                 body {{ font-family: 'Inter', sans-serif; background: transparent; margin: 0; padding: 0; overflow-x: hidden; }} 
-                ::-webkit-scrollbar {{ width: 6px; }} 
+                /* Custom Scrollbar */
+                ::-webkit-scrollbar {{ width: 8px; }} 
                 ::-webkit-scrollbar-track {{ background: #0b0f19; }}
                 ::-webkit-scrollbar-thumb {{ background: #4ade80; border-radius: 10px; }} 
+                ::-webkit-scrollbar-thumb:hover {{ background: #22c55e; }}
                 .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:18px; border-radius:10px; margin-bottom:12px; }} 
                 .anchor-type {{ color:#4ade80; font-size:0.65rem; font-weight:900; text-transform: uppercase; }} 
                 .anchor-name {{ color:#ffffff; font-weight:800; font-size:1rem; }} 
                 .anchor-dist {{ color:#94a3b8; font-size:0.8rem; margin-bottom: 10px; }} 
                 .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 6px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; border: 2px solid #4ade80; }}
             </style>
-            <div>{list_html if list_html else '<p style=color:#475569;>Select a tract on the map.</p>'}</div>
-        """, height=540)
+            <div style="padding-right: 10px;">{list_html if list_html else '<p style=color:#475569;>Select a tract on the map.</p>'}</div>
+        """, height=540, scrolling=True)
 
-    # --- SECTION 6: TRACT PROFILING ---
+    # --- SECTION 6 ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.65, 0.35], gap="large") 
     with c6a:
