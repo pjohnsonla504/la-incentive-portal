@@ -362,8 +362,8 @@ if check_password():
                 (d.get('Deeply_Distressed', 'No'), "Deeply Distressed"),
                 (f"{d.get('_pov_num', 0):.1f}%", "Poverty Rate"),
                 (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment Rate"),
-                (f"${d.get('_mfi_num', 0):,.0f}", "Median Income"),
-                (d.get('Median Home Value', 'N/A'), "Median Home Value"),
+             	(f"${d.get('_mfi_num', 0)):,.0f}", "Median Income"),
+    		(f"${d.get('Median Home Value', 0)):,.0f}", "Median Home Value"),
                 (d.get('Population 65 years and over', '0'), "Population 65+"),
                 (f"{d.get('Broadband Internet (%)','0')}%", "Broadband Accessibility")
             ]
