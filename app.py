@@ -47,15 +47,15 @@ def check_password():
     if not st.session_state["password_correct"]:
         st.markdown("""
             <style>
-            .login-card { max-width: 360px; margin: 100px auto; padding: 30px; background: #111827; border: 1px solid #1e293b; border-top: 4px solid #4ade80; border-radius: 12px; text-align: center; }
+            .login-card { max-width: 360px; margin: 100px auto; padding: 30px; background: #111827; border: 1px solid #1e293b; border-top: 4px solid #4ade80; border-radius: 12px; text-align: center; font-family: 'Inter', sans-serif; }
             </style>
-            <div class="login-card"><h2 style='color:white;'>OZ 2.0 Portal</h2></div>
+            <div class="login-card"><h2 style='color:white;'>OZ 2.0 Portal</h2><p style='color:#94a3b8;'>Stakeholder Access</p></div>
         """, unsafe_allow_html=True)
         _, col_mid, _ = st.columns([1, 0.8, 1])
         with col_mid:
             st.text_input("Username", key="username")
             st.text_input("Password", type="password", key="password")
-            st.button("Sign In", on_click=password_entered, use_container_width=True)
+            st.button("Sign In", on_click=password_entered, use_container_width=True, type="primary")
         return False
     return True
 
@@ -65,14 +65,18 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
-        .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
-        .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
-        .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
-        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; }
-        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
-        .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
-        .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; }
-        .tract-header-container { background-color: #111827 !important; padding: 20px 25px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 15px; }
+        .content-section { padding: 50px 0; border-bottom: 1px solid #1e293b; width: 100%; }
+        .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+        .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; color: #f8fafc; }
+        .hero-title { font-size: 3.5rem; font-weight: 900; color: #f8fafc; line-height: 1.1; margin-bottom: 20px; }
+        .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 900px; margin-bottom: 30px; }
+        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #1e293b; border-radius: 8px; min-height: 200px; transition: 0.3s; }
+        .benefit-card:hover { border-color: #4ade80; }
+        .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; margin-bottom: 10px; }
+        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; }
+        .metric-value { font-size: 1.1rem; font-weight: 900; color: #4ade80; }
+        .metric-label { font-size: 0.6rem; text-transform: uppercase; color: #94a3b8; margin-top: 5px; }
+        .tract-header-container { background-color: #111827; padding: 20px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 20px; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -106,7 +110,7 @@ if check_password():
         master['_unemp'] = master[unemployment_col].apply(clean_num)
         master['_mfi'] = master[mfi_col].apply(clean_num)
 
-        # PolicyMap/CDFI Benchmarks
+        # Corrected PolicyMap Benchmarks
         NAT_UNEMP, STATE_MFI = 5.3, 86934 
         master['NMTC_Eligible'] = ((master['_pov'] >= 20) | (master['_mfi'] <= (0.8 * STATE_MFI))).map({True:'Yes', False:'No'})
         master['Severe_Distress'] = ((master['_pov'] >= 30) | (master['_mfi'] <= (0.6 * STATE_MFI)) | (master['_unemp'] >= (1.5 * NAT_UNEMP))).map({True:'Yes', False:'No'})
@@ -118,13 +122,19 @@ if check_password():
         anchors = read_csv_safe("la_anchors.csv")
         anchors['Link'] = anchors.get('Link', pd.Series([""]*len(anchors))).fillna("")
         
-        centers = {f['properties'].get('GEOID') or f['properties'].get('GEOID20'): [np.mean(np.array(f['geometry']['coordinates'][0][0] if f['geometry']['type'] == 'MultiPolygon' else f['geometry']['coordinates'][0])[:,0]), np.mean(np.array(f['geometry']['coordinates'][0][0] if f['geometry']['type'] == 'MultiPolygon' else f['geometry']['coordinates'][0])[:,1])] for f in geojson['features']} if geojson else {}
+        centers = {}
+        if geojson:
+            for f in geojson['features']:
+                gid = f['properties'].get('GEOID') or f['properties'].get('GEOID20')
+                try:
+                    c = np.array(f['geometry']['coordinates'][0]) if f['geometry']['type'] == 'Polygon' else np.array(f['geometry']['coordinates'][0][0])
+                    centers[gid] = [np.mean(c[:, 0]), np.mean(c[:, 1])]
+                except: pass
         return geojson, master, anchors, centers
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
     def render_map(df, is_filtered=False, height=600):
-        # Center on selection or state
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2
         if is_filtered and not df.empty:
@@ -142,12 +152,35 @@ if check_password():
         fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height)
         return fig
 
-    # --- SECTIONS 1-4 (NARRATIVE) ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-title'>Louisiana OZ 2.0 Recommendation Portal</div></div>", unsafe_allow_html=True)
-    # [Sections 2-4 logic here - truncated for brevity but restored in your local copy]
+    # --- SECTION 1: HERO ---
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>Section 1</div>
+            <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
+            <p class='narrative-text'>Advancing economic resilience through strategic investment. This portal identifies high-impact census tracts eligible for the 2.0 framework.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # --- SECTION 2: BENEFIT FRAMEWORK ---
+    st.markdown("<div class='content-section'><div class='section-num'>Section 2</div><div class='section-title'>Benefit Framework</div>", unsafe_allow_html=True)
+    c2 = st.columns(3)
+    c2[0].markdown("<div class='benefit-card'><h3>Deferral</h3><p>Defer taxes on capital gains through 2026/2027.</p></div>", unsafe_allow_html=True)
+    c2[1].markdown("<div class='benefit-card'><h3>Step-Up</h3><p>Receive a basis step-up for long-term holds.</p></div>", unsafe_allow_html=True)
+    c2[2].markdown("<div class='benefit-card'><h3>Elimination</h3><p>Pay zero tax on appreciation after 10 years.</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 3: ADVOCACY ---
+    st.markdown("<div class='content-section'><div class='section-num'>Section 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
+    st.markdown("<p class='narrative-text'>Focusing on rural and deeply distressed tracts to ensure equitable capital flow across all Louisiana regions.</p>", unsafe_allow_html=True)
+
+    # --- SECTION 4: BEST PRACTICES ---
+    st.markdown("<div class='content-section'><div class='section-num'>Section 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
+    c4 = st.columns(3)
+    c4[0].markdown("<div class='benefit-card'><h3>Data Alignment</h3><p>Verify tracts against PolicyMap distress layers.</p></div>", unsafe_allow_html=True)
+    c4[1].markdown("<div class='benefit-card'><h3>Anchor Proximity</h3><p>Focus on tracts near ports, hospitals, or universities.</p></div>", unsafe_allow_html=True)
+    c4[2].markdown("<div class='benefit-card'><h3>Stacking</h3><p>Combine OZ benefits with NMTC or state credits.</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAPPING ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>Section 5</div><div class='section-title'>Strategic Asset Mapping</div></div>", unsafe_allow_html=True)
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
         st.plotly_chart(render_map(master_df), use_container_width=True, on_select="rerun", key="map5")
@@ -155,14 +188,21 @@ if check_password():
             st.session_state["active_tract"] = str(st.session_state["map5"]["selection"]["points"][0]["location"])
 
     with c5b:
-        # Asset List logic here
-        st.write(f"Assets near {st.session_state['active_tract']}")
+        curr = st.session_state["active_tract"]
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800;'>LOCAL ASSETS NEAR {curr}</p>", unsafe_allow_html=True)
+        list_html = ""
+        if curr in tract_centers:
+            lon, lat = tract_centers[curr]
+            anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
+            for _, a in anchors_df.sort_values('dist').head(10).iterrows():
+                btn = f"<div style='margin-top:8px;'><a href='{a['Link']}' target='_blank' style='background:#4ade80; color:#0b0f19; padding:4px 10px; border-radius:4px; font-size:0.7rem; font-weight:900; text-decoration:none;'>VIEW SITE 🔗</a></div>" if a['Type'] in ['Land','Buildings'] and a['Link'] else ""
+                list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'><div style='color:#4ade80; font-size:0.6rem; font-weight:900;'>{str(a['Type']).upper()}</div><div style='font-weight:700; color:white;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.7rem;'>📍 {a['dist']:.1f} miles away</div>{btn}</div>"
+        components.html(f"<div style='height:500px; overflow-y:auto; font-family:sans-serif;'>{list_html}</div>", height=520)
 
-    # --- SECTION 6: PERFECT NINE GRID (REPLY TO USER REQUEST) ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div></div>", unsafe_allow_html=True)
+    # --- SECTION 6: PROFILING GRID ---
+    st.markdown("<div class='content-section'><div class='section-num'>Section 6</div><div class='section-title'>Tract Profiling & Recommendation Engine</div></div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
-        # Linked Map for Section 6
         st.plotly_chart(render_map(master_df, height=750), use_container_width=True, on_select="rerun", key="map6")
         if st.session_state.get("map6") and st.session_state["map6"]["selection"]["points"]:
             st.session_state["active_tract"] = str(st.session_state["map6"]["selection"]["points"][0]["location"])
@@ -173,7 +213,7 @@ if check_password():
             d = row.iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size:1.8rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
             
-            # The Grid
+            # The Perfect Nine Grid
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (d['NMTC_Eligible'], "NMTC Eligible"), (d['Severe_Distress'], "Severe Distress"), (d['Deep_Distress'], "Deep Distress"),
@@ -184,20 +224,20 @@ if check_password():
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
 
             st.write("---")
-            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
+            cat = st.selectbox("Investment Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Narrative Justification")
             if st.button("Add to My Recommendations", type="primary", use_container_width=True):
                 st.session_state["session_recs"].append({"Date": datetime.now().strftime("%I:%M %p"), "Tract": st.session_state["active_tract"], "Parish": d.get('Parish'), "Category": cat, "Justification": just})
-                st.success("Tract Added.")
+                st.success("Tract Profile Saved.")
 
-    # --- SECTION 7: USER SESSION SPREADSHEET (REPLY TO USER REQUEST) ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My Recommended Tracts</div></div>", unsafe_allow_html=True)
+    # --- SECTION 7: SPREADSHEET ---
+    st.markdown("<div class='content-section'><div class='section-num'>Section 7</div><div class='section-title'>Session Summary</div></div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True, hide_index=True)
-        if st.button("Clear List"):
+        if st.button("Export/Clear List"):
             st.session_state["session_recs"] = []
             st.rerun()
     else:
-        st.info("No recommendations added yet.")
+        st.info("Your recommendation list is empty. Select a tract on the map above to start profiling.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
