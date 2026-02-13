@@ -166,7 +166,6 @@ if check_password():
         if 'Type' in anchors.columns:
             anchors['Type'] = anchors['Type'].fillna('Other')
             
-        # Ensure the new 'Link' column is read and cleaned
         if 'Link' in anchors.columns:
             anchors['Link'] = anchors['Link'].fillna("")
         else:
@@ -302,12 +301,12 @@ if check_password():
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
-                # --- LINK LOGIC: Only show button for 'Land' type with a valid Link ---
                 link_btn = ""
                 asset_type_clean = str(a.get('Type',''))
                 asset_link = str(a.get('Link',''))
                 
-                if asset_type_clean == 'Land' and asset_link.strip() != "":
+                # Render button for both Land and Buildings if a link exists
+                if asset_type_clean in ['Land', 'Buildings'] and asset_link.strip() != "":
                     link_btn = f"""
                     <div style='margin-top:10px;'>
                         <a href='{asset_link}' target='_blank' 
