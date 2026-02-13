@@ -76,18 +76,23 @@ if check_password():
             color: #ffffff; 
         }
 
-        /* Improved Dropdown Selectbox Styling */
+        /* High Visibility White Dropdown Filters */
         div[data-baseweb="select"] > div {
-            background-color: #1e293b !important;
-            border: 1px solid #334155 !important;
-            color: white !important;
-            border-radius: 8px !important;
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+            border-radius: 6px !important;
+        }
+        /* Ensure dropdown arrow and text inside are dark */
+        div[data-baseweb="select"] * {
+            color: #0f172a !important;
         }
         label[data-testid="stWidgetLabel"] { 
             color: #94a3b8 !important; 
-            font-weight: 600 !important; 
+            font-weight: 700 !important; 
             text-transform: uppercase; 
             font-size: 0.75rem !important; 
+            letter-spacing: 0.05em;
         }
 
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
@@ -106,8 +111,8 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         
-        /* High Contrast Anchor List Styling */
-        .anchor-card { background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; font-family: 'Inter', sans-serif; }
+        /* Anchor List Styling */
+        .anchor-card { background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; }
         .anchor-type { color:#4ade80; font-size:0.7rem; font-weight:900; letter-spacing:0.12em; text-transform: uppercase; margin-bottom: 4px; }
         .anchor-name { color:#ffffff; font-weight:800; font-size:1.1rem; line-height: 1.2; margin-bottom:4px; }
         .anchor-dist { color:#94a3b8; font-size:0.85rem; margin-bottom: 12px; }
@@ -121,7 +126,6 @@ if check_password():
             text-decoration: none !important; 
             font-size: 0.75rem; 
             font-weight: 900; 
-            transition: all 0.2s ease;
             text-align: center;
             border: 2px solid #4ade80;
             width: 100%;
@@ -153,7 +157,7 @@ if check_password():
 
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
-        # Apply Logic: Tracks highlighted green are only those eligible for OZ 2.0
+        # Eligibility logic: Only green for Eligible
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -182,15 +186,17 @@ if check_password():
             geojson=gj, locations=map_df['geoid_str'],
             z=np.where(map_df['Eligibility_Status'] == 'Eligible', 1, 0),
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#1e293b'], [1, '#4ade80']], showscale=False,
+            # Light gray map scale
+            colorscale=[[0, '#e2e8f0'], [1, '#4ade80']], showscale=False,
             marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx,
             selected=dict(marker=dict(opacity=1.0)),
-            unselected=dict(marker=dict(opacity=0.15)),
+            unselected=dict(marker=dict(opacity=0.2)),
             hoverinfo="location"
         ))
         fig.update_layout(
-            mapbox=dict(style="carto-darkmatter", zoom=6.0, center={"lat": 30.9, "lon": -91.8}),
+            # Light Mapbox Style
+            mapbox=dict(style="carto-positron", zoom=6.0, center={"lat": 30.9, "lon": -91.8}),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
             height=600, clickmode='event+select', uirevision="constant"
         )
@@ -199,22 +205,22 @@ if check_password():
     # --- SECTION 1: HERO ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs, housing, and innovation in Louisiana's most promising census tracts.</div></div>", unsafe_allow_html=True)
 
-    # --- SECTIONS 2, 3, 4: NARRATIVES ---
+    # --- SECTIONS 2-4: NARRATIVES ---
     narratives = [
-        (2, "Benefit Framework", "Strategic federal tax incentives to de-risk projects and encourage long-term equity investment.", [
+        (2, "Benefit Framework", "Strategic federal tax incentives to de-risk projects.", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years.", "#"), 
-            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural).", "#"), 
-            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.", "#")
+            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up.", "#"), 
+            ("Permanent Exclusion", "Zero federal capital gains tax after 10 years.", "#")
         ]),
-        (3, "Tract Advocacy", "Identifying high readiness tracts paired with existing industrial and educational infrastructure.", [
+        (3, "Tract Advocacy", "Identifying high readiness tracts paired with existing infrastructure.", [
             ("Geographically Disbursed", "Zones focused on rural and investment-ready tracts.", "#"), 
-            ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community.", "#"), 
-            ("Project Ready", "Aligning recommendations with tracts likely to receive private investment.", "#")
+            ("Distressed Communities", "Eligibility is dependent on the federal low-income definition.", "#"), 
+            ("Project Ready", "Aligning recommendations with tracts likely to receive investment.", "#")
         ]),
-        (4, "Best Practices", "Leveraging national expertise to ensure best-in-class implementation.", [
-            ("Economic Innovation Group", "Proximity to ports ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"), 
-            ("Frost Brown Todd", "Utilizing educational anchors for a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"), 
-            ("America First Policy Institute", "Stack incentives to de-risk projects for growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
+        (4, "Best Practices", "Leveraging national expertise for implementation.", [
+            ("Economic Innovation Group", "Guidance on Opportunity Zone incentives.", "https://eig.org/ozs-guidance/"), 
+            ("Frost Brown Todd", "Strategic selection and legal frameworks.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"), 
+            ("America First Policy Institute", "State blueprints for maximum impact.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
         ])
     ]
     
@@ -263,13 +269,12 @@ if check_password():
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
                 body {{ font-family: 'Inter', sans-serif; background: transparent; margin: 0; padding: 0; overflow-x: hidden; }}
                 ::-webkit-scrollbar {{ width: 5px; }}
-                ::-webkit-scrollbar-track {{ background: transparent; }}
-                ::-webkit-scrollbar-thumb {{ background: #334155; border-radius: 10px; }}
-                .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; }}
-                .anchor-type {{ color:#4ade80; font-size:0.7rem; font-weight:900; letter-spacing:0.12em; text-transform: uppercase; margin-bottom: 4px; }}
-                .anchor-name {{ color:#ffffff; font-weight:800; font-size:1.1rem; line-height: 1.2; margin-bottom:4px; }}
-                .anchor-dist {{ color:#94a3b8; font-size:0.85rem; margin-bottom: 12px; }}
-                .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; width: 100%; border: 2px solid #4ade80; }}
+                ::-webkit-scrollbar-thumb {{ background: #4ade80; border-radius: 10px; }}
+                .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:18px; border-radius:10px; margin-bottom:12px; }}
+                .anchor-type {{ color:#4ade80; font-size:0.65rem; font-weight:900; text-transform: uppercase; margin-bottom: 4px; }}
+                .anchor-name {{ color:#ffffff; font-weight:800; font-size:1rem; line-height: 1.2; margin-bottom:4px; }}
+                .anchor-dist {{ color:#94a3b8; font-size:0.8rem; margin-bottom: 10px; }}
+                .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 6px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; border: 2px solid #4ade80; }}
             </style>
             <div>{list_html if list_html else '<p style=color:#475569;>Select a tract on the map to view nearby anchors.</p>'}</div>
         """, height=540)
