@@ -142,19 +142,18 @@ if check_password():
         master['_unemp_num'] = master[unemployment_col].apply(clean_numeric)
         master['_mfi_num'] = master[mfi_col].apply(clean_numeric)
 
-        # UPDATED BENCHMARKS (Aligning with PolicyMap/NMTC Standards)
+        # Benchmarks
         NAT_UNEMP = 5.3
         STATE_MFI = 86934 
 
-        # NMTC Eligibility (PolicyMap logic uses higher of Metro/State MFI, but we'll use 80% State as baseline)
+        # NMTC Eligibility (20% Poverty or 80% MFI)
         master['NMTC_Eligible'] = (
             (master['_pov_num'] >= 20) | 
             (master['_mfi_num'] <= (0.8 * STATE_MFI)) | 
             (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
-        # Deeply Distressed (CDFI Fund Standard: Pov >= 30% OR MFI <= 60% OR Unemp >= 1.5x Nat)
-        # Note: PolicyMap often defines 'Severe' or 'Deeply' Distressed at the 30% Poverty mark.
+        # Deeply Distressed (Pov >= 30% OR MFI <= 60% OR Unemp >= 1.5x Nat)
         master['Deeply_Distressed'] = (
             (master['_pov_num'] >= 30) | 
             (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
@@ -286,7 +285,8 @@ if check_password():
 
     c5a, c5b = st.columns([0.6, 0.4], gap="large")
     with c5a:
-        f5 = render_map(filtered_df, is_filtered=is_actively_filtering)
+        # MAP HEIGHT SET TO 600
+        f5 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5")
         if s5 and "selection" in s5 and s5["selection"]["points"]:
             new_id = str(s5["selection"]["points"][0]["location"])
@@ -309,7 +309,6 @@ if check_password():
                 asset_type_clean = str(a.get('Type',''))
                 asset_link = str(a.get('Link',''))
                 
-                # Render button for both Land and Buildings if a link exists
                 if asset_type_clean in ['Land', 'Buildings'] and asset_link.strip() != "":
                     link_btn = f"""
                     <div style='margin-top:10px;'>
@@ -334,7 +333,8 @@ if check_password():
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.45, 0.55])
     with c6a:
-        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=750)
+        # MAP HEIGHT SET TO 600 (Matched Section 5)
+        f6 = render_map(filtered_df, is_filtered=is_actively_filtering, height=600)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6")
         if s6 and "selection" in s6 and s6["selection"]["points"]:
             new_id = str(s6["selection"]["points"][0]["location"])
