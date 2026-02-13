@@ -147,10 +147,11 @@ if check_password():
                 except: continue
             return pd.read_csv(path)
 
+        # Map eligibility and metrics from Master File
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
+        # Only highlight tracks eligible for OZ 2.0 in green
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -172,6 +173,7 @@ if check_password():
 
         master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
         
+        # Anchor data from LA anchors CSV
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         centers = {}
@@ -242,7 +244,7 @@ if check_password():
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leveraging national expertise.</div>", unsafe_allow_html=True)
     c4cols = st.columns(3); c4cols[0].markdown("<div class='benefit-card'><h3><a href='https://eig.org/ozs-guidance/' target='_blank'>Economic Innovation Group ↗</a></h3><p>OZ Guidance.</p></div>", unsafe_allow_html=True); c4cols[1].markdown("<div class='benefit-card'><h3><a href='https://fbtgibbons.com/' target='_blank'>Frost Brown Todd ↗</a></h3><p>Strategic Selection.</p></div>", unsafe_allow_html=True); c4cols[2].markdown("<div class='benefit-card'><h3><a href='https://americafirstpolicy.com/' target='_blank'>America First ↗</a></h3><p>State Blueprint.</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5 ---
+    # --- SECTION 5: STRATEGIC ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
@@ -269,7 +271,6 @@ if check_password():
             working_anchors = anchors_df.copy()
             if selected_asset_type != "All Assets": working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            # Removed the head() limit to allow full scrolling
             for _, a in working_anchors.sort_values('dist').iterrows():
                 btn_html = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>" if pd.notna(a.get('Link')) and str(a['Link']).strip() != "" else ""
                 list_html += f"<div class='anchor-card'><div class='anchor-type'>{str(a['Type']).upper()}</div><div class='anchor-name'>{a['Name']}</div><div class='anchor-dist'>{a['dist']:.1f} miles away</div>{btn_html}</div>"
@@ -278,11 +279,9 @@ if check_password():
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
                 body {{ font-family: 'Inter', sans-serif; background: transparent; margin: 0; padding: 0; overflow-x: hidden; }} 
-                /* Custom Scrollbar */
                 ::-webkit-scrollbar {{ width: 8px; }} 
                 ::-webkit-scrollbar-track {{ background: #0b0f19; }}
                 ::-webkit-scrollbar-thumb {{ background: #4ade80; border-radius: 10px; }} 
-                ::-webkit-scrollbar-thumb:hover {{ background: #22c55e; }}
                 .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:18px; border-radius:10px; margin-bottom:12px; }} 
                 .anchor-type {{ color:#4ade80; font-size:0.65rem; font-weight:900; text-transform: uppercase; }} 
                 .anchor-name {{ color:#ffffff; font-weight:800; font-size:1rem; }} 
@@ -292,7 +291,7 @@ if check_password():
             <div style="padding-right: 10px;">{list_html if list_html else '<p style=color:#475569;>Select a tract on the map.</p>'}</div>
         """, height=540, scrolling=True)
 
-    # --- SECTION 6 ---
+    # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.65, 0.35], gap="large") 
     with c6a:
@@ -349,7 +348,43 @@ if check_password():
                     "Parish": row['Parish'],
                     "Justification": justification
                 })
-                st.toast("Tract Added with Justification!")
-        else: st.info("Select a tract on the map.")
+                st.toast("Tract Added to Recommendation Report!")
+        else: st.info("Select a tract on the map to begin profiling.")
+
+    # --- SECTION 7: RECOMMENDATION REPORT ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>Recommendation Report</div><div class='narrative-text'>Summary of selected high-readiness tracts and project-specific justifications.</div>", unsafe_allow_html=True)
+    
+    if st.session_state["session_recs"]:
+        report_df = pd.DataFrame(st.session_state["session_recs"])
+        
+        # Displaying a clean table using Streamlit Dataframe
+        st.dataframe(
+            report_df, 
+            use_container_width=True, 
+            hide_index=True,
+            column_config={
+                "Tract": st.column_config.TextColumn("Census Tract (GEOID)", width="medium"),
+                "Parish": st.column_config.TextColumn("Parish", width="medium"),
+                "Justification": st.column_config.TextColumn("Strategic Justification", width="large")
+            }
+        )
+        
+        c7_act1, c7_act2, _ = st.columns([0.2, 0.2, 0.6])
+        with c7_act1:
+            if st.button("Clear Report", use_container_width=True):
+                st.session_state["session_recs"] = []
+                st.rerun()
+        with c7_act2:
+            # Simple CSV export
+            csv = report_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Export to CSV",
+                data=csv,
+                file_name="oz_recommendation_report.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+    else:
+        st.info("No tracts selected yet. Use Section 6 to add tracts to this report.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
