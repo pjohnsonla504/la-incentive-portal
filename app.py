@@ -76,7 +76,7 @@ if check_password():
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; }
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
-        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 180px; transition: all 0.3s ease; }
+        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 200px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; }
         .benefit-card h3 a { color: #f8fafc; text-decoration: none; }
         .benefit-card h3 a:hover { color: #4ade80; }
@@ -199,7 +199,7 @@ if check_password():
                 list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:8px;'><div style='color:#4ade80; font-size:0.6rem; font-weight:900;'>{str(a['Type']).upper()}</div><div style='color:white; font-weight:700; font-size:0.9rem;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.7rem;'>{a['dist']:.1f} miles</div></div>"
         components.html(f"<div style='height: 520px; overflow-y: auto; font-family: sans-serif;'>{list_html if list_html else '<p style=color:#475569;>Select a tract to view assets.</p>'}</div>", height=540)
 
-    # --- SECTION 6: TRACT PROFILING (9 METRICS + TOTAL POP) ---
+    # --- SECTION 6: TRACT PROFILING (HEADER + 9 METRIC GRID) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.65, 0.35], gap="large") 
     with c6a:
@@ -212,31 +212,44 @@ if check_password():
     with c6b:
         if st.session_state["active_tract"]:
             row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]].iloc[0]
-            st.markdown(f"<div class='tract-header-container'><div style='font-size: 1.6rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.8rem;'>GEOID: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
+            total_pop = safe_int(row.get('Estimate!!Total population', 0))
             
-            # --- METRIC GRID (9 items + Pop) ---
-            m_cols = [st.columns(3) for _ in range(4)]
+            # Header block with Parish, GEOID, and Total Population
+            st.markdown(f"""
+                <div class='tract-header-container'>
+                    <div style='display: flex; justify-content: space-between; align-items: flex-end;'>
+                        <div>
+                            <div style='font-size: 1.6rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div>
+                            <div style='color: #94a3b8; font-size: 0.8rem;'>GEOID: {st.session_state['active_tract']}</div>
+                        </div>
+                        <div style='text-align: right;'>
+                            <div style='color: #94a3b8; font-size: 0.6rem; text-transform: uppercase;'>Total Population</div>
+                            <div style='font-size: 1.2rem; font-weight: 900; color: white;'>{total_pop:,}</div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # --- 9 METRIC GRID ---
+            m_cols = [st.columns(3) for _ in range(3)]
             
             pov_rate = safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0))
             unemp_rate = safe_float(row.get('Unemployment Rate (%)', 0))
             mfi_val = safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0))
-            total_pop = safe_int(row.get('Estimate!!Total population', 0))
             broadband = safe_float(row.get('Broadband Internet (%)', 0))
             pop_18_24 = safe_int(row.get('Population 18 to 24', 0))
             pop_65_up = safe_int(row.get('Population 65 years and over', 0))
 
             metrics = [
-                (f"{total_pop:,}", "Total Pop"), (f"{unemp_rate:.1f}%", "Unemployment"), (f"{pov_rate:.1f}%", "Poverty Rate"),
-                (f"${mfi_val:,.0f}", "MFI"), (str(row.get('Metro Status (Metropolitan/Rural)', 'N/A')), "Status"), (str(row.get('NMTC_Eligible', 'No')), "NMTC Eligible"),
-                (f"{pop_18_24:,}", "Pop 18-24"), (f"{pop_65_up:,}", "Pop 65+"), (f"{broadband:.1f}%", "Broadband"),
-                (str(row.get('Deeply_Distressed', 'No')), "Distressed")
+                (f"{unemp_rate:.1f}%", "Unemployment"), (f"{pov_rate:.1f}%", "Poverty Rate"), (f"${mfi_val:,.0f}", "MFI"),
+                (str(row.get('Metro Status (Metropolitan/Rural)', 'N/A')), "Metro Status"), (str(row.get('NMTC_Eligible', 'No')), "NMTC Eligible"), (str(row.get('Deeply_Distressed', 'No')), "Distressed"),
+                (f"{pop_18_24:,}", "Pop 18-24"), (f"{pop_65_up:,}", "Pop 65+"), (f"{broadband:.1f}%", "Broadband")
             ]
             
             for i, (v, l) in enumerate(metrics):
                 row_idx = i // 3
                 col_idx = i % 3
-                if row_idx < 4:
-                    m_cols[row_idx][col_idx].markdown(f"<div class='metric-card'><div class='metric-value'>{v}</div><div class='metric-label'>{l}</div></div>", unsafe_allow_html=True)
+                m_cols[row_idx][col_idx].markdown(f"<div class='metric-card'><div class='metric-value'>{v}</div><div class='metric-label'>{l}</div></div>", unsafe_allow_html=True)
 
             cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Justification")
