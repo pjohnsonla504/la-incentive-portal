@@ -165,7 +165,13 @@ if check_password():
         anchors = read_csv_safe("la_anchors.csv")
         if 'Type' in anchors.columns:
             anchors['Type'] = anchors['Type'].fillna('Other')
-        
+            
+        # Ensure the new 'Link' column is read and cleaned
+        if 'Link' in anchors.columns:
+            anchors['Link'] = anchors['Link'].fillna("")
+        else:
+            anchors['Link'] = ""
+            
         centers = {}
         if geojson:
             for feature in geojson['features']:
@@ -294,12 +300,28 @@ if check_password():
             if selected_asset_type != "All Assets":
                 working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
+            
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
+                # --- LINK LOGIC: Only show button for 'Land' type with a valid Link ---
+                link_btn = ""
+                asset_type_clean = str(a.get('Type',''))
+                asset_link = str(a.get('Link',''))
+                
+                if asset_type_clean == 'Land' and asset_link.strip() != "":
+                    link_btn = f"""
+                    <div style='margin-top:10px;'>
+                        <a href='{asset_link}' target='_blank' 
+                           style='display:inline-block; background:#4ade80; color:#0b0f19; padding:5px 12px; border-radius:4px; font-size:0.7rem; font-weight:900; text-decoration:none;'>
+                           VIEW SITE 🔗
+                        </a>
+                    </div>"""
+
                 list_html += f"""
                 <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:10px;'>
-                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{str(a.get('Type','')).upper()}</div>
+                    <div style='color:#4ade80; font-size:0.65rem; font-weight:900;'>{asset_type_clean.upper()}</div>
                     <div style='color:#ffffff; font-weight:700; font-size:1rem; margin: 4px 0;'>{a['Name']}</div>
-                    <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles</div>
+                    <div style='color:#94a3b8; font-size:0.75rem;'>📍 {a['dist']:.1f} miles away</div>
+                    {link_btn}
                 </div>"""
         if not list_html:
             list_html = "<div style='color:#94a3b8; padding:20px;'>No assets of this type found nearby.</div>"
