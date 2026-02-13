@@ -11,7 +11,7 @@ from streamlit_gsheets import GSheetsConnection
 import streamlit.components.v1 as components
 from datetime import datetime
 
-# --- 0. INITIAL CONFIG & STATE INITIALIZATION ---
+# --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
 if "session_recs" not in st.session_state:
@@ -44,10 +44,10 @@ def check_password():
         except: pass
 
     if not st.session_state["password_correct"]:
-        st.markdown("""<style>.stApp { background-color: #0b0f19; }</style>""", unsafe_allow_html=True)
+        st.markdown("<style>.stApp { background-color: #0b0f19; }</style>", unsafe_allow_html=True)
         _, col_mid, _ = st.columns([1, 0.8, 1])
         with col_mid:
-            st.markdown("<h2 style='text-align:center; color:white;'>OZ 2.0 Portal Login</h2>", unsafe_allow_html=True)
+            st.markdown("<h2 style='text-align:center; color:white; font-family: sans-serif;'>OZ 2.0 Portal</h2>", unsafe_allow_html=True)
             st.text_input("Username", key="username")
             st.text_input("Password", type="password", key="password")
             st.button("Sign In", on_click=password_entered, use_container_width=True)
@@ -87,13 +87,20 @@ if check_password():
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: gj = json.load(f)
         
-        master = pd.read_csv("Opportunity Zones 2.0 - Master Data File.csv")
+        # FIX: Encoding handling for CSVs
+        def read_csv_with_fallback(path):
+            for enc in ['utf-8', 'latin1', 'cp1252']:
+                try: return pd.read_csv(path, encoding=enc)
+                except UnicodeDecodeError: continue
+            return pd.read_csv(path)
+
+        master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
         
-        anchors = pd.read_csv("la_anchors.csv")
+        anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         
         centers = {}
@@ -109,12 +116,7 @@ if check_password():
     gj, master_df, anchors_df, tract_centers = load_assets()
 
     def render_map_go(df):
-        # Ensure we have a consistent index for selection
         map_df = df.copy().reset_index(drop=True)
-        
-        # Color mapping logic
-        map_df['color_val'] = map_df['Eligibility_Status'].map({'Eligible': '#4ade80', 'Ineligible': '#cbd5e1'})
-        
         sel_idx = []
         if st.session_state["active_tract"]:
             sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
@@ -122,17 +124,11 @@ if check_password():
         fig = go.Figure(go.Choroplethmapbox(
             geojson=gj,
             locations=map_df['geoid_str'],
-            z=np.ones(len(map_df)), # Dummy value for color scale
+            z=np.where(map_df['Eligibility_Status'] == 'Eligible', 1, 0),
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#4ade80'], [1, '#4ade80']], # Override with marker color logic
+            colorscale=[[0, '#cbd5e1'], [1, '#4ade80']],
             showscale=False,
-            marker=dict(
-                opacity=0.8,
-                line=dict(width=0.5, color='white'),
-                # Apply per-point coloring
-                colorscale=[[0, '#cbd5e1'], [1, '#4ade80']],
-                color=np.where(map_df['Eligibility_Status'] == 'Eligible', 1, 0)
-            ),
+            marker=dict(opacity=0.8, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx,
             selected=dict(marker=dict(opacity=1.0)),
             unselected=dict(marker=dict(opacity=0.1)),
@@ -159,46 +155,48 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTIONS 2-4: NARRATIVE & CARDS ---
-    for sec, title, text, cards in [
-        (2, "The OZ 2.0 Benefit Framework", "Our strategic framework leverages federal tax incentives to de-risk projects and encourage long-term equity investment.", [
+    # --- SECTIONS 2-4: NARRATIVE ---
+    narratives = {
+        2: ("The OZ 2.0 Benefit Framework", "Our strategic framework leverages federal tax incentives to de-risk projects and encourage long-term equity investment in Louisiana's future.", [
             ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
             ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
             ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
         ]),
-        (3, "Census Tract Advocacy", "We focus on identifying tracts with high Project Readiness, pairing distressed community data with existing infrastructure.", [
+        3: ("Census Tract Advocacy", "We focus on identifying tracts with high Project Readiness—pairing distressed community data with existing industrial and educational infrastructure.", [
             ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
             ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
             ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
         ]),
-        (4, "Best Practices", "Leveraging national expertise to ensure Louisiana's Opportunity Zones 2.0 implementation is best-in-class.", [
+        4: ("Best Practices", "Leveraging national expertise to ensure Louisiana's Opportunity Zones 2.0 implementation is best-in-class.", [
             ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand."),
             ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force."),
             ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.")
         ])
-    ]:
-        st.markdown(f"<div class='content-section'><div class='section-num'>SECTION {sec}</div><div class='section-title'>{title}</div><div class='narrative-text'>{text}</div>", unsafe_allow_html=True)
-        cols = st.columns(3)
-        for i, (ct, ctx) in enumerate(cards):
-            cols[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+    }
 
-    # --- SECTION 5: ASSET MAPPING ---
+    for i in [2, 3, 4]:
+        title, text, cards = narratives[i]
+        st.markdown(f"<div class='content-section'><div class='section-num'>SECTION {i}</div><div class='section-title'>{title}</div><div class='narrative-text'>{text}</div>", unsafe_allow_html=True)
+        cols = st.columns(3)
+        for j, (ct, ctx) in enumerate(cards):
+            cols[j].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: ASSET MAPPING & FILTERS ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
-    # FILTERS INSIDE SECTION 5
     f_col1, f_col2, f_col3 = st.columns(3)
-    with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
+    with f_col1: selected_region = st.selectbox("Filter Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
     
     filtered_df = master_df.copy()
     if selected_region != "All Louisiana":
         filtered_df = filtered_df[filtered_df['Region'] == selected_region]
         
     with f_col2:
-        selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
+        selected_parish = st.selectbox("Filter Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
     if selected_parish != "All in Region":
         filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
         
-    with f_col3: selected_asset_type = st.selectbox("Anchor Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
+    with f_col3: selected_asset_type = st.selectbox("Filter Anchor Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
 
     c5a, c5b = st.columns([0.6, 0.4], gap="large") 
     with c5a:
@@ -225,7 +223,7 @@ if check_password():
         components.html(f"<div style='height: 500px; overflow-y: auto;'>{list_html}</div>", height=520)
 
     # --- SECTION 6: TRACT PROFILING ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.6, 0.4], gap="large") 
     with c6a:
         f6 = render_map_go(filtered_df)
@@ -247,15 +245,15 @@ if check_password():
                 m_cols[0][i].markdown(f"<div class='metric-card'><div class='metric-value'>{v}</div><div class='metric-label'>{l}</div></div>", unsafe_allow_html=True)
 
             cat = st.selectbox("Category", ["Industrial", "Housing", "Retail", "Tech"])
-            just = st.text_area("Justification")
+            just = st.text_area("Narrative Justification")
             if st.button("Add Recommendation", use_container_width=True):
-                st.session_state["session_recs"].append({"Tract": st.session_state["active_tract"], "Parish": row['Parish'], "Category": cat})
+                st.session_state["session_recs"].append({"Tract": st.session_state["active_tract"], "Parish": row['Parish'], "Category": cat, "Justification": just})
                 st.rerun()
         else:
-            st.info("Select a tract on either map to begin.")
+            st.info("Select a tract on either map to begin profiling.")
 
-    # --- SECTION 7: SPREADSHEET ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My List</div>", unsafe_allow_html=True)
+    # --- SECTION 7: LIST ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 7</div><div class='section-title'>My Recommended Tracts</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True)
 
