@@ -26,14 +26,16 @@ try:
 except:
     pass
 
-# --- HELPER FOR VALUE ERRORS ---
+# --- HELPERS FOR ROBUST DATA ---
 def safe_float(val):
     try:
         if pd.isna(val) or val == '' or val == 'N/A': return 0.0
         s = str(val).replace('$', '').replace(',', '').replace('%', '').strip()
         return float(s)
-    except:
-        return 0.0
+    except: return 0.0
+
+def safe_int(val):
+    return int(safe_float(val))
 
 # --- 1. AUTHENTICATION ---
 def check_password():
@@ -74,14 +76,14 @@ if check_password():
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; }
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
-        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 200px; transition: all 0.3s ease; }
+        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 180px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; }
         .benefit-card h3 a { color: #f8fafc; text-decoration: none; }
         .benefit-card h3 a:hover { color: #4ade80; }
-        .metric-card { background-color: #111827 !important; padding: 12px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; }
-        .metric-value { font-size: 1.1rem; font-weight: 900; color: #4ade80; }
-        .metric-label { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px;}
-        .tract-header-container { background-color: #111827 !important; padding: 20px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 20px;}
+        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 90px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
+        .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
+        .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
+        .tract-header-container { background-color: #111827 !important; padding: 20px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 15px;}
         </style>
         """, unsafe_allow_html=True)
 
@@ -134,12 +136,10 @@ if check_password():
             sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
 
         fig = go.Figure(go.Choroplethmapbox(
-            geojson=gj,
-            locations=map_df['geoid_str'],
+            geojson=gj, locations=map_df['geoid_str'],
             z=np.where(map_df['Eligibility_Status'] == 'Eligible', 1, 0),
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#cbd5e1'], [1, '#4ade80']],
-            showscale=False,
+            colorscale=[[0, '#cbd5e1'], [1, '#4ade80']], showscale=False,
             marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx,
             selected=dict(marker=dict(opacity=1.0)),
@@ -153,26 +153,13 @@ if check_password():
         )
         return fig
 
-    # --- SECTION 1: HERO ---
+    # --- SECTIONS 1-4: NARRATIVE & BEST PRACTICES ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs and innovation in Louisiana's most promising census tracts.</div></div>", unsafe_allow_html=True)
 
-    # --- SECTIONS 2-4: NARRATIVE & CARDS ---
     narratives = [
-        (2, "Benefit Framework", "Our strategic framework leverages federal tax incentives to de-risk projects and encourage long-term equity investment in Louisiana's future.", [
-            ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years.", "#"),
-            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural).", "#"),
-            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.", "#")
-        ]),
-        (3, "Tract Advocacy", "We focus on identifying tracts with high Project Readiness—pairing distressed community data with existing industrial and educational infrastructure.", [
-            ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts.", "#"),
-            ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community.", "#"),
-            ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.", "#")
-        ]),
-        (4, "Best Practices", "Leveraging national blueprints to ensure Louisiana's Opportunity Zones 2.0 implementation is best-in-class.", [
-            ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"),
-            ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"),
-            ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
-        ])
+        (2, "Benefit Framework", "Strategic federal tax incentives to de-risk projects and encourage long-term equity investment.", [("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years.", "#"), ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural).", "#"), ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.", "#")]),
+        (3, "Tract Advocacy", "Identifying high readiness tracts paired with existing industrial and educational infrastructure.", [("Geographically Disbursed", "Zones Focused on rural and investment ready tracts.", "#"), ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community.", "#"), ("Project Ready", "Aligning recommendations with tracts likely to receive private investment.", "#")]),
+        (4, "Best Practices", "Leveraging national expertise to ensure best-in-class implementation.", [("Economic Innovation Group", "Proximity to ports ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"), ("Frost Brown Todd", "Utilizing educational anchors for a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"), ("America First Policy Institute", "Stack incentives to de-risk projects for growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")])
     ]
     for n_idx, n_title, n_text, n_cards in narratives:
         st.markdown(f"<div class='content-section'><div class='section-num'>SECTION {n_idx}</div><div class='section-title'>{n_title}</div><div class='narrative-text'>{n_text}</div>", unsafe_allow_html=True)
@@ -212,7 +199,7 @@ if check_password():
                 list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:8px;'><div style='color:#4ade80; font-size:0.6rem; font-weight:900;'>{str(a['Type']).upper()}</div><div style='color:white; font-weight:700; font-size:0.9rem;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.7rem;'>{a['dist']:.1f} miles</div></div>"
         components.html(f"<div style='height: 520px; overflow-y: auto; font-family: sans-serif;'>{list_html if list_html else '<p style=color:#475569;>Select a tract to view assets.</p>'}</div>", height=540)
 
-    # --- SECTION 6: TRACT PROFILING ---
+    # --- SECTION 6: TRACT PROFILING (9 METRICS + TOTAL POP) ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.65, 0.35], gap="large") 
     with c6a:
@@ -226,15 +213,35 @@ if check_password():
         if st.session_state["active_tract"]:
             row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]].iloc[0]
             st.markdown(f"<div class='tract-header-container'><div style='font-size: 1.6rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.8rem;'>GEOID: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
-            m_cols = [st.columns(3) for _ in range(1)]
+            
+            # --- METRIC GRID (9 items + Pop) ---
+            m_cols = [st.columns(3) for _ in range(4)]
+            
+            pov_rate = safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0))
+            unemp_rate = safe_float(row.get('Unemployment Rate (%)', 0))
             mfi_val = safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0))
-            unemp_val = safe_float(row.get('Unemployment Rate (%)', 0))
-            metrics = [(f"{unemp_val:.1f}%", "Unemp"), (f"${mfi_val:,.0f}", "MFI"), (str(row.get('Metro Status (Metropolitan/Rural)', 'N/A')), "Status")]
-            for i, (v, l) in enumerate(metrics): m_cols[0][i].markdown(f"<div class='metric-card'><div class='metric-value'>{v}</div><div class='metric-label'>{l}</div></div>", unsafe_allow_html=True)
-            cat = st.selectbox("Category", ["Industrial", "Housing", "Retail", "Tech"])
+            total_pop = safe_int(row.get('Estimate!!Total population', 0))
+            broadband = safe_float(row.get('Broadband Internet (%)', 0))
+            pop_18_24 = safe_int(row.get('Population 18 to 24', 0))
+            pop_65_up = safe_int(row.get('Population 65 years and over', 0))
+
+            metrics = [
+                (f"{total_pop:,}", "Total Pop"), (f"{unemp_rate:.1f}%", "Unemployment"), (f"{pov_rate:.1f}%", "Poverty Rate"),
+                (f"${mfi_val:,.0f}", "MFI"), (str(row.get('Metro Status (Metropolitan/Rural)', 'N/A')), "Status"), (str(row.get('NMTC_Eligible', 'No')), "NMTC Eligible"),
+                (f"{pop_18_24:,}", "Pop 18-24"), (f"{pop_65_up:,}", "Pop 65+"), (f"{broadband:.1f}%", "Broadband"),
+                (str(row.get('Deeply_Distressed', 'No')), "Distressed")
+            ]
+            
+            for i, (v, l) in enumerate(metrics):
+                row_idx = i // 3
+                col_idx = i % 3
+                if row_idx < 4:
+                    m_cols[row_idx][col_idx].markdown(f"<div class='metric-card'><div class='metric-value'>{v}</div><div class='metric-label'>{l}</div></div>", unsafe_allow_html=True)
+
+            cat = st.selectbox("Category", ["Industrial Development", "Housing Initiative", "Commercial/Retail", "Technology & Innovation"])
             just = st.text_area("Justification")
             if st.button("Add to Selection", use_container_width=True, type="primary"):
-                st.session_state["session_recs"].append({"Tract": st.session_state["active_tract"], "Parish": row['Parish'], "Category": cat})
+                st.session_state["session_recs"].append({"Tract": st.session_state["active_tract"], "Parish": row['Parish'], "Category": cat, "Justification": just})
                 st.toast("Tract Added!")
         else: st.info("Select a tract on the map to view data.")
 
