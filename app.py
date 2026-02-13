@@ -172,7 +172,6 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- COLOR LOGIC FOR RECOMMENDATIONS ---
     def get_map_data():
         df = master_df.copy()
         rec_ids = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
@@ -194,20 +193,42 @@ if check_password():
             if subset_centers:
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                zoom = 8.5 
+                zoom = 8.8 
         
         fig = px.choropleth_mapbox(df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Display_Status", 
                                      color_discrete_map={
                                          "Eligible": "#4ade80", 
-                                         "Recommended": "#fb923c", # Orange Highlight
+                                         "Recommended": "#fb923c", 
                                          "Ineligible": "#cbd5e1"
                                      },
-                                     mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=True, 
-                          legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, bgcolor="rgba(17,24,39,0.8)", font=dict(color="white", size=10)),
-                          height=height, clickmode='event+select')
+                                     # Changed style to light and decreased opacity to make labels pop
+                                     mapbox_style="light", 
+                                     zoom=zoom, center=center, opacity=0.45)
+        
+        # Pulling city/parish labels to the TOP layer
+        fig.update_layout(
+            margin={"r":0,"t":0,"l":0,"b":0}, 
+            paper_bgcolor='rgba(0,0,0,0)', 
+            showlegend=True, 
+            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, bgcolor="rgba(17,24,39,0.8)", font=dict(color="white", size=10)),
+            height=height, 
+            clickmode='event+select',
+            mapbox=dict(
+                # If you have a Mapbox Token, paste it here for even better city detail:
+                # accesstoken="YOUR_TOKEN_HERE",
+                layers=[
+                    {
+                        "below": 'traces',
+                        "sourcetype": "raster",
+                        "source": [
+                            "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+                        ]
+                    }
+                ]
+            )
+        )
         return fig
 
     # --- SECTION 1: HERO ---
@@ -220,8 +241,6 @@ if check_password():
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTIONS 2-4 OMITTED FOR BREVITY IN RE-RENDER, LOGIC REMAINS SAME ---
-    
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
     
