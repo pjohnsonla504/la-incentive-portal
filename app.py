@@ -9,7 +9,6 @@ import ssl
 from math import radians, cos, sin, asin, sqrt
 from streamlit_gsheets import GSheetsConnection
 import streamlit.components.v1 as components
-from datetime import datetime
 
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
@@ -26,7 +25,7 @@ try:
 except:
     pass
 
-# --- HELPERS FOR ROBUST DATA ---
+# --- HELPERS ---
 def safe_float(val):
     try:
         if pd.isna(val) or val == '' or val == 'N/A': return 0.0
@@ -78,24 +77,27 @@ if check_password():
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 200px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; }
+        .benefit-card h3 { color: #f8fafc; margin-bottom: 10px; font-weight: 800; }
         .benefit-card h3 a { color: #f8fafc; text-decoration: none; }
         .benefit-card h3 a:hover { color: #4ade80; }
+        
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 90px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
+        
         .tract-header-container { background-color: #111827 !important; padding: 20px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 15px;}
         
-        /* High-Contrast Anchor List Styling */
-        .anchor-card { background:#111827; border:1px solid #1e293b; padding:18px; border-radius:10px; margin-bottom:12px; }
-        .anchor-type { color:#4ade80; font-size:0.7rem; font-weight:900; letter-spacing:0.1em; text-transform: uppercase; }
-        .anchor-name { color:white; font-weight:800; font-size:1.1rem; margin-top:4px; }
-        .anchor-dist { color:#94a3b8; font-size:0.8rem; margin-top:2px; }
+        /* High Contrast Anchor List Styling */
+        .anchor-card { background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; }
+        .anchor-type { color:#4ade80; font-size:0.75rem; font-weight:900; letter-spacing:0.12em; text-transform: uppercase; }
+        .anchor-name { color:#ffffff; font-weight:800; font-size:1.15rem; margin-top:4px; margin-bottom:2px; }
+        .anchor-dist { color:#94a3b8; font-size:0.85rem; }
         
         .view-site-btn { 
             display: inline-block; 
             background-color: #4ade80; 
-            color: #0b0f19 !important; 
-            padding: 10px 20px; 
+            color: #ffffff !important; 
+            padding: 10px 22px; 
             border-radius: 6px; 
             text-decoration: none !important; 
             font-size: 0.9rem; 
@@ -106,9 +108,8 @@ if check_password():
             border: 2px solid #4ade80;
         }
         .view-site-btn:hover { 
-            background-color: white; 
-            border-color: white;
-            color: #0b0f19 !important;
+            background-color: transparent; 
+            color: #4ade80 !important;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -175,17 +176,33 @@ if check_password():
         )
         return fig
 
-    # --- SECTION 1-4: NARRATIVES ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs and innovation.</div></div>", unsafe_allow_html=True)
+    # --- SECTION 1: HERO ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs, housing, and innovation in Louisiana's most promising census tracts.</div></div>", unsafe_allow_html=True)
 
+    # --- SECTION 2, 3, 4: NARRATIVES ---
     narratives = [
-        (4, "Best Practices", "Leveraging national expertise to ensure best-in-class implementation.", [("Economic Innovation Group", "Proximity to ports ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"), ("Frost Brown Todd", "Utilizing educational anchors for a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"), ("America First Policy Institute", "Stack incentives to de-risk projects for growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")])
+        (2, "Benefit Framework", "Strategic federal tax incentives to de-risk projects and encourage long-term equity investment.", [
+            ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years.", "#"), 
+            ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural).", "#"), 
+            ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.", "#")
+        ]),
+        (3, "Tract Advocacy", "Identifying high readiness tracts paired with existing industrial and educational infrastructure.", [
+            ("Geographically Disbursed", "Zones focused on rural and investment-ready tracts.", "#"), 
+            ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community.", "#"), 
+            ("Project Ready", "Aligning recommendations with tracts likely to receive private investment.", "#")
+        ]),
+        (4, "Best Practices", "Leveraging national expertise to ensure best-in-class implementation.", [
+            ("Economic Innovation Group", "Proximity to ports ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"), 
+            ("Frost Brown Todd", "Utilizing educational anchors for a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"), 
+            ("America First Policy Institute", "Stack incentives to de-risk projects for growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
+        ])
     ]
+    
     for n_idx, n_title, n_text, n_cards in narratives:
         st.markdown(f"<div class='content-section'><div class='section-num'>SECTION {n_idx}</div><div class='section-title'>{n_title}</div><div class='narrative-text'>{n_text}</div>", unsafe_allow_html=True)
         cols = st.columns(3)
         for i, (ct, ctx, url) in enumerate(n_cards):
-            link_html = f"<h3><a href='{url}' target='_blank'>{ct}</a></h3>" if url != "#" else f"<h3>{ct}</h3>"
+            link_html = f"<h3><a href='{url}' target='_blank'>{ct} ↗</a></h3>" if url != "#" else f"<h3>{ct}</h3>"
             cols[i].markdown(f"<div class='benefit-card'>{link_html}<p>{ctx}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAPPING ---
@@ -208,7 +225,7 @@ if check_password():
                 st.rerun()
     with c5b:
         curr = st.session_state["active_tract"]
-        st.markdown(f"<p style='color:#94a3b8; font-weight:800; font-size:0.7rem; letter-spacing:0.1em;'>ANCHOR ASSETS NEAR {curr if curr else '...'}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#94a3b8; font-weight:800; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:20px;'>ANCHOR ASSETS NEAR {curr if curr else 'SELECT TRACT'}</p>", unsafe_allow_html=True)
         list_html = ""
         if curr and curr in tract_centers:
             lon, lat = tract_centers[curr]
@@ -219,15 +236,8 @@ if check_password():
                 btn_html = ""
                 if str(a.get('Type', '')).lower() in ['land', 'building'] and pd.notna(a.get('Link')):
                     btn_html = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>"
-                
-                list_html += f"""
-                    <div class='anchor-card'>
-                        <div class='anchor-type'>{str(a['Type']).upper()}</div>
-                        <div class='anchor-name'>{a['Name']}</div>
-                        <div class='anchor-dist'>{a['dist']:.1f} miles away</div>
-                        {btn_html}
-                    </div>"""
-        components.html(f"<div style='height: 520px; overflow-y: auto; font-family: sans-serif; padding-right: 10px;'>{list_html if list_html else '<p style=color:#475569;>Select a tract to view assets.</p>'}</div>", height=540)
+                list_html += f"<div class='anchor-card'><div class='anchor-type'>{str(a['Type']).upper()}</div><div class='anchor-name'>{a['Name']}</div><div class='anchor-dist'>{a['dist']:.1f} miles away</div>{btn_html}</div>"
+        components.html(f"<div style='height: 520px; overflow-y: auto; font-family: sans-serif; padding-right: 10px;'>{list_html if list_html else '<p style=color:#475569;>Select a tract on the map to view nearby anchors.</p>'}</div>", height=540)
 
     # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
@@ -243,8 +253,7 @@ if check_password():
         if st.session_state["active_tract"]:
             row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]].iloc[0]
             pop_val = safe_int(row.get('Estimate!!Total population', 0))
-            st.markdown(f"<div class='tract-header-container'><div style='display: flex; justify-content: space-between; align-items: flex-end;'><div><div style='font-size: 1.6rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.8rem;'>GEOID: {st.session_state['active_tract']}</div></div><div style='text-align: right;'><div style='color: #94a3b8; font-size: 0.6rem; text-transform: uppercase;'>Total Population</div><div style='font-size: 1.2rem; font-weight: 900; color: white;'>{pop_val:,}</div></div></div></div>", unsafe_allow_html=True)
-            
+            st.markdown(f"<div class='tract-header-container'><div style='display: flex; justify-content: space-between; align-items: flex-end;'><div><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {st.session_state['active_tract']}</div></div><div style='text-align: right;'><div style='color: #94a3b8; font-size: 0.65rem; text-transform: uppercase;'>Total Population</div><div style='font-size: 1.3rem; font-weight: 900; color: white;'>{pop_val:,}</div></div></div></div>", unsafe_allow_html=True)
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
                 (f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%", "Unemployment"), (f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "Poverty Rate"), (f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "MFI"),
