@@ -30,7 +30,6 @@ except:
 
 # --- HELPER FUNCTIONS ---
 def clean_currency(val):
-    """Helper to convert string currency or mixed types to float for formatting."""
     if pd.isna(val) or val == 'N/A' or val == '': 
         return 0.0
     if isinstance(val, (int, float)):
@@ -110,8 +109,6 @@ if check_password():
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); background-color: #161b28 !important; }
         .benefit-card h3 { color: #f8fafc; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
-        .benefit-card a { color: #4ade80; text-decoration: none; }
-        .benefit-card a:hover { text-decoration: underline; color: #ffffff; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
@@ -164,9 +161,9 @@ if check_password():
         ).map({True: 'Yes', False: 'No'})
 
         master['Deeply_Distressed'] = (
-            (master['_pov_num'] >= 40) | 
-            (master['_mfi_num'] <= (0.4 * STATE_MFI)) | 
-            (master['_unemp_num'] >= (2.5 * NAT_UNEMP))
+            (master['_pov_num'] >= 30) | 
+            (master['_mfi_num'] <= (0.6 * STATE_MFI)) | 
+            (master['_unemp_num'] >= (1.5 * NAT_UNEMP))
         ).map({True: 'Yes', False: 'No'})
 
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
@@ -195,8 +192,10 @@ if check_password():
 
     def render_map(df, is_filtered=False, height=600):
         recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
-        map_df = df.copy()
+        map_df = df.copy().reset_index(drop=True)
         map_df.loc[map_df['geoid_str'].isin(recs), 'Eligibility_Status'] = "Recommended"
+
+        active_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
 
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
@@ -216,8 +215,15 @@ if check_password():
                                          "Ineligible": "#cbd5e1",
                                          "Recommended": "#f97316"
                                      },
-                                     mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
+                                     mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.8)
         
+        fig.update_traces(
+            selectedpoints=active_idx,
+            marker_line_width=0.5,
+            marker_line_color="white",
+            unselected={'marker': {'opacity': 0.15}} 
+        )
+
         fig.update_layout(
             margin={"r":0,"t":0,"l":0,"b":0}, 
             paper_bgcolor='rgba(0,0,0,0)', 
@@ -237,47 +243,73 @@ if check_password():
             <div class='section-num'>SECTION 1</div>
             <div class='hero-subtitle'>Opportunity Zones 2.0</div>
             <div class='hero-title'>Louisiana Opportunity Zone 2.0 Recommendation Portal</div>
-            <div class='narrative-text'>Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment—unlocking long-term private capital to fuel jobs, small businesses, and innovation in the communities that need it most.</div>
+            <div class='narrative-text'>
+                Opportunity Zones 2.0 is Louisiana’s chance to turn bold ideas into real investment. 
+                By identifying high-potential census tracts and pairing them with local anchor assets, 
+                we create a roadmap for sustainable economic growth across the state.
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2: BENEFIT FRAMEWORK ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The OZ 2.0 Benefit Framework</div>", unsafe_allow_html=True)
-    cols2 = st.columns(3)
-    cards2 = [
-        ("Capital Gain Deferral", "Defer taxes on original capital gains for 5 years."),
-        ("Basis Step-Up", "Qualified taxpayer receives 10% basis step-up (30% if rural)."),
-        ("Permanent Exclusion", "Zero federal capital gains tax on appreciation after 10 years.")
-    ]
-    for i, (ct, ctx) in enumerate(cards2):
-        cols2[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
-
-    # --- SECTION 3: CENSUS TRACT ADVOCACY ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Census Tract Advocacy</div>", unsafe_allow_html=True)
-    cols3 = st.columns(3)
-    cards3 = [
-        ("Geographically Disbursed", "Zones Focused on rural and investment ready tracts."),
-        ("Distressed Communities", "Eligibility is dependent on the federal definition of a low-income community."),
-        ("Project Ready", "Aligning regional recommendations with tracts likely to receive private investment.")
-    ]
-    for i, (ct, ctx) in enumerate(cards3):
-        cols3[i].markdown(f"<div class='benefit-card'><h3>{ct}</h3><p>{ctx}</p></div>", unsafe_allow_html=True)
-
-    # --- SECTION 4: BEST PRACTICES ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
-    cols4 = st.columns(3)
-    cards4 = [
-        ("Economic Innovation Group", "Proximity to ports and manufacturing hubs ensures long-term tenant demand.", "https://eig.org/ozs-guidance/"),
-        ("Frost Brown Todd", "Utilizing local educational anchors to provide a skilled labor force.", "https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/"),
-        ("America First Policy Institute", "Stack incentives to de-risk projects for long-term growth.", "https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact")
-    ]
-    for i, (ct, ctx, url) in enumerate(cards4):
-        cols4[i].markdown(f"""
-            <div class='benefit-card'>
-                <h3><a href='{url}' target='_blank'>{ct}</a></h3>
-                <p>{ctx}</p>
+    # --- SECTION 2: STRATEGIC OVERVIEW ---
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 2</div>
+            <div class='section-title'>Strategic Impact & Benefits</div>
+            <div class='narrative-text'>
+                Selecting a tract for OZ 2.0 isn't just a designation—it's a catalyst for multi-layered financial and community benefits. 
+                Our framework prioritizes three core pillars of development.
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+    """, unsafe_allow_html=True)
+
+    b1, b2, b3 = st.columns(3)
+    with b1:
+        st.markdown("""
+            <div class='benefit-card'>
+                <h3>Capital Gains Deferral</h3>
+                <p>Investors can reinvest realized capital gains into Qualified Opportunity Funds (QOFs), deferring taxes until 2031 and potentially eliminating taxes on new appreciation.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with b2:
+        st.markdown("""
+            <div class='benefit-card'>
+                <h3>Anchor Asset Synergy</h3>
+                <p>By focusing on tracts near universities, hospitals, and industrial hubs, we ensure that new investments have built-in stability and workforce pipelines.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with b3:
+        st.markdown("""
+            <div class='benefit-card'>
+                <h3>Community Wealth</h3>
+                <p>OZ 2.0 targets "Deeply Distressed" and "NMTC Eligible" tracts, ensuring that capital flows to the communities that will benefit most from job creation and infrastructure.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # --- SECTION 3: DATA INTEGRITY ---
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 3</div>
+            <div class='section-title'>Data-Driven Methodology</div>
+            <div class='narrative-text'>
+                Our recommendations are powered by the <b>Opportunity Zones Master File</b> and real-time <b>Anchor Asset Mapping</b>. 
+                We evaluate every tract based on poverty levels, unemployment rates, and proximity to strategic economic anchors.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # --- SECTION 4: INSTRUCTIONS ---
+    st.markdown("""
+        <div class='content-section'>
+            <div class='section-num'>SECTION 4</div>
+            <div class='section-title'>How to Use This Portal</div>
+            <div class='narrative-text'>
+                1. <b>Explore the Map:</b> Use Section 5 to find tracts near specific industrial or community assets.<br>
+                2. <b>Analyze the Metrics:</b> Review the Section 6 "Perfect Nine" grid for detailed socioeconomic data.<br>
+                3. <b>Submit Recommendations:</b> Add selected tracts to your session list and provide your narrative justification.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
