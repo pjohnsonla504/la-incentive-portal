@@ -76,7 +76,7 @@ if check_password():
             color: #ffffff; 
         }
 
-        /* White Dropdown Filters with Dark Text */
+        /* Clean White Dropdowns */
         div[data-baseweb="select"] > div {
             background-color: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
@@ -115,17 +115,9 @@ if check_password():
         .anchor-dist { color:#94a3b8; font-size:0.85rem; margin-bottom: 12px; }
         
         .view-site-btn { 
-            display: block; 
-            background-color: #4ade80; 
-            color: #0b0f19 !important; 
-            padding: 8px 0; 
-            border-radius: 4px; 
-            text-decoration: none !important; 
-            font-size: 0.75rem; 
-            font-weight: 900; 
-            text-align: center;
-            border: 2px solid #4ade80;
-            width: 100%;
+            display: block; background-color: #4ade80; color: #0b0f19 !important; 
+            padding: 8px 0; border-radius: 4px; text-decoration: none !important; 
+            font-size: 0.75rem; font-weight: 900; text-align: center; border: 2px solid #4ade80; width: 100%;
         }
         .view-site-btn:hover { background-color: transparent; color: #4ade80 !important; }
         </style>
@@ -151,6 +143,7 @@ if check_password():
 
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        # Eligibility logic: Green highlights for OZ 2.0 Eligible
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -171,8 +164,7 @@ if check_password():
     gj, master_df, anchors_df, tract_centers = load_assets()
 
     def get_zoom_center(geoids):
-        if not geoids or not gj:
-            return {"lat": 30.9, "lon": -91.8}, 6.0
+        if not geoids or not gj: return {"lat": 30.9, "lon": -91.8}, 6.0
         lats, lons = [], []
         found = False
         for feature in gj['features']:
@@ -217,28 +209,41 @@ if check_password():
         return fig
 
     # --- SECTION 1: HERO ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs, housing, and innovation in Louisiana's most promising census tracts. This portal identifies high-readiness zones where strategic investment meets community need.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking long-term private capital to fuel jobs, housing, and innovation in Louisiana's most promising census tracts.</div></div>", unsafe_allow_html=True)
 
     # --- SECTION 2: BENEFIT FRAMEWORK ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div><div class='narrative-text'>The Opportunity Zones 2.0 program provides three primary federal tax incentives to de-risk projects and encourage long-term equity investment.</div>", unsafe_allow_html=True)
-    c2_1, c2_2, c2_3 = st.columns(3)
-    c2_1.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Investors can defer federal taxes on any prior capital gains until December 31, 2026, if those gains are reinvested in a Qualified Opportunity Fund (QOF).</p></div>", unsafe_allow_html=True)
-    c2_2.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>For capital gains held in a QOF for at least 5 years, the taxpayer's basis is increased by 10%. If held for 7 years, it increases to 15% (depending on legislative windows).</p></div>", unsafe_allow_html=True)
-    c2_3.markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>A post-investment gain on an investment in a QOF is completely excluded from federal income tax if the investment is held for at least 10 years.</p></div>", unsafe_allow_html=True)
+    c2cols = st.columns(3)
+    c2_data = [
+        ("Capital Gain Deferral", "Investors can defer federal taxes on any prior capital gains until December 31, 2026, if reinvested in a QOF."),
+        ("Basis Step-Up", "For capital gains held in a QOF for at least 5 years, the taxpayer's basis is increased by 10%."),
+        ("Permanent Exclusion", "Post-investment gains on an investment in a QOF are excluded from federal tax if held for at least 10 years.")
+    ]
+    for i, (title, text) in enumerate(c2_data):
+        c2cols[i].markdown(f"<div class='benefit-card'><h3>{title}</h3><p>{text}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 3: TRACT ADVOCACY ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Tract Advocacy</div><div class='narrative-text'>The nomination process for OZ 2.0 is based on "Project Readiness." We focus on tracts where industrial anchors, transit hubs, and educational institutions converge.</div>", unsafe_allow_html=True)
-    c3_1, c3_2, c3_3 = st.columns(3)
-    c3_1.markdown("<div class='benefit-card'><h3>Geographically Disbursed</h3><p>Selection ensures that every region of Louisiana—from the Delta to the Gulf—has access to the transformative power of private capital.</p></div>", unsafe_allow_html=True)
-    c3_2.markdown("<div class='benefit-card'><h3>Distressed Communities</h3><p>Prioritizing tracts defined as 'Low-Income Communities' (LIC) to ensure the economic lift reaches those who need it most.</p></div>", unsafe_allow_html=True)
-    c3_3.markdown("<div class='benefit-card'><h3>Project Ready</h3><p>Advocacy is targeted at tracts that have already undergone site-selection preparation, ensuring a faster path from investment to impact.</p></div>", unsafe_allow_html=True)
+    # Fixed the "Project Readiness" syntax error here
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Tract Advocacy</div><div class='narrative-text'>The nomination process for OZ 2.0 is based on 'Project Readiness.' We focus on tracts where industrial anchors, transit hubs, and educational institutions converge.</div>", unsafe_allow_html=True)
+    c3cols = st.columns(3)
+    c3_data = [
+        ("Geographically Disbursed", "Selection ensures that every region of Louisiana—from the Delta to the Gulf—has access to transformative capital."),
+        ("Distressed Communities", "Prioritizing tracts defined as 'Low-Income Communities' (LIC) to ensure the economic lift reaches those in need."),
+        ("Project Ready", "Advocacy is targeted at tracts that have undergone site-selection preparation, ensuring a faster path to impact.")
+    ]
+    for i, (title, text) in enumerate(c3_data):
+        c3cols[i].markdown(f"<div class='benefit-card'><h3>{title}</h3><p>{text}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 4: BEST PRACTICES ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Louisiana's OZ 2.0 strategy is informed by national leaders in economic policy and urban development.</div>", unsafe_allow_html=True)
-    c4_1, c4_2, c4_3 = st.columns(3)
-    c4_1.markdown("<div class='benefit-card'><h3><a href='https://eig.org/ozs-guidance/' target='_blank'>Economic Innovation Group ↗</a></h3><p>Utilizing the EIG framework for ensuring that zones catalyze measurable community wealth building and sustainable jobs.</p></div>", unsafe_allow_html=True)
-    c4_2.markdown("<div class='benefit-card'><h3><a href='https://fbtgibbons.com/' target='_blank'>Frost Brown Todd ↗</a></h3><p>Applying legal best practices for Governor-led nominations to ensure compliance and transparency in the selection process.</p></div>", unsafe_allow_html=True)
-    c4_3.markdown("<div class='benefit-card'><h3><a href='https://americafirstpolicy.com/' target='_blank'>America First Policy ↗</a></h3><p>Incorporating the state-level blueprint for economic revitalization through deregulation and localized incentive stacking.</p></div>", unsafe_allow_html=True)
+    c4cols = st.columns(3)
+    c4_data = [
+        ("Economic Innovation Group", "Utilizing the EIG framework for ensuring that zones catalyze measurable community wealth building.", "https://eig.org/ozs-guidance/"),
+        ("Frost Brown Todd", "Applying legal best practices for Governor-led nominations to ensure compliance and transparency.", "https://fbtgibbons.com/"),
+        ("America First Policy", "Incorporating the state-level blueprint for economic revitalization through localized incentive stacking.", "https://americafirstpolicy.com/")
+    ]
+    for i, (title, text, link) in enumerate(c4_data):
+        c4cols[i].markdown(f"<div class='benefit-card'><h3><a href='{link}' target='_blank'>{title} ↗</a></h3><p>{text}</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAPPING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Asset Mapping</div>", unsafe_allow_html=True)
