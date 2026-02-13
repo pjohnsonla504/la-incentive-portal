@@ -84,6 +84,8 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         .tract-header-container { background-color: #111827 !important; padding: 20px; border-radius: 10px; border-top: 4px solid #4ade80; border: 1px solid #1e293b; margin-bottom: 15px;}
+        .view-site-btn { display: inline-block; background-color: #4ade80; color: #0b0f19; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 800; margin-top: 8px; }
+        .view-site-btn:hover { background-color: #22c55e; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -106,12 +108,16 @@ if check_password():
                 except: continue
             return pd.read_csv(path)
 
+        # Updated mapping from Opportunity Zones Master File
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        
+        # Tracks highlighted green are those eligible for OZ 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
         
+        # Anchor data from LA anchors CSV
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         
@@ -196,10 +202,21 @@ if check_password():
             if selected_asset_type != "All Assets": working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
             working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in working_anchors.sort_values('dist').head(12).iterrows():
-                list_html += f"<div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:8px;'><div style='color:#4ade80; font-size:0.6rem; font-weight:900;'>{str(a['Type']).upper()}</div><div style='color:white; font-weight:700; font-size:0.9rem;'>{a['Name']}</div><div style='color:#94a3b8; font-size:0.7rem;'>{a['dist']:.1f} miles</div></div>"
+                # Restore hyperlinks for Land and Building assets
+                btn_html = ""
+                if str(a.get('Type', '')).lower() in ['land', 'building'] and pd.notna(a.get('Link')):
+                    btn_html = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>View Site ↗</a>"
+                
+                list_html += f"""
+                    <div style='background:#111827; border:1px solid #1e293b; padding:12px; border-radius:8px; margin-bottom:8px;'>
+                        <div style='color:#4ade80; font-size:0.6rem; font-weight:900;'>{str(a['Type']).upper()}</div>
+                        <div style='color:white; font-weight:700; font-size:0.9rem;'>{a['Name']}</div>
+                        <div style='color:#94a3b8; font-size:0.7rem;'>{a['dist']:.1f} miles</div>
+                        {btn_html}
+                    </div>"""
         components.html(f"<div style='height: 520px; overflow-y: auto; font-family: sans-serif;'>{list_html if list_html else '<p style=color:#475569;>Select a tract to view assets.</p>'}</div>", height=540)
 
-    # --- SECTION 6: TRACT PROFILING (HEADER + 9 METRIC GRID) ---
+    # --- SECTION 6: TRACT PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.65, 0.35], gap="large") 
     with c6a:
