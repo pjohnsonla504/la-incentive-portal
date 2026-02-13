@@ -184,22 +184,24 @@ if check_password():
     gj, master_df, anchors_df, tract_centers = load_assets()
 
     def render_map(df, is_filtered=False, height=600):
-        # 1. Update status for recommended tracts
-        recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
-        map_df = df.copy()
-        map_df.loc[map_df['geoid_str'].isin(recs), 'Eligibility_Status'] = "Recommended"
+        # Logic to highlight recommended tracts orange
+        recommended_ids = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
+        
+        # Create a display copy so we don't overwrite master data
+        display_df = df.copy()
+        display_df.loc[display_df['geoid_str'].isin(recommended_ids), 'Eligibility_Status'] = "Recommended"
 
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
-        if is_filtered and not map_df.empty:
-            active_ids = map_df['geoid_str'].tolist()
+        if is_filtered and not display_df.empty:
+            active_ids = display_df['geoid_str'].tolist()
             subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
             if subset_centers:
                 lons, lats = zip(*subset_centers)
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
                 zoom = 8.5 
         
-        fig = px.choropleth_mapbox(map_df, geojson=gj, locations="geoid_str", 
+        fig = px.choropleth_mapbox(display_df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Eligibility_Status", 
                                      color_discrete_map={
@@ -208,20 +210,7 @@ if check_password():
                                          "Recommended": "#f97316" # ORANGE
                                      },
                                      mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
-        
-        # 2. Add Legend & Enable Scroll Zoom
-        fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)', 
-            showlegend=True, 
-            legend=dict(
-                yanchor="top", y=0.99, xanchor="left", x=0.01,
-                bgcolor="rgba(17, 24, 39, 0.8)", font=dict(color="white", size=10)
-            ),
-            height=height, 
-            clickmode='event+select',
-            mapbox_scrollzoom=True  # ENABLE SCROLL ZOOM
-        )
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', showlegend=False, height=height, clickmode='event+select')
         return fig
 
     # --- SECTION 1: HERO ---
