@@ -17,7 +17,7 @@ st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
-    st.session_state["active_tract"] = None # Start with no selection
+    st.session_state["active_tract"] = None 
 if "current_user" not in st.session_state:
     st.session_state["current_user"] = None
 if "password_correct" not in st.session_state:
@@ -99,7 +99,6 @@ if check_password():
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
-        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 220px; transition: all 0.3s ease; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-top: 5px; line-height: 1.2;}
@@ -163,7 +162,7 @@ if check_password():
 
     gj, master_df, anchors_df, tract_centers = load_assets()
 
-    # --- MODIFIED RENDER MAP FOR LINKED ISOLATION ---
+    # --- MODIFIED RENDER MAP FOR DIMMING EFFECT ---
     def render_map(df, isolated_id=None, is_filtered=False, height=600):
         recs = [str(r["Tract ID"]) for r in st.session_state["session_recs"]]
         map_df = df.copy()
@@ -173,26 +172,30 @@ if check_password():
         center = {"lat": 30.8, "lon": -91.8}
         zoom = 6.2 
         
-        # If a specific tract is selected, center on it and isolate
         if isolated_id and isolated_id in tract_centers:
             lon, lat = tract_centers[isolated_id]
             center = {"lat": lat, "lon": lon}
-            zoom = 11.0
-            # Optional: Filter map to only show selection + recommendations
-            # map_df = map_df[map_df['geoid_str'].isin([isolated_id] + recs)]
-        elif is_filtered and not map_df.empty:
-            active_ids = map_df['geoid_str'].tolist()
-            subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
-            if subset_centers:
-                lons, lats = zip(*subset_centers)
-                center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                zoom = 8.5 
-        
+            zoom = 10.5
+            # Logic: All tracts 0.1 opacity, Active tract 0.9 opacity
+            map_df['Opacity'] = map_df['geoid_str'].apply(lambda x: 0.9 if x == isolated_id else 0.1)
+        else:
+            if is_filtered and not map_df.empty:
+                active_ids = map_df['geoid_str'].tolist()
+                subset_centers = [tract_centers[gid] for gid in active_ids if gid in tract_centers]
+                if subset_centers:
+                    lons, lats = zip(*subset_centers)
+                    center = {"lat": np.mean(lats), "lon": np.mean(lons)}
+                    zoom = 8.5 
+            map_df['Opacity'] = 0.5 # Default opacity when no tract is active
+
         fig = px.choropleth_mapbox(map_df, geojson=gj, locations="geoid_str", 
                                      featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
                                      color="Eligibility_Status", 
                                      color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#cbd5e1", "Recommended": "#f97316"},
-                                     mapbox_style="carto-positron", zoom=zoom, center=center, opacity=0.5)
+                                     mapbox_style="carto-positron", zoom=zoom, center=center)
+        
+        # Apply the dynamic opacity values
+        fig.update_traces(marker_opacity=map_df['Opacity'])
         
         fig.update_layout(
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', 
@@ -203,7 +206,6 @@ if check_password():
 
     chart_config = {"scrollZoom": True}
 
-    # --- HERO SECTIONS (1-4 omitted for brevity, same as previous) ---
     st.markdown("<div class='content-section'><div class='hero-title'>Louisiana OZ 2.0 Portal</div></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: ASSET MAPPING ---
@@ -228,7 +230,6 @@ if check_password():
 
     c5a, c5b = st.columns([0.6, 0.4], gap="large") 
     with c5a:
-        # Pass session_state to render_map
         f5 = render_map(filtered_df, isolated_id=st.session_state["active_tract"], is_filtered=is_actively_filtering)
         s5 = st.plotly_chart(f5, use_container_width=True, on_select="rerun", key="map5", config=chart_config)
         if s5 and "selection" in s5 and s5["selection"]["points"]:
@@ -254,7 +255,6 @@ if check_password():
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Tract Profiling & Recommendations</div>", unsafe_allow_html=True)
     c6a, c6b = st.columns([0.6, 0.4], gap="large") 
     with c6a:
-        # Pass session_state to render_map
         f6 = render_map(filtered_df, isolated_id=st.session_state["active_tract"], is_filtered=is_actively_filtering)
         s6 = st.plotly_chart(f6, use_container_width=True, on_select="rerun", key="map6", config=chart_config)
         if s6 and "selection" in s6 and s6["selection"]["points"]:
