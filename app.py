@@ -343,7 +343,26 @@ if check_password():
         row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]]
         if not row.empty:
             d = row.iloc[0]
-            st.markdown(f"<div class='tract-header-container'><div style='font-size:2rem; font-weight:900; color:#4ade80;'>{str(d.get('Parish','')).upper()}</div><div style='color:#94a3b8;'>TRACT: {st.session_state['active_tract']}</div></div>", unsafe_allow_html=True)
+            
+            # Formatted Population
+            pop_val = d.get('Estimate!!Total!!Population', 0)
+            formatted_pop = f"{int(clean_currency(pop_val)):,}"
+
+            # Updated Header with Flexbox for Population on the Right
+            st.markdown(f"""
+                <div class='tract-header-container'>
+                    <div style='display: flex; justify-content: space-between; align-items: baseline;'>
+                        <div style='font-size: 2rem; font-weight: 900; color: #4ade80;'>
+                            {str(d.get('Parish','')).upper()}
+                        </div>
+                        <div style='text-align: right;'>
+                            <div style='color: #94a3b8; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;'>Tract Population</div>
+                            <div style='font-size: 1.5rem; font-weight: 900; color: #ffffff;'>{formatted_pop}</div>
+                        </div>
+                    </div>
+                    <div style='color: #94a3b8; font-size: 0.8rem; margin-top: -5px;'>TRACT: {st.session_state['active_tract']}</div>
+                </div>
+            """, unsafe_allow_html=True)
             
             m_cols = [st.columns(3) for _ in range(3)]
             metrics = [
@@ -354,8 +373,8 @@ if check_password():
                 (f"{d.get('_unemp_num', 0):.1f}%", "Unemployment"),
                 (f"${clean_currency(d.get('_mfi_num', 0)):,.0f}", "Median Income"),
                 (f"${clean_currency(d.get('Median Home Value', 0)):,.0f}", "Median Home Value"),
-                (d.get('Population 65 years and over', '0'), "Population over 65"),
-                (f"{d.get('Broadband Internet (%)','0')}%", "Broadband Accessibility")
+                (d.get('Population 65 years and over', '0'), "Pop 65+"),
+                (f"{d.get('Broadband Internet (%)','0')}", "Broadband")
             ]
             for i, (val, lbl) in enumerate(metrics):
                 m_cols[i//3][i%3].markdown(f"<div class='metric-card'><div class='metric-value'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
