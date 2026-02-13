@@ -108,6 +108,14 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         
+        /* Justification Box Styling */
+        div[data-testid="stTextArea"] textarea {
+            background-color: #111827 !important;
+            color: #f8fafc !important;
+            border: 1px solid #1e293b !important;
+            border-radius: 8px !important;
+        }
+
         .anchor-card { background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; }
         .anchor-type { color:#4ade80; font-size:0.7rem; font-weight:900; letter-spacing:0.12em; text-transform: uppercase; margin-bottom: 4px; }
         .anchor-name { color:#ffffff; font-weight:800; font-size:1.1rem; line-height: 1.2; margin-bottom:4px; }
@@ -143,7 +151,6 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # NMTC Calculation Logic aligned with PolicyMap Embed instructions
         pov_col = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
         mfi_ratio_col = "Percentage of Benchmarked Median Family Income" 
         unemp_ratio_col = "Unemployment Ratio" 
@@ -161,7 +168,6 @@ if check_password():
 
         master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
 
-        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -326,9 +332,22 @@ if check_password():
             m_row3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
             m_row3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
+            # --- Narrative Justification Box ---
+            st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+            justification = st.text_area(
+                "Narrative Justification", 
+                placeholder=f"Enter strategic justification for Tract {st.session_state['active_tract']}...",
+                height=120,
+                key="tract_justification"
+            )
+
             if st.button("Add to Selection", use_container_width=True, type="primary"):
-                st.session_state["session_recs"].append({"Tract": st.session_state["active_tract"], "Parish": row['Parish']})
-                st.toast("Tract Added!")
+                st.session_state["session_recs"].append({
+                    "Tract": st.session_state["active_tract"], 
+                    "Parish": row['Parish'],
+                    "Justification": justification
+                })
+                st.toast("Tract Added with Justification!")
         else: st.info("Select a tract on the map.")
 
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
