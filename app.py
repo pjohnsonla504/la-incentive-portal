@@ -215,17 +215,32 @@ if check_password():
         geoids = set(map_df['geoid_str'].tolist())
         center, zoom = get_zoom_center(geoids)
         sel_idx = []
+        
+        # Get list of currently recommended tracts to color orange
+        recommended_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
+        
+        # Logic for coloring: 2 = Orange (Recommended), 1 = Green (Eligible), 0 = Gray (Ineligible)
+        def determine_color_val(row):
+            if row['geoid_str'] in recommended_geoids:
+                return 2
+            return 1 if row['Eligibility_Status'] == 'Eligible' else 0
+
+        map_df['map_color_val'] = map_df.apply(determine_color_val, axis=1)
+
         if st.session_state["active_tract"]:
             sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist()
+        
         fig = go.Figure(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'],
-            z=np.where(map_df['Eligibility_Status'] == 'Eligible', 1, 0),
+            z=map_df['map_color_val'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#e2e8f0'], [1, '#4ade80']], showscale=False,
+            # ColorScale: 0=Gray, 1=Green, 2=Orange
+            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#fb923c']], 
+            showscale=False,
             marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx,
             selected=dict(marker=dict(opacity=1.0)),
-            unselected=dict(marker=dict(opacity=0.2)),
+            unselected=dict(marker=dict(opacity=0.4)),
             hoverinfo="location"
         ))
         fig.update_layout(
@@ -343,12 +358,17 @@ if check_password():
             )
 
             if st.button("Add to Selection", use_container_width=True, type="primary"):
-                st.session_state["session_recs"].append({
-                    "Tract": st.session_state["active_tract"], 
-                    "Parish": row['Parish'],
-                    "Justification": justification
-                })
-                st.toast("Tract Added to Recommendation Report!")
+                # Check if already in list to avoid duplicates
+                if not any(d['Tract'] == st.session_state["active_tract"] for d in st.session_state["session_recs"]):
+                    st.session_state["session_recs"].append({
+                        "Tract": st.session_state["active_tract"], 
+                        "Parish": row['Parish'],
+                        "Justification": justification
+                    })
+                    st.toast("Tract Added to Recommendation Report!")
+                    st.rerun() # Rerun to update map colors
+                else:
+                    st.warning("Tract is already in your selection.")
         else: st.info("Select a tract on the map to begin profiling.")
 
     # --- SECTION 7: RECOMMENDATION REPORT ---
@@ -357,7 +377,6 @@ if check_password():
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
         
-        # Displaying a clean table using Streamlit Dataframe
         st.dataframe(
             report_df, 
             use_container_width=True, 
@@ -375,7 +394,6 @@ if check_password():
                 st.session_state["session_recs"] = []
                 st.rerun()
         with c7_act2:
-            # Simple CSV export
             csv = report_df.to_csv(index=False).encode('utf-8')
             st.download_button(
                 label="Export to CSV",
