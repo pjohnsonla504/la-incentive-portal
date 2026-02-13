@@ -344,8 +344,9 @@ if check_password():
         if not row.empty:
             d = row.iloc[0]
             
-            # Formatted Population
-            pop_val = d.get('Estimate!!Total!!Population', 0)
+            # Pull Population from specific column provided by user
+            pop_col = 'Estimate!!Total!!Population for whom poverty status is determined'
+            pop_val = d.get(pop_col, 0)
             formatted_pop = f"{int(clean_currency(pop_val)):,}"
 
             # Updated Header with Flexbox for Population on the Right
