@@ -70,11 +70,11 @@ if check_password():
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
 
-        /* Navigation Sidebar */
+        /* Sidebar TOC */
         .toc-link { display: block; padding: 10px; color: #94a3b8 !important; text-decoration: none; font-weight: 600; font-size: 0.85rem; border-radius: 5px; margin-bottom: 5px; }
         .toc-link:hover { background-color: #1e293b; color: #4ade80 !important; }
 
-        /* Force Filter Titles to White */
+        /* White Labels for Filters */
         label[data-testid="stWidgetLabel"] p { color: white !important; font-weight: 700 !important; }
 
         /* Content Sections */
@@ -83,20 +83,20 @@ if check_password():
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; }
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 900px; margin-bottom: 20px; }
         
-        /* Benefit Cards (Sections 2-4) */
+        /* Benefit Cards */
         .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 160px; }
 
-        /* Dashboard (Section 5) - Tightening Space */
-        .dashboard-card { background-color: #111827 !important; padding: 15px; border: 1px solid #1e293b; border-radius: 12px; height: 560px; overflow-y: auto; }
-        .eligible-border { border: 2px solid #4ade80 !important; box-shadow: 0 0 10px rgba(74, 222, 128, 0.2); }
+        /* Dashboard Analysis Row */
+        .dashboard-card { background-color: #111827 !important; padding: 15px; border: 1px solid #1e293b; border-radius: 12px; height: 560px; overflow-y: auto; margin-top: -10px; }
+        .eligible-border { border: 2px solid #4ade80 !important; box-shadow: 0 0 15px rgba(74, 222, 128, 0.15); }
         
         .metric-card-inner { background-color: #1f2937; padding: 10px; border: 1px solid #374151; border-radius: 8px; text-align: center; margin-bottom: 8px; height: 80px; display: flex; flex-direction: column; justify-content: center; }
         .m-val { font-size: 1.0rem; font-weight: 900; color: #4ade80; }
         .m-lab { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
         .anchor-ui-box { background: #1f2937; border: 1px solid #374151; padding: 10px; border-radius: 8px; margin-bottom: 6px; }
         
-        /* Remove Streamlit padding between elements */
-        .block-container { padding-top: 2rem !important; }
+        /* Global Space Reduction */
+        .block-container { padding-top: 1.5rem !important; }
         [data-testid="stVerticalBlock"] > div { padding-top: 0px !important; padding-bottom: 0px !important; }
         </style>
         """, unsafe_allow_html=True)
@@ -161,7 +161,7 @@ if check_password():
         fig.update_layout(
             mapbox=dict(style="carto-positron", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
-            height=500, clickmode='event+select', uirevision="constant"
+            height=450, clickmode='event+select', uirevision="constant"
         )
         return fig
 
@@ -192,9 +192,9 @@ if check_password():
 
     st.markdown("<div id='section-4'></div><div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div>", unsafe_allow_html=True)
     c4 = st.columns(3)
-    c4[0].markdown("<div class='benefit-card'><h3>EIG</h3><p><a href='https://eig.org/ozs-guidance/'>Policy Guidance ↗</a></p></div>", unsafe_allow_html=True)
-    c4[1].markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p><a href='https://fbtgibbons.com/'>Legal Structures ↗</a></p></div>", unsafe_allow_html=True)
-    c4[2].markdown("<div class='benefit-card'><h3>America First Policy</h3><p><a href='https://americafirstpolicy.com/'>Blueprints ↗</a></p></div>", unsafe_allow_html=True)
+    c4[0].markdown("<div class='benefit-card'><h3>EIG</h3><p><a href='https://eig.org/ozs-guidance/' target='_blank'>Policy Guidance ↗</a></p></div>", unsafe_allow_html=True)
+    c4[1].markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p><a href='https://fbtgibbons.com/' target='_blank'>Legal Structures ↗</a></p></div>", unsafe_allow_html=True)
+    c4[2].markdown("<div class='benefit-card'><h3>America First Policy</h3><p><a href='https://americafirstpolicy.com/' target='_blank'>Blueprints ↗</a></p></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- SECTION 5: COMMAND CENTER ---
@@ -202,13 +202,13 @@ if check_password():
     
     # Filter Bar
     f1, f2, f3 = st.columns([1, 1, 1])
-    with f1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
+    with f1: selected_region = st.selectbox("Select Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
     filtered_df = master_df.copy()
     if selected_region != "All Louisiana": filtered_df = filtered_df[filtered_df['Region'] == selected_region]
-    with f2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
+    with f2: selected_parish = st.selectbox("Select Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
     if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
     with f3: 
-        search_q = st.text_input("Tract Search", placeholder="Enter 11-digit GEOID")
+        search_q = st.text_input("Tract Search (GEOID)", placeholder="Enter 11-digit FIPS")
         if search_q and search_q in master_df['geoid_str'].values:
             st.session_state["active_tract"] = search_q
 
@@ -228,7 +228,7 @@ if check_password():
     card_a, card_b, card_c = st.columns(3)
 
     with card_a:
-        st.markdown(f"<div class='dashboard-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='dashboard-card'>", unsafe_allow_html=True)
         st.subheader("📍 Anchor Assets")
         anc_f = st.selectbox("Filter Assets", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
         if curr_id and curr_id in tract_centers:
@@ -238,11 +238,10 @@ if check_password():
             wa['dist'] = wa.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             for _, a in wa.sort_values('dist').head(8).iterrows():
                 st.markdown(f"<div class='anchor-ui-box'><b style='color:#4ade80;'>{a['Type']}</b><br>{a['Name']}<br><small>{a['dist']:.1f} miles away</small></div>", unsafe_allow_html=True)
-        else: st.info("Select a tract to analyze anchors.")
+        else: st.info("Select a tract on the map.")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with card_b:
-        # Conditional Highlight Class
         border_class = "eligible-border" if is_eligible else ""
         st.markdown(f"<div class='dashboard-card {border_class}'>", unsafe_allow_html=True)
         st.subheader("📊 Tract Profile")
@@ -250,22 +249,32 @@ if check_password():
             row = master_df[master_df["geoid_str"] == curr_id].iloc[0]
             st.markdown(f"**GEOID:** `{curr_id}`")
             if is_eligible: st.markdown("<small style='color:#4ade80;'><b>OZ 2.0 ELIGIBLE</b></small>", unsafe_allow_html=True)
-            
             m_rows = [st.columns(3) for _ in range(3)]
-            # R1
             m_rows[0][0].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='m-lab'>Poverty</div></div>", unsafe_allow_html=True)
             m_rows[0][1].markdown(f"<div class='metric-card-inner'><div class='m-val'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='m-lab'>MFI</div></div>", unsafe_allow_html=True)
             m_rows[0][2].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='m-lab'>Unemp.</div></div>", unsafe_allow_html=True)
-            # R2
             m_rows[1][0].markdown(f"<div class='metric-card-inner'><div class='m-val'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='m-lab'>Metro</div></div>", unsafe_allow_html=True)
             m_rows[1][1].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='m-lab'>Pop 18-24</div></div>", unsafe_allow_html=True)
             m_rows[1][2].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='m-lab'>Pop 65+</div></div>", unsafe_allow_html=True)
-            # R3
             m_rows[2][0].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='m-lab'>Broadband</div></div>", unsafe_allow_html=True)
             m_rows[2][1].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_int(row.get('Total Housing Units', 0)):,}</div><div class='m-lab'>Units</div></div>", unsafe_allow_html=True)
             m_rows[2][2].markdown(f"<div class='metric-card-inner'><div class='m-val'>{row.get('NMTC_Calculated', 'Ineligible')}</div><div class='m-lab'>NMTC</div></div>", unsafe_allow_html=True)
-        else: st.info("Select a tract to see 9-point profile.")
+        else: st.info("Select a tract to view metrics.")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with card_c:
-        st.markdown(
+        st.markdown("<div class='dashboard-card'>", unsafe_allow_html=True)
+        st.subheader("✍️ Recommendation")
+        cat = st.selectbox("Category", ["Industrial", "Housing", "Retail", "Infrastructure", "Other"])
+        just = st.text_area("Justification", height=230, placeholder="Explain selection...")
+        if st.button("Save Recommendation", use_container_width=True, type="primary"):
+            if curr_id:
+                st.session_state["session_recs"].append({"Tract": curr_id, "Category": cat, "Justification": just})
+                st.toast("Saved to Report")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 6: REPORT ---
+    st.markdown("<div id='section-6'></div><div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Final Report</div>", unsafe_allow_html=True)
+    if st.session_state["session_recs"]:
+        st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True, hide_index=True)
+    else: st.info("No recommendations added.")
