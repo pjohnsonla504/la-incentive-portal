@@ -95,14 +95,8 @@ if check_password():
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
-        .hero-title { font-size: 3.2rem; font-weight: 900; color: #f8fafc; margin-bottom: 15px; }
-        .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 950px; margin-bottom: 25px; }
         
-        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 200px; transition: all 0.3s ease; }
-        .benefit-card:hover { border-color: #4ade80 !important; }
-        .benefit-card h3 { color: #f8fafc; margin-bottom: 10px; font-weight: 800; }
-        
-        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 90px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
+        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 95px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         
@@ -113,11 +107,11 @@ if check_password():
             border-radius: 8px !important;
         }
 
-        .anchor-card { background:#111827; border:1px solid #1e293b; padding:20px; border-radius:10px; margin-bottom:15px; }
+        .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
         .view-site-btn { 
             display: block; background-color: #4ade80; color: #0b0f19 !important; 
-            padding: 8px 0; border-radius: 4px; text-decoration: none !important; 
-            font-size: 0.75rem; font-weight: 900; text-align: center; border: 2px solid #4ade80; width: 100%;
+            padding: 6px 0; border-radius: 4px; text-decoration: none !important; 
+            font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -179,22 +173,16 @@ if check_password():
     def get_zoom_center(geoids):
         if not geoids or not gj: return {"lat": 30.9, "lon": -91.8}, 6.0
         lats, lons = [], []
-        found = False
         for feature in gj['features']:
             gid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
             if gid in geoids:
-                found = True
                 coords = feature['geometry']['coordinates'][0]
                 if feature['geometry']['type'] == 'MultiPolygon': coords = coords[0]
                 pts = np.array(coords)
                 lons.extend(pts[:, 0]); lats.extend(pts[:, 1])
-        if not found: return {"lat": 30.9, "lon": -91.8}, 6.0
-        min_lat, max_lat = min(lats), max(lats)
-        min_lon, max_lon = min(lons), max(lons)
-        center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
-        max_diff = max(max_lat - min_lat, max_lon - min_lon)
-        zoom = max(6, min(12, 8 - np.log2(max_diff))) if max_diff != 0 else 12
-        return center, zoom
+        if not lats: return {"lat": 30.9, "lon": -91.8}, 6.0
+        center = {"lat": (min(lats) + max(lats)) / 2, "lon": (min(lons) + max(lons)) / 2}
+        return center, 6.5
 
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
@@ -217,16 +205,12 @@ if check_password():
                           height=600, clickmode='event+select', uirevision=str(center))
         return fig
 
-    # --- SECTIONS 1-4 ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Tract Advocacy</div></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div></div>", unsafe_allow_html=True)
+    # --- TOP NAV SECTIONS ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1-4</div><div class='section-title'>Opportunity Zones 2.0 Strategic Overview</div></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: STRATEGIC MAPPING & PROFILING ---
+    # --- SECTION 5: MAPPING & PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Mapping & Profiling</div>", unsafe_allow_html=True)
     
-    # Regional Filters (Anchor Filter moved below)
     f_col1, f_col2 = st.columns(2)
     with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
     filtered_df = master_df.copy()
@@ -234,7 +218,7 @@ if check_password():
     with f_col2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
     if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
 
-    # THE MAP
+    # FULL WIDTH MAP
     combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map")
     if combined_map and "selection" in combined_map and combined_map["selection"]["points"]:
         new_id = str(combined_map["selection"]["points"][0]["location"])
@@ -248,7 +232,7 @@ if check_password():
         curr = st.session_state["active_tract"]
         row = master_df[master_df["geoid_str"] == curr].iloc[0]
         
-        # Fixed Triple-Quoted String Closure
+        # Header Box
         st.markdown(f"""
             <div style='display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 20px;'>
                 <div>
@@ -257,7 +241,7 @@ if check_password():
                 </div>
                 <div style='text-align: right;'>
                     <div style='font-size: 1.6rem; font-weight: 900; color: #f8fafc;'>{safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}</div>
-                    <div style='color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;'>Population</div>
+                    <div style='color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;'>Population</div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -267,27 +251,28 @@ if check_password():
         with d_col1:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>TRACT DEMOGRAPHICS</p>", unsafe_allow_html=True)
             
-            # 9 Metric Data Cards (3x3 Grid)
-            m_row1 = st.columns(3)
-            m_row1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
+            # Grid 1
+            m1 = st.columns(3)
+            m1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
             is_nmtc = "YES" if row['NMTC_Calculated'] in ["Eligible", "Deep Distress"] else "NO"
-            m_row1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{is_nmtc}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
+            m1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{is_nmtc}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
             is_deep = "YES" if row['NMTC_Calculated'] == "Deep Distress" else "NO"
-            m_row1[2].markdown(f"<div class='metric-card'><div class='metric-value'>{is_deep}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
+            m1[2].markdown(f"<div class='metric-card'><div class='metric-value'>{is_deep}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
             
-            m_row2 = st.columns(3)
+            # Grid 2
+            m2 = st.columns(3)
             pov_val = safe_float(row.get("Estimate!!Percent below poverty level!!Population for whom poverty status is determined", 0))
             mfi_val = safe_float(row.get("Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)", 0))
-            m_row2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{pov_val:.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
-            m_row2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${mfi_val:,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
-            m_row2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
+            m2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{pov_val:.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
+            m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${mfi_val:,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
+            m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
             
-            m_row3 = st.columns(3)
-            m_row3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
-            m_row3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
-            m_row3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
+            # Grid 3
+            m3 = st.columns(3)
+            m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
+            m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
+            m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
-            st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
                 st.session_state["session_recs"].append({"Tract": curr, "Parish": row['Parish'], "Justification": justification})
@@ -296,15 +281,41 @@ if check_password():
 
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS</p>", unsafe_allow_html=True)
-            # Anchor Filter moved below map and above assets
-            selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="prof_anchor_filter")
+            # Filter below the header and above the list
+            selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             
             list_html = ""
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
-                working_anchors = anchors_df.copy()
-                if selected_asset_type != "All Assets": working_anchors = working_anchors[working_anchors['Type'] == selected_asset_type]
-                working_anchors['dist'] = working_anchors.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-                for _, a in working_anchors.sort_values('dist').head(15).iterrows():
-                    btn_html = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>" if pd.notna(a.get('Link')) and str(a['Link']).strip() != "" else ""
-                    list_html += f"<div class='anchor-card'><div style='color:#4ade80; font-size:0.7rem; font-weight:900;'>{str(a['Type']).upper()}</div><div style='color:white; font-weight:800; font-size:1.1rem;'>{
+                working = anchors_df.copy()
+                if selected_asset_type != "All Assets": working = working[working['Type'] == selected_asset_type]
+                working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
+                
+                for _, a in working.sort_values('dist').head(15).iterrows():
+                    link_btn = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>" if pd.notna(a.get('Link')) and str(a['Link']).strip() != "" else ""
+                    list_html += f"""
+                    <div class='anchor-card'>
+                        <div style='color:#4ade80; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div>
+                        <div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div>
+                        <div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>
+                        {link_btn}
+                    </div>
+                    """
+            components.html(f"""
+                <style>body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} 
+                .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }}
+                .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }}
+                </style>
+                {list_html}
+            """, height=440, scrolling=True)
+
+    # --- SECTION 6: RECOMMENDATION REPORT ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
+    if st.session_state["session_recs"]:
+        report_df = pd.DataFrame(st.session_state["session_recs"])
+        st.dataframe(report_df, use_container_width=True, hide_index=True)
+        if st.button("Clear Report"): 
+            st.session_state["session_recs"] = []
+            st.rerun()
+    else: st.info("No tracts selected.")
+    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
