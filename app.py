@@ -64,14 +64,16 @@ def check_password():
     return True
 
 if check_password():
-    # --- 2. GLOBAL STYLING ---
+    # --- 2. GLOBAL STYLING & SIDEBAR TOC ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
 
-        /* Navigation Sidebar */
-        .toc-link { display: block; padding: 10px; color: #94a3b8 !important; text-decoration: none; font-weight: 600; font-size: 0.85rem; border-radius: 5px; margin-bottom: 5px; }
+        /* Sidebar Navigation Styling */
+        [data-testid="stSidebar"] { background-color: #0f172a !important; border-right: 1px solid #1e293b; }
+        .toc-header { color: #4ade80; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 15px; text-transform: uppercase; padding: 0 10px; }
+        .toc-link { display: block; padding: 10px; color: #94a3b8 !important; text-decoration: none; font-weight: 600; font-size: 0.85rem; border-radius: 5px; margin-bottom: 5px; transition: 0.2s; }
         .toc-link:hover { background-color: #1e293b; color: #4ade80 !important; }
 
         /* Force Filter Titles to White */
@@ -83,18 +85,33 @@ if check_password():
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; }
         .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 900px; margin-bottom: 20px; }
         
-        /* Analysis Styling (No Cards) */
-        .eligible-highlight { border-left: 5px solid #4ade80; padding-left: 15px; margin-bottom: 20px; }
-        
+        /* Benefit Cards Restoration */
+        .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 160px; }
+        .benefit-card h3 { color: #4ade80; font-size: 1.2rem; margin-bottom: 10px; }
+        .benefit-card p { color: #94a3b8; font-size: 0.95rem; }
+
+        /* Analysis Metrics Styling */
         .metric-card-inner { background-color: #1f2937; padding: 10px; border: 1px solid #374151; border-radius: 8px; text-align: center; margin-bottom: 8px; height: 80px; display: flex; flex-direction: column; justify-content: center; }
         .m-val { font-size: 1.0rem; font-weight: 900; color: #4ade80; }
         .m-lab { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
         .anchor-ui-box { background: #1f2937; border: 1px solid #374151; padding: 10px; border-radius: 8px; margin-bottom: 6px; }
         
-        /* Tightening Space */
+        /* Global Space Reduction */
         .block-container { padding-top: 1.5rem !important; }
         [data-testid="stVerticalBlock"] > div { padding-top: 0px !important; padding-bottom: 0px !important; }
         </style>
+        """, unsafe_allow_html=True)
+
+    # --- SIDEBAR TOC ---
+    with st.sidebar:
+        st.markdown("<div class='toc-header'>Navigation</div>", unsafe_allow_html=True)
+        st.markdown("""
+            <a href="#section-1" class="toc-link">01. Portal Overview</a>
+            <a href="#section-2" class="toc-link">02. Benefit Framework</a>
+            <a href="#section-3" class="toc-link">03. Tract Advocacy</a>
+            <a href="#section-4" class="toc-link">04. Best Practices</a>
+            <a href="#section-5" class="toc-link">05. Strategic Analysis</a>
+            <a href="#section-6" class="toc-link">06. Final Report</a>
         """, unsafe_allow_html=True)
 
     # --- 3. DATA ENGINE ---
@@ -161,22 +178,34 @@ if check_password():
         )
         return fig
 
-    # Navigation Sidebar
-    st.sidebar.markdown("""
-        <a href="#section-1" class="toc-link">01. Portal Overview</a>
-        <a href="#section-2" class="toc-link">02. Benefit Framework</a>
-        <a href="#section-3" class="toc-link">03. Tract Advocacy</a>
-        <a href="#section-4" class="toc-link">04. Best Practices</a>
-        <a href="#section-5" class="toc-link">05. Strategic Analysis</a>
-    """, unsafe_allow_html=True)
+    # --- RESTORED NARRATIVE SECTIONS ---
+    st.markdown("<div id='section-1'></div><div class='content-section'><div class='section-num'>SECTION 1</div><div class='section-title'>Portal Overview</div><div class='narrative-text'>This portal provides a unified interface for identifying high-impact census tracts eligible for the Opportunity Zones 2.0 initiative. It combines real-time geographic data with socioeconomic metrics to support strategic investment and community advocacy.</div></div>", unsafe_allow_html=True)
+    
+    st.markdown("<div id='section-2'></div><div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div><div class='narrative-text'>Opportunity Zones 2.0 builds upon the original tax incentive structure to drive long-term capital into under-resourced communities.</div>", unsafe_allow_html=True)
+    c2 = st.columns(3)
+    c2[0].markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes on capital gains reinvested into Qualified Opportunity Funds (QOFs) until 2026.</p></div>", unsafe_allow_html=True)
+    c2[1].markdown("<div class='benefit-card'><h3>Step-Up in Basis</h3><p>10% basis increase for investments held 5 years, reducing the tax liability on the original gain.</p></div>", unsafe_allow_html=True)
+    c2[2].markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero capital gains tax on the appreciation of the QOF investment after a 10-year hold period.</p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Narrative Content (Sections 1-4)
-    st.markdown("<div id='section-1'></div><div class='content-section'><div class='section-num'>SECTION 1</div><div class='section-title'>Portal Overview</div><div class='narrative-text'>This portal provides a unified interface for identifying high-impact census tracts eligible for the Opportunity Zones 2.0 initiative.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div id='section-3'></div><div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Tract Advocacy</div><div class='narrative-text'>Successful tract selection depends on a balance of data-driven distress metrics and local asset proximity.</div>", unsafe_allow_html=True)
+    c3 = st.columns(3)
+    c3[0].markdown("<div class='benefit-card'><h3>Geographic Diversity</h3><p>Ensuring representation across all Louisiana regions to distribute economic growth equitably.</p></div>", unsafe_allow_html=True)
+    c3[1].markdown("<div class='benefit-card'><h3>Economic Distress</h3><p>Focusing on tracts meeting high-poverty criteria and low median family income (MFI) thresholds.</p></div>", unsafe_allow_html=True)
+    c3[2].markdown("<div class='benefit-card'><h3>Asset Proximity</h3><p>Justifying selections based on proximity to universities, hospitals, and transit hubs.</p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div id='section-4'></div><div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Guidance from national leaders helps ensure compliance and maximize social impact.</div>", unsafe_allow_html=True)
+    c4 = st.columns(3)
+    c4[0].markdown("<div class='benefit-card'><h3>EIG</h3><p><a href='https://eig.org/ozs-guidance/' target='_blank'>Economic Innovation Group Policy Guidance ↗</a></p></div>", unsafe_allow_html=True)
+    c4[1].markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p><a href='https://fbtgibbons.com/' target='_blank'>Legal Frameworks & Investment Structures ↗</a></p></div>", unsafe_allow_html=True)
+    c4[2].markdown("<div class='benefit-card'><h3>America First Policy</h3><p><a href='https://americafirstpolicy.com/' target='_blank'>OZ Blueprint for Prosperity ↗</a></p></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: COMMAND CENTER ---
+    st.markdown("<div id='section-5'></div><div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Analysis Command Center</div><div class='narrative-text'>Use the tools below to filter regions or select a tract on the map. The anchor assets and data profile will update automatically based on your selection.</div>", unsafe_allow_html=True)
     
-    # Analysis Section
-    st.markdown("<div id='section-5'></div><div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Analysis Command Center</div><div class='narrative-text'>Identify and justify candidate tracts using live geographic and census data.</div>", unsafe_allow_html=True)
-    
-    # Filter Row
+    # Filter Bar
     f1, f2, f3 = st.columns([1, 1, 1])
     with f1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
     filtered_df = master_df.copy()
@@ -184,7 +213,7 @@ if check_password():
     with f2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
     if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
     with f3: 
-        search_q = st.text_input("Tract Search", placeholder="Enter 11-digit GEOID")
+        search_q = st.text_input("Tract Search (GEOID)", placeholder="11-digit FIPS")
         if search_q and search_q in master_df['geoid_str'].values:
             st.session_state["active_tract"] = search_q
 
@@ -194,10 +223,9 @@ if check_password():
         st.session_state["active_tract"] = str(map_ev["selection"]["points"][0]["location"])
         st.rerun()
 
-    # Direct Analysis Area (No Cards)
+    # Analysis Row
     st.markdown("<br>", unsafe_allow_html=True)
     curr_id = st.session_state["active_tract"]
-    
     col_anchors, col_data, col_rec = st.columns(3)
 
     with col_anchors:
@@ -216,23 +244,16 @@ if check_password():
         st.subheader("📊 Tract Profile")
         if curr_id:
             row = master_df[master_df["geoid_str"] == curr_id].iloc[0]
-            is_eligible = row['Eligibility_Status'] == 'Eligible'
-            
-            # Eligibility Indicator
-            if is_eligible:
+            if row['Eligibility_Status'] == 'Eligible':
                 st.markdown("<div style='background-color:rgba(74, 222, 128, 0.1); border: 1px solid #4ade80; padding: 10px; border-radius: 8px; margin-bottom:15px; text-align:center;'><b style='color:#4ade80;'>✅ OZ 2.0 ELIGIBLE</b></div>", unsafe_allow_html=True)
-            
             st.markdown(f"**GEOID:** `{curr_id}`")
             m_rows = [st.columns(3) for _ in range(3)]
-            # R1: Poverty, Income, Unemployment
             m_rows[0][0].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='m-lab'>Poverty</div></div>", unsafe_allow_html=True)
             m_rows[0][1].markdown(f"<div class='metric-card-inner'><div class='m-val'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='m-lab'>MFI</div></div>", unsafe_allow_html=True)
             m_rows[0][2].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='m-lab'>Unemp.</div></div>", unsafe_allow_html=True)
-            # R2: Metro, Young, Old
             m_rows[1][0].markdown(f"<div class='metric-card-inner'><div class='m-val'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='m-lab'>Metro</div></div>", unsafe_allow_html=True)
             m_rows[1][1].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='m-lab'>Pop 18-24</div></div>", unsafe_allow_html=True)
             m_rows[1][2].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='m-lab'>Pop 65+</div></div>", unsafe_allow_html=True)
-            # R3: Broadband, Housing, NMTC
             m_rows[2][0].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='m-lab'>Broadband</div></div>", unsafe_allow_html=True)
             m_rows[2][1].markdown(f"<div class='metric-card-inner'><div class='m-val'>{safe_int(row.get('Total Housing Units', 0)):,}</div><div class='m-lab'>Housing</div></div>", unsafe_allow_html=True)
             m_rows[2][2].markdown(f"<div class='metric-card-inner'><div class='m-val'>{row.get('NMTC_Calculated', 'Ineligible')}</div><div class='m-lab'>NMTC</div></div>", unsafe_allow_html=True)
@@ -240,16 +261,15 @@ if check_password():
 
     with col_rec:
         st.subheader("✍️ Recommendation")
-        cat = st.selectbox("Category", ["Industrial", "Housing", "Retail", "Infrastructure", "Other"])
-        just = st.text_area("Justification", height=300, placeholder="Explain selection based on anchors and data profile...")
+        cat = st.selectbox("Investment Category", ["Industrial", "Housing", "Retail", "Infrastructure", "Other"])
+        just = st.text_area("Justification", height=300, placeholder="Explain selection based on anchors and profile...")
         if st.button("Save to Report", use_container_width=True, type="primary"):
             if curr_id:
                 st.session_state["session_recs"].append({"Tract": curr_id, "Category": cat, "Justification": just})
-                st.toast("Saved!")
-    
-    st.markdown("</div>", unsafe_allow_html=True) # Close Section 5
+                st.toast("Tract saved to report!")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Section 6: Report
+    # --- SECTION 6: FINAL REPORT ---
     st.markdown("<div id='section-6'></div><div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Final Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True, hide_index=True)
