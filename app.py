@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import json
 import os
 import numpy as np
+from pathlib import Path
 
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
@@ -24,24 +24,30 @@ st.markdown("""
     .benefit-card { background-color: #111827 !important; padding: 25px; border: 1px solid #2d3748; border-radius: 8px; min-height: 160px; }
     .benefit-card h3 { color: #4ade80; font-size: 1.2rem; margin-bottom: 10px; }
     .benefit-card p { color: #94a3b8; font-size: 0.95rem; }
-    
-    /* Fixed Scrollable Anchor Container */
     .anchor-scroll-container { height: 420px; overflow-y: auto; padding-right: 8px; border: 1px solid #1e293b; border-radius: 8px; padding: 15px; background: #0b0f19; }
     .anchor-ui-box { background: #1f2937; border: 1px solid #374151; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
     .anchor-link { color: #4ade80 !important; text-decoration: none; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-top: 5px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. DATA ENGINE (WITH ENCODING FIX) ---
+# --- 2. DATA ENGINE ---
 @st.cache_data(ttl=3600)
 def load_assets():
-    base_path = os.path.dirname(__file__)
-    gj_path = os.path.join(base_path, "louisiana_tracts.json")
-    master_path = os.path.join(base_path, "Opportunity Zones 2.0 - Master Data File.csv")
-    anchors_path = os.path.join(base_path, "la_anchors.csv")
+    # Use Pathlib to find the current script's directory
+    this_dir = Path(__file__).parent
+    
+    gj_path = this_dir / "louisiana_tracts.json"
+    master_path = this_dir / "Opportunity Zones 2.0 - Master Data File.csv"
+    anchors_path = this_dir / "la_anchors.csv"
+
+    # Robust loading check
+    for p in [gj_path, master_path, anchors_path]:
+        if not p.exists():
+            st.error(f"❌ Missing File: {p.name}")
+            st.info(f"Directory contents: {os.listdir(this_dir)}")
+            st.stop()
 
     def smart_read_csv(path):
-        # Fallback encoding strategy to fix UnicodeDecodeError
         for enc in ['utf-8', 'latin1', 'cp1252']:
             try: return pd.read_csv(path, encoding=enc)
             except UnicodeDecodeError: continue
@@ -54,38 +60,32 @@ def load_assets():
     with open(gj_path, "r") as f:
         gj = json.load(f)
 
-    # Process GEOIDs for mapping
+    # Standardize column and data
     master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+    # Highlight logic (Tracks highlighted green are only those eligible)
     master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
         lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
     )
     
-    # Calculate tract centers for zoom logic
     centers = {}
     for feature in gj['features']:
         geoid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
         try:
             geom = feature['geometry']
+            # Simple centroid calculation
             coords = np.array(geom['coordinates'][0] if geom['type'] == 'Polygon' else geom['coordinates'][0][0])
-            centers[geoid] = [np.mean(coords[:, 1]), np.mean(coords[:, 0])] # [Lat, Lon]
+            centers[geoid] = [np.mean(coords[:, 1]), np.mean(coords[:, 0])]
         except: continue
         
     return gj, master, anchors, centers
 
+# Load assets
 gj, master_df, anchors_df, tract_centers = load_assets()
 
 # --- 3. SECTIONS 1-4 ---
-st.markdown("<div class='content-section'><div class='section-num'>01</div><div class='section-title'>Portal Overview</div><p style='color:#94a3b8;'>Strategic intelligence for identifying census tracts eligible for Opportunity Zones 2.0 across the State of Louisiana.</p></div>", unsafe_allow_html=True)
-
-st.markdown("<div class='content-section'><div class='section-num'>02</div><div class='section-title'>Benefit Framework</div>", unsafe_allow_html=True)
-c2 = st.columns(3)
-c2[0].markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Reinvested gains are deferred until the 2026 tax year.</p></div>", unsafe_allow_html=True)
-c2[1].markdown("<div class='benefit-card'><h3>Step-Up in Basis</h3><p>10% increase for 5-year holds; 15% for 7-year holds.</p></div>", unsafe_allow_html=True)
-c2[2].markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero tax on appreciation for investments held over 10 years.</p></div>", unsafe_allow_html=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
-# (Sections 3 & 4 follow same pattern...)
-st.markdown("<div class='content-section'><div class='section-num'>03</div><div class='section-title'>Tract Advocacy</div>", unsafe_allow_html=True)
+st.markdown("<div class='content-section'><div class='section-num'>01</div><div class='section-title'>Portal Overview</div><p style='color:#94a3b8;'>Louisiana Opportunity Zones 2.0 Analysis Platform.</p></div>", unsafe_allow_html=True)
+st.markdown("<div class='content-section'><div class='section-num'>02</div><div class='section-title'>Benefit Framework</div></div>", unsafe_allow_html=True)
+st.markdown("<div class='content-section'><div class='section-num'>03</div><div class='section-title'>Tract Advocacy</div></div>", unsafe_allow_html=True)
 st.markdown("<div class='content-section'><div class='section-num'>04</div><div class='section-title'>Best Practices</div></div>", unsafe_allow_html=True)
 
 # --- 4. SECTION 5: COMMAND CENTER ---
@@ -103,7 +103,7 @@ with f2:
 if selected_parish != "All in Region":
     filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
 
-# --- DYNAMIC MAP ZOOM LOGIC ---
+# DYNAMIC ZOOM LOGIC
 is_filtered = (selected_region != "All Louisiana" or selected_parish != "All in Region")
 map_center = LA_CENTER
 map_zoom = LA_ZOOM
@@ -133,20 +133,17 @@ fig = px.choropleth_mapbox(
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, height=600, paper_bgcolor='rgba(0,0,0,0)')
 st.plotly_chart(fig, use_container_width=True)
 
-# --- ANCHOR ASSET SCROLLABLE LIST ---
+# ANCHOR ASSETS
 st.subheader("📍 Local Anchor Assets")
 anchor_html = "<div class='anchor-scroll-container'>"
-# Only show assets related to filtered parishes
 visible_anchors = anchors_df[anchors_df['Parish'].isin(filtered_df['Parish'].unique())] if is_filtered else anchors_df
 
 for _, row in visible_anchors.iterrows():
-    link = row.get('Link', '#')
     anchor_html += f"""
     <div class='anchor-ui-box'>
-        <b style='color:#4ade80;'>{row.get('Type', 'Asset')}</b><br>
-        {row.get('Name', 'Unknown')}<br>
-        <small>{row.get('Parish', '')}</small><br>
-        <a href='{link}' class='anchor-link' target='_blank'>VIEW ASSET ↗</a>
+        <b style='color:#4ade80;'>{row.get('Anchor_Type', 'Asset')}</b><br>
+        {row.get('Anchor_Name', 'Unknown')}<br>
+        <small>{row.get('Parish', '')}</small>
     </div>
     """
 anchor_html += "</div>"
