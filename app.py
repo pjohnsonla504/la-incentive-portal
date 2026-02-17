@@ -157,11 +157,31 @@ if check_password():
         map_df = df.copy()
         map_df['Color_Category'] = map_df['Eligibility_Status'].apply(lambda x: 1 if x == 'Eligible' else 0)
         active = st.session_state.get("active_tract")
+        
+        # Default Louisiana bounding box
         center = {"lat": 30.9, "lon": -91.8}
         zoom = 6.5
+
+        # Handle zooming logic
         if active and active in tract_centers:
+            # Zoom to individual tract
             center = {"lat": tract_centers[active][1], "lon": tract_centers[active][0]}
             zoom = 12.0
+        elif not map_df.empty:
+            # Zoom to the boundary of the filtered data
+            lats = [tract_centers[gid][1] for gid in map_df['geoid_str'] if gid in tract_centers]
+            lons = [tract_centers[gid][0] for gid in map_df['geoid_str'] if gid in tract_centers]
+            
+            if lats and lons:
+                center = {"lat": np.mean(lats), "lon": np.mean(lons)}
+                # Basic heuristic to adjust zoom based on geographical spread
+                lat_range = max(lats) - min(lats)
+                lon_range = max(lons) - min(lons)
+                max_range = max(lat_range, lon_range)
+                
+                if max_range > 2: zoom = 6.5  # Statewide
+                elif max_range > 0.5: zoom = 8.5 # Region
+                else: zoom = 10.5 # Parish
 
         fig = go.Figure(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'],
@@ -174,7 +194,7 @@ if check_password():
         fig.update_layout(
             mapbox=dict(style="carto-positron", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
-            height=500, clickmode='event+select', uirevision="constant"
+            height=500, clickmode='event+select', uirevision=str(zoom) + str(center)
         )
         return fig
 
@@ -207,11 +227,27 @@ if check_password():
     
     # Filter Bar
     f1, f2, f3 = st.columns([1, 1, 1])
-    with f1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
+    
+    # Reset active tract if Region or Parish changes to allow the map to zoom to the new boundary
+    with f1: 
+        selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
+        if "prev_region" not in st.session_state: st.session_state["prev_region"] = selected_region
+        if selected_region != st.session_state["prev_region"]:
+            st.session_state["active_tract"] = None
+            st.session_state["prev_region"] = selected_region
+
     filtered_df = master_df.copy()
     if selected_region != "All Louisiana": filtered_df = filtered_df[filtered_df['Region'] == selected_region]
-    with f2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
+
+    with f2: 
+        selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
+        if "prev_parish" not in st.session_state: st.session_state["prev_parish"] = selected_parish
+        if selected_parish != st.session_state["prev_parish"]:
+            st.session_state["active_tract"] = None
+            st.session_state["prev_parish"] = selected_parish
+
     if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
+
     with f3: 
         search_q = st.text_input("Tract Search (GEOID)", placeholder="11-digit FIPS")
         if search_q and search_q in master_df['geoid_str'].values:
