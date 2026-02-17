@@ -7,7 +7,6 @@ import numpy as np
 import ssl
 from math import radians, cos, sin, asin, sqrt
 from streamlit_gsheets import GSheetsConnection
-import streamlit.components.v1 as components
 
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana OZ 2.0 Command Center", layout="wide")
@@ -62,7 +61,7 @@ def check_password():
         st.markdown("<style>.stApp { background-color: #0b0f19; }</style>", unsafe_allow_html=True)
         _, col_mid, _ = st.columns([1, 0.8, 1])
         with col_mid:
-            st.markdown("<h2 style='text-align:center; color:white;'>OZ 2.0 Portal</h2>", unsafe_allow_html=True)
+            st.markdown("<h2 style='text-align:center; color:white; font-family: sans-serif;'>OZ 2.0 Portal</h2>", unsafe_allow_html=True)
             st.text_input("Username", key="username")
             st.text_input("Password", type="password", key="password")
             st.button("Sign In", on_click=password_entered, use_container_width=True)
@@ -76,20 +75,27 @@ if check_password():
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
         
-        .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; }
+        .content-section { padding: 30px 0; border-bottom: 1px solid #1e293b; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
-        .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; color: #f8fafc; }
-        .narrative-text { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 900px; }
+        .section-title { font-size: 2rem; font-weight: 900; margin-bottom: 15px; color: #f8fafc; }
         
-        .benefit-card { background-color: #111827; padding: 25px; border: 1px solid #1e293b; border-radius: 8px; height: 180px; }
-        .dashboard-card { background-color: #111827; padding: 20px; border: 1px solid #1e293b; border-radius: 12px; height: 600px; overflow-y: auto; }
+        .dashboard-card { 
+            background-color: #111827; padding: 20px; border: 1px solid #1e293b; 
+            border-radius: 12px; height: 620px; overflow-y: auto; 
+        }
         
-        .metric-card-small { background: #1f2937; padding: 10px; border: 1px solid #374151; border-radius: 8px; text-align: center; margin-bottom: 8px; }
-        .m-val-small { font-size: 1rem; font-weight: 900; color: #4ade80; }
+        .metric-card-small { 
+            background: #1f2937; padding: 10px; border: 1px solid #374151; 
+            border-radius: 8px; text-align: center; margin-bottom: 8px;
+        }
+        .m-val-small { font-size: 0.95rem; font-weight: 900; color: #4ade80; }
         .m-lab-small { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; }
         
-        .anchor-card-mini { background:#1f2937; border:1px solid #374151; padding:12px; border-radius:8px; margin-bottom:10px; }
-        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 4px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; }
+        .view-site-btn { 
+            display: block; background-color: #4ade80; color: #0b0f19 !important; 
+            padding: 5px 0; border-radius: 4px; text-decoration: none !important; 
+            font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; 
+        }
         </style>
         """, unsafe_allow_html=True)
 
@@ -105,12 +111,15 @@ if check_password():
         gj = None
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: gj = json.load(f)
+        
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
+
         anchors = read_csv_with_fallback("la_anchors.csv")
+        
         centers = {}
         if gj:
             for feature in gj['features']:
@@ -144,53 +153,57 @@ if check_password():
         zoom = 12 if active else 7
         return center, zoom
 
-    def render_unified_map(df):
+    def render_map(df):
         map_df = df.copy()
         recs = [r['Tract'] for r in st.session_state["session_recs"]]
+        # 0: Ineligible (Grey), 1: Eligible (Green), 2: Selected (Orange)
         map_df['Color_Cat'] = map_df.apply(lambda r: 2 if r['geoid_str'] in recs else (1 if r['Eligibility_Status'] == 'Eligible' else 0), axis=1)
         center, zoom = get_zoom_center(map_df['geoid_str'].tolist())
         
         fig = go.Figure(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Cat'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#d1d5db'], [0.5, '#4ade80'], [1, '#f97316']], # Grey, Green, Orange
+            colorscale=[[0, '#d1d5db'], [0.5, '#4ade80'], [1, '#f97316']], 
             zmin=0, zmax=2, showscale=False, marker=dict(opacity=0.6, line=dict(width=0.5, color='white'))
         ))
         fig.update_layout(
-            mapbox=dict(style="light", zoom=zoom, center=center), # Changed to light for high contrast
+            mapbox=dict(style="light", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, height=500, clickmode='event+select',
             uirevision=st.session_state.get("active_tract", "const")
         )
         return fig
 
-    # --- 4. SIDEBAR TABLE OF CONTENTS ---
+    # --- 4. NAVIGATION ---
     with st.sidebar:
         st.markdown("### Table of Contents")
-        nav = st.radio("Skip to Section:", ["Introduction", "Benefit Framework", "Strategic Advocacy", "Best Practices", "Strategic Mapping Tool"])
+        nav = st.radio("Go to Section:", ["Full Dashboard", "Introduction", "Benefit Framework", "Strategic Advocacy", "Best Practices", "Strategic Mapping Tool"])
         st.divider()
         if st.button("Reset Selection"):
             st.session_state["active_tract"] = None
             st.rerun()
 
-    # --- SECTIONS 1-4 ---
-    if nav == "Introduction":
-        st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div class='section-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>Unlocking capital to fuel Louisiana's promising census tracts. This portal identifies high-readiness areas for the next phase of Opportunity Zone investment.</div></div>", unsafe_allow_html=True)
-    elif nav == "Benefit Framework":
-        st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div></div>", unsafe_allow_html=True)
-        c2 = st.columns(3)
-        c2[0].markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>Defer taxes until 2026.</p></div>", unsafe_allow_html=True)
-        c2[1].markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>10% step-up after 5 years.</p></div>", unsafe_allow_html=True)
-        c2[2].markdown("<div class='benefit-card'><h3>Permanent Exclusion</h3><p>Zero gains tax after 10 years.</p></div>", unsafe_allow_html=True)
-    elif nav == "Strategic Advocacy":
-        st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Advocacy</div><div class='narrative-text'>Focusing on rural and deeply distressed communities that offer the highest impact potential.</div></div>", unsafe_allow_html=True)
-    elif nav == "Best Practices":
-        st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><div class='narrative-text'>Leveraging national blueprint strategies for local implementation.</div></div>", unsafe_allow_html=True)
+    # --- 5. NARRATIVE CONTENT ---
+    def show_intro():
+        st.markdown("<div class='content-section' id='intro'><div class='section-num'>SECTION 1</div><div class='section-title'>Louisiana OZ 2.0 Portal</div><p>Unlocking capital to fuel Louisiana's promising census tracts. This portal identifies high-readiness areas for the next phase of Opportunity Zone investment.</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 5: COMMAND CENTER ---
-    elif nav == "Strategic Mapping Tool":
-        st.markdown("<div class='section-num' style='margin-top:20px;'>SECTION 5</div><div class='section-title'>Strategic Mapping Tool</div>", unsafe_allow_html=True)
+    def show_benefits():
+        st.markdown("<div class='content-section' id='benefits'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div></div>", unsafe_allow_html=True)
+        cols = st.columns(3)
+        with cols[0]: st.info("**Gain Deferral**\nDefer taxes until 2026.")
+        with cols[1]: st.info("**Basis Step-Up**\n10% increase after 5 years.")
+        with cols[2]: st.info("**Permanent Exclusion**\nTax-free gains after 10 years.")
+
+    def show_advocacy():
+        st.markdown("<div class='content-section' id='advocacy'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Advocacy</div><p>Focusing on rural and deeply distressed communities with high impact potential.</p></div>", unsafe_allow_html=True)
+
+    def show_practices():
+        st.markdown("<div class='content-section' id='practices'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div><p>Leveraging proven national blueprint strategies for local implementation.</p></div>", unsafe_allow_html=True)
+
+    # --- 6. MAPPING TOOL (COMMAND CENTER) ---
+    def show_mapping_tool():
+        st.markdown("<div class='section-num' style='margin-top:30px;'>SECTION 5</div><div class='section-title'>Strategic Mapping Tool</div>", unsafe_allow_html=True)
         
-        # Filter Row
+        # Filters
         f1, f2, f3 = st.columns([1, 1, 1])
         with f1: region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
         filtered = master_df.copy()
@@ -202,13 +215,13 @@ if check_password():
             if search and search in master_df['geoid_str'].values:
                 st.session_state["active_tract"] = search
 
-        # Map
-        map_res = st.plotly_chart(render_unified_map(filtered), use_container_width=True, on_select="rerun")
+        # Map Display
+        map_res = st.plotly_chart(render_map(filtered), use_container_width=True, on_select="rerun")
         if map_res and "selection" in map_res and map_res["selection"]["points"]:
             st.session_state["active_tract"] = str(map_res["selection"]["points"][0]["location"])
             st.rerun()
 
-        # The 3-Cell Grid
+        # 3-Card Grid
         c1, c2, c3 = st.columns([0.25, 0.45, 0.3], gap="medium")
         curr_id = st.session_state["active_tract"]
         row = master_df[master_df["geoid_str"] == curr_id].iloc[0] if curr_id else None
@@ -216,54 +229,62 @@ if check_password():
         # Cell 1: Anchors
         with c1:
             st.markdown("<div class='dashboard-card'><h3>📍 Anchors</h3>", unsafe_allow_html=True)
-            a_type = st.selectbox("Filter Assets", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
             if curr_id and curr_id in tract_centers:
                 lon, lat = tract_centers[curr_id]
                 wa = anchors_df.copy()
-                if a_type != "All Assets": wa = wa[wa['Type'] == a_type]
                 wa['dist'] = wa.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-                for _, a in wa.sort_values('dist').head(10).iterrows():
-                    btn_html = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>" if pd.notna(a.get('Link')) else ""
-                    st.markdown(f"<div class='anchor-card-mini'><strong>{a['Name']}</strong><br><span style='font-size:0.75rem; color:#94a3b8;'>{a['Type']} • {a['dist']:.1f} mi</span>{btn_html}</div>", unsafe_allow_html=True)
+                for _, a in wa.sort_values('dist').head(8).iterrows():
+                    link = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>" if pd.notna(a.get('Link')) else ""
+                    st.markdown(f"<div style='background:#1f2937; padding:10px; border-radius:8px; margin-bottom:8px;'><strong>{a['Name']}</strong><br><small>{a['Type']} • {a['dist']:.1f} mi</small>{link}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Cell 2: Data Profile (9 Metrics)
+        # Cell 2: Data Profile (9 Cards)
         with c2:
-            st.markdown("<div class='dashboard-card'><h3>📊 Tract Profile</h3>", unsafe_allow_html=True)
+            st.markdown("<div class='dashboard-card'><h3>📊 Data Profile</h3>", unsafe_allow_html=True)
             if row is not None:
-                st.write(f"**Tract {curr_id} - {row['Parish']}**")
+                st.write(f"**Tract {curr_id} ({row['Parish']})**")
                 m_grid = st.columns(3)
                 metrics = [
                     ("Poverty Rate", f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%"),
                     ("Median Income", f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}"),
                     ("Unemployment", f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%"),
+                    ("Broadband", f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"),
                     ("Metro Status", row.get('Metro Status (Metropolitan/Rural)', 'N/A')),
+                    ("NMTC Status", "Eligible" if "Eligible" in str(row.get('NMTC_Calculated', '')) else "Ineligible"),
                     ("Pop 18-24", f"{safe_int(row.get('Population 18 to 24', 0)):,}"),
                     ("Pop 65+", f"{safe_int(row.get('Population 65 years and over', 0)):,}"),
-                    ("Broadband", f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"),
-                    ("NMTC Status", "Eligible" if "Eligible" in str(row.get('NMTC_Calculated', '')) else "Ineligible"),
-                    ("Pop Density", f"{safe_int(row.get('Total Population', 0)):,}")
+                    ("Total Pop", f"{safe_int(row.get('Total Population', 0)):,}")
                 ]
                 for i, (label, val) in enumerate(metrics):
                     m_grid[i % 3].markdown(f"<div class='metric-card-small'><div class='m-val-small'>{val}</div><div class='m-lab-small'>{label}</div></div>", unsafe_allow_html=True)
-            else: st.info("Select a tract.")
             st.markdown("</div>", unsafe_allow_html=True)
 
         # Cell 3: Justification
         with c3:
             st.markdown("<div class='dashboard-card'><h3>✍️ Justification</h3>", unsafe_allow_html=True)
-            cat = st.selectbox("Category", ["Industrial", "Housing", "Retail", "Infrastructure", "Mixed-Use"])
-            just = st.text_area("Justification Notes", height=250, placeholder="INSTRUCTIONS:\n- Highlight proximity to assets in Cell 1.\n- Mention economic impact of the metrics in Cell 2.\n- Describe specific project readiness.")
-            if st.button("Save to Report", use_container_width=True, type="primary"):
+            cat = st.selectbox("Investment Focus", ["Industrial", "Housing", "Retail", "Energy", "Infrastructure"])
+            just = st.text_area("Narrative Justification", height=250, placeholder="INSTRUCTIONS:\n- Highlight proximity to anchors in Cell 1.\n- Reference the 9 metrics in Cell 2.\n- Describe project readiness and community impact.")
+            if st.button("Add to Selection Report", use_container_width=True, type="primary"):
                 if curr_id:
                     st.session_state["session_recs"].append({"Tract": curr_id, "Category": cat, "Justification": just})
-                    st.toast("Tract Added!")
-                else: st.error("Select a tract.")
+                    st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- FINAL REPORT ---
+    # --- 7. MAIN RENDER LOGIC ---
+    if nav == "Full Dashboard":
+        show_intro()
+        show_benefits()
+        show_advocacy()
+        show_practices()
+        show_mapping_tool()
+    elif nav == "Introduction": show_intro()
+    elif nav == "Benefit Framework": show_benefits()
+    elif nav == "Strategic Advocacy": show_advocacy()
+    elif nav == "Best Practices": show_practices()
+    elif nav == "Strategic Mapping Tool": show_mapping_tool()
+
+    # Final Report Table
     if st.session_state["session_recs"]:
         st.divider()
-        st.subheader("Final Recommendation Summary")
-        st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True, hide_index=True)
-        if st.button("Clear Report"): st.session_state["session_recs"] = []; st.rerun()
+        st.subheader("Selection Summary")
+        st.table(pd.DataFrame(st.session_state["session_recs"]))
