@@ -76,19 +76,19 @@ if check_password():
         .toc-link { display: block; padding: 10px; color: #94a3b8 !important; text-decoration: none; font-weight: 600; font-size: 0.85rem; border-radius: 5px; margin-bottom: 5px; transition: 0.2s; }
         .toc-link:hover { background-color: #1e293b; color: #4ade80 !important; }
 
-        /* Section Styling */
-        .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; }
-        .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
-        .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; }
-        
-        /* Anchor Asset Scroll Area - Height Synced to Profile/Rec columns */
+        /* Anchor Asset Scroll Area - The "Red Oval" Area */
         .anchor-scroll-container {
-            height: 410px; 
+            height: 480px; 
             overflow-y: auto;
-            padding-right: 10px;
+            padding-right: 12px;
             scrollbar-width: thin;
             scrollbar-color: #4ade80 #1f2937;
         }
+        /* Custom Scrollbar for Chrome/Safari/Edge */
+        .anchor-scroll-container::-webkit-scrollbar { width: 8px; }
+        .anchor-scroll-container::-webkit-scrollbar-track { background: #1f2937; border-radius: 10px; }
+        .anchor-scroll-container::-webkit-scrollbar-thumb { background: #4ade80; border-radius: 10px; }
+
         .anchor-ui-box { 
             background: #1f2937; 
             border: 1px solid #374151; 
@@ -96,18 +96,17 @@ if check_password():
             border-radius: 8px; 
             margin-bottom: 10px;
         }
-        .anchor-link { color: #4ade80; text-decoration: none; font-weight: 700; font-size: 0.95rem; }
-        .anchor-link:hover { text-decoration: underline; color: #22c55e; }
+        .anchor-link { color: #4ade80 !important; text-decoration: none !important; font-weight: 700; }
+        .anchor-link:hover { text-decoration: underline !important; color: #22c55e !important; }
 
-        /* Metrics */
-        .metric-card-inner { background-color: #1f2937; padding: 10px; border: 1px solid #374151; border-radius: 8px; text-align: center; margin-bottom: 8px; height: 90px; display: flex; flex-direction: column; justify-content: center; }
+        /* Metric Cards Alignment */
+        .metric-card-inner { background-color: #1f2937; padding: 10px; border: 1px solid #374151; border-radius: 8px; text-align: center; margin-bottom: 8px; height: 95px; display: flex; flex-direction: column; justify-content: center; }
         .m-val { font-size: 1.0rem; font-weight: 900; color: #4ade80; }
         .m-lab { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
 
-        /* Global UI Adjustments */
+        /* Layout cleanup */
         .block-container { padding-top: 1.5rem !important; }
         label[data-testid="stWidgetLabel"] p { color: white !important; font-weight: 700 !important; }
-        div[data-testid="stTextArea"] textarea { background-color: #1f2937; color: white; border: 1px solid #374151; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -123,21 +122,18 @@ if check_password():
         gj = None
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: gj = json.load(f)
-        
         def read_csv_with_fallback(path):
             for enc in ['utf-8', 'latin1', 'cp1252']:
                 try: return pd.read_csv(path, encoding=enc)
                 except: continue
             return pd.read_csv(path)
 
-        # Master data with eligibility and metric source
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
         
-        # Anchor data source
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         
@@ -190,24 +186,17 @@ if check_password():
         return fig
 
     # --- SECTION 5: COMMAND CENTER ---
-    st.markdown("<div id='section-5'></div><div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Analysis Command Center</div>", unsafe_allow_html=True)
+    st.markdown("### Strategic Analysis Command Center")
     
+    # Global Filters
     f1, f2, f3 = st.columns([1, 1, 1])
     with f1: 
         selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
-        if "prev_region" not in st.session_state: st.session_state["prev_region"] = selected_region
-        if selected_region != st.session_state["prev_region"]:
-            st.session_state["active_tract"] = None
-            st.session_state["prev_region"] = selected_region
     filtered_df = master_df.copy()
     if selected_region != "All Louisiana": filtered_df = filtered_df[filtered_df['Region'] == selected_region]
 
     with f2: 
         selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
-        if "prev_parish" not in st.session_state: st.session_state["prev_parish"] = selected_parish
-        if selected_parish != st.session_state["prev_parish"]:
-            st.session_state["active_tract"] = None
-            st.session_state["prev_parish"] = selected_parish
     if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
 
     with f3: 
@@ -217,15 +206,16 @@ if check_password():
 
     st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="main_map")
 
-    # --- PERFECTLY EVEN 3-COLUMN ANALYSIS DASHBOARD ---
+    # --- SIDE-BY-SIDE ANALYSIS ROW ---
     st.markdown("<br>", unsafe_allow_html=True)
     curr_id = st.session_state["active_tract"]
-    col_anchors, col_data, col_rec = st.columns([1, 1, 1]) # perfectly even 1:1:1
+    col_anchors, col_data, col_rec = st.columns([1, 1, 1]) # Perfectly even horizontal layout
 
     with col_anchors:
-        st.subheader("📍 Anchor Assets")
+        st.markdown("#### 📍 Anchor Assets")
         anc_f = st.selectbox("Filter Assets", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), label_visibility="collapsed")
         
+        # This container matches the height of the Profile/Rec columns
         st.markdown("<div class='anchor-scroll-container'>", unsafe_allow_html=True)
         if curr_id and curr_id in tract_centers:
             lon, lat = tract_centers[curr_id]
@@ -233,24 +223,28 @@ if check_password():
             if anc_f != "All Assets": wa = wa[wa['Type'] == anc_f]
             wa['dist'] = wa.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
             
+            # Sort by distance and show top 30 for scrollability
             for _, a in wa.sort_values('dist').head(30).iterrows():
-                # Handling links from 'Link' column
-                anchor_link = a.get('Link', '')
-                name_display = f"<a href='{anchor_link}' target='_blank' class='anchor-link'>{a['Name']} ↗</a>" if pd.notna(anchor_link) and str(anchor_link).strip() != "" else f"<b>{a['Name']}</b>"
-                
+                # Link logic: uses the 'Link' column from your CSV
+                asset_url = a.get('Link', '')
+                if pd.notna(asset_url) and str(asset_url).strip() != "":
+                    display_name = f"<a href='{asset_url}' target='_blank' class='anchor-link'>{a['Name']} ↗</a>"
+                else:
+                    display_name = f"<b>{a['Name']}</b>"
+
                 st.markdown(f"""
                 <div class='anchor-ui-box'>
-                    <div style='color:#4ade80; font-size:0.7rem; font-weight:900; margin-bottom:4px;'>{a['Type'].upper()}</div>
-                    {name_display}<br>
+                    <div style='color:#4ade80; font-size:0.7rem; font-weight:900;'>{a['Type'].upper()}</div>
+                    {display_name}<br>
                     <small style='color:#94a3b8;'>{a['dist']:.1f} miles away</small>
                 </div>
                 """, unsafe_allow_html=True)
-        else: 
-            st.info("Select a tract on the map to see nearby anchors.")
+        else:
+            st.info("Select a tract on the map.")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_data:
-        st.subheader("📊 Tract Profile")
+        st.markdown("#### 📊 Tract Profile")
         if curr_id:
             row = master_df[master_df["geoid_str"] == curr_id].iloc[0]
             if row['Eligibility_Status'] == 'Eligible':
@@ -271,22 +265,21 @@ if check_password():
             ]
             for i, (val, lab) in enumerate(metrics):
                 m_rows[i//3][i%3].markdown(f"<div class='metric-card-inner'><div class='m-val'>{val}</div><div class='m-lab'>{lab}</div></div>", unsafe_allow_html=True)
-        else: 
-            st.info("Select a tract to view the 9-point data profile.")
+        else:
+            st.info("Select a tract to see metrics.")
 
     with col_rec:
-        st.subheader("✍️ Recommendation")
+        st.markdown("#### ✍️ Recommendation")
         cat = st.selectbox("Category", ["Industrial", "Housing", "Retail", "Infrastructure", "Other"])
-        just = st.text_area("Justification", height=280, placeholder="Explain selection based on anchors and profile...")
+        just = st.text_area("Justification", height=320, placeholder="Explain selection...")
         if st.button("Save to Report", use_container_width=True, type="primary"):
             if curr_id:
                 st.session_state["session_recs"].append({"Tract": curr_id, "Category": cat, "Justification": just})
-                st.toast("Tract saved to report!")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+                st.toast("Saved!")
 
     # --- SECTION 6: FINAL REPORT ---
-    st.markdown("<div id='section-6'></div><div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Final Report</div>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("### Final Report")
     if st.session_state["session_recs"]:
         st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True, hide_index=True)
     else: st.info("No recommendations added yet.")
