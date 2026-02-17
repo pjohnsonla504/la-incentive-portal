@@ -35,7 +35,7 @@ def safe_float(val):
 def safe_int(val):
     return int(safe_float(val))
 
-# --- 1. DYNAMIC MODERN LOGIN ---
+# --- 1. LOGIN ---
 def check_password():
     def password_entered():
         try:
@@ -85,36 +85,19 @@ if check_password():
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
 
-        /* Navigation */
-        [data-testid="stSidebar"] { background-color: #0f172a !important; border-right: 1px solid #1e293b; }
-        
-        /* Expert Layout */
-        .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; }
-        .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; letter-spacing: 0.1em; }
-        .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; }
-        .narrative { font-size: 1.1rem; color: #94a3b8; line-height: 1.7; max-width: 900px; }
-
-        /* The Internal Scroll Area (Red Oval Area) */
         .anchor-scroll-area {
-            height: 540px; 
+            height: 440px; 
             overflow-y: auto;
-            padding-right: 15px;
-            margin-top: 10px;
-            scrollbar-width: thin;
-            scrollbar-color: #4ade80 #1f2937;
+            padding-right: 10px;
         }
-        .anchor-scroll-area::-webkit-scrollbar { width: 8px; }
-        .anchor-scroll-area::-webkit-scrollbar-thumb { background: #4ade80; border-radius: 10px; }
+        .asset-card { background: #1f2937; border: 1px solid #374151; padding: 12px; border-radius: 10px; margin-bottom: 10px; }
+        .asset-link { color: #4ade80 !important; text-decoration: none !important; font-weight: 700; font-size: 0.9rem; }
         
-        .asset-card { background: #1f2937; border: 1px solid #374151; padding: 15px; border-radius: 12px; margin-bottom: 12px; }
-        .asset-link { color: #4ade80 !important; text-decoration: none !important; font-weight: 700; }
-        
-        /* Metric Styling */
-        .metric-box { background: #1f2937; border: 1px solid #374151; padding: 12px; border-radius: 10px; text-align: center; height: 105px; display: flex; flex-direction: column; justify-content: center; }
-        .m-val { font-size: 1.1rem; font-weight: 900; color: #4ade80; }
+        .metric-box { background: #1f2937; border: 1px solid #374151; padding: 10px; border-radius: 8px; text-align: center; height: 85px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
+        .m-val { font-size: 1rem; font-weight: 900; color: #4ade80; }
         .m-lab { font-size: 0.6rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
-        
-        .block-container { padding-top: 1.5rem !important; }
+
+        .section-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; color: #4ade80; }
         </style>
         """, unsafe_allow_html=True)
 
@@ -127,49 +110,46 @@ if check_password():
 
     @st.cache_data(ttl=3600)
     def load_data():
+        gj = None
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: gj = json.load(f)
+        
         def read_csv(path):
             for enc in ['utf-8', 'latin1', 'cp1252']:
                 try: return pd.read_csv(path, encoding=enc)
                 except: continue
             return pd.read_csv(path)
         
+        # Load Opportunity Zones Master File
         master = read_csv("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        # Eligibility logic: Green highlights for OZ 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
+        
+        # Load LA Anchors
         anchors = read_csv("la_anchors.csv")
         
         centers = {}
         if gj:
             for feature in gj['features']:
-                geoid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
+                props = feature['properties']
+                geoid = props.get('GEOID') or props.get('GEOID20')
                 try:
-                    coords = feature['geometry']['coordinates'][0] if feature['geometry']['type'] == 'Polygon' else feature['geometry']['coordinates'][0][0]
-                    pts = np.array(coords)
+                    geom = feature['geometry']
+                    if geom['type'] == 'Polygon':
+                        pts = np.array(geom['coordinates'][0])
+                    else: # MultiPolygon
+                        pts = np.array(geom['coordinates'][0][0])
                     centers[geoid] = [np.mean(pts[:, 0]), np.mean(pts[:, 1])]
                 except: continue
         return gj, master, anchors, centers
 
     gj, master_df, anchors_df, tract_centers = load_data()
 
-    # --- SECTIONS 1-4: EXPERT NARRATIVE ---
-    st.markdown("<div id='section-1' class='content-section'><div class='section-num'>01</div><div class='section-title'>Executive Overview</div><p class='narrative'>This strategic portal identifies high-potential census tracts across Louisiana by cross-referencing socioeconomic distress markers with institutional anchor proximity.</p></div>", unsafe_allow_html=True)
-    
-    st.markdown("<div id='section-2' class='content-section'><div class='section-num'>02</div><div class='section-title'>Economic Framework</div><p class='narrative'>Qualified Opportunity Zone 2.0 focuses on three tiers of tax incentives: deferral of capital gains, step-up in basis, and permanent exclusion of appreciation tax.</p></div>", unsafe_allow_html=True)
-    
-    st.markdown("<div id='section-3' class='content-section'><div class='section-num'>03</div><div class='section-title'>Strategic Best Practices</div><p class='narrative'>Deploying capital near 'Institutional Anchors'—such as major hospitals and universities—de-risks investments and supports long-term community stabilization.</p></div>", unsafe_allow_html=True)
-    
-    st.markdown("<div id='section-4' class='content-section'><div class='section-num'>04</div><div class='section-title'>Expert Resources</div>", unsafe_allow_html=True)
-    c4 = st.columns(3)
-    c4[0].info("[EIG Policy Hub ↗](https://eig.org/ozs-guidance/) - National Regulation Updates.")
-    c4[1].info("[FBT Gibbons ↗](https://fbtgibbons.com/) - Technical Legal Structuring.")
-    c4[2].info("[AFPI Prosperity ↗](https://americafirstpolicy.com/) - Prosperity Blueprints.")
-
-    # --- SECTION 5: COMMAND CENTER ---
-    st.markdown("### 05. Strategic Analysis Command Center")
+    # --- COMMAND CENTER ---
+    st.markdown("<div class='section-title'>05. Strategic Analysis Command Center</div>", unsafe_allow_html=True)
     f1, f2, f3 = st.columns([1,1,1])
     with f1: s_reg = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
     with f2:
@@ -179,70 +159,105 @@ if check_password():
         search = st.text_input("GEOID Search", placeholder="11-digit FIPS")
         if search in master_df['geoid_str'].values: st.session_state["active_tract"] = search
 
+    # Map Rendering
     map_df = f_df[f_df['Parish'] == s_par] if s_par != "All in Region" else f_df
+    
+    # Click interaction simulation via search/selection
     fig = go.Figure(go.Choroplethmapbox(
-        geojson=gj, locations=map_df['geoid_str'], z=map_df['Eligibility_Status'].apply(lambda x: 1 if x == 'Eligible' else 0),
-        featureidkey="properties.GEOID", colorscale=[[0, '#cbd5e1'], [1, '#4ade80']], showscale=False,
-        marker=dict(opacity=0.6, line=dict(width=0.5, color='white'))
+        geojson=gj, 
+        locations=map_df['geoid_str'], 
+        z=map_df['Eligibility_Status'].apply(lambda x: 1 if x == 'Eligible' else 0),
+        featureidkey="properties.GEOID", 
+        colorscale=[[0, '#334155'], [1, '#4ade80']], 
+        showscale=False,
+        marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
+        hovertemplate="<b>Tract: %{location}</b><br>Status: %{customdata}<extra></extra>",
+        customdata=map_df['Eligibility_Status']
     ))
-    fig.update_layout(mapbox=dict(style="carto-positron", zoom=6, center={"lat": 30.9, "lon": -91.8}), margin={"r":0,"t":0,"l":0,"b":0}, height=500)
+    fig.update_layout(
+        mapbox=dict(style="carto-darkmatter", zoom=6, center={"lat": 30.9, "lon": -91.8}), 
+        margin={"r":0,"t":0,"l":0,"b":0}, 
+        height=500
+    )
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- 3-COLUMN SIDE-BY-SIDE ANALYSIS ---
-    st.markdown("<br>", unsafe_allow_html=True)
+    # --- THE FIXED DATA METRIC ROW ---
+    st.markdown("---")
     curr_id = st.session_state["active_tract"]
-    col_anc, col_prof, col_rec = st.columns([1, 1, 1])
+    
+    col_anc, col_prof, col_rec = st.columns([1.2, 1.5, 1])
 
     with col_anc:
         st.markdown("#### 📍 Institutional Anchors")
-        anc_filter = st.selectbox("Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), label_visibility="collapsed")
+        anc_filter = st.selectbox("Filter by Type", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
         
-        # This is the "Red Oval" scroll area
         st.markdown("<div class='anchor-scroll-area'>", unsafe_allow_html=True)
+        # We display anchors based on either the selected tract proximity OR general list if none selected
         if curr_id and curr_id in tract_centers:
             lon, lat = tract_centers[curr_id]
             wa = anchors_df.copy()
             if anc_filter != "All Assets": wa = wa[wa['Type'] == anc_filter]
             wa['dist'] = wa.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            for _, a in wa.sort_values('dist').head(30).iterrows():
+            display_df = wa.sort_values('dist').head(25)
+            
+            for _, a in display_df.iterrows():
                 url = a.get('Link', '')
-                title_html = f"<a href='{url}' target='_blank' class='asset-link'>{a['Name']} ↗</a>" if pd.notna(url) and str(url).strip() != "" else f"<b>{a['Name']}</b>"
-                st.markdown(f"<div class='asset-card'><small style='color:#4ade80;'>{a['Type'].upper()}</small><br>{title_html}<br><small style='color:#94a3b8;'>{a['dist']:.1f} miles</small></div>", unsafe_allow_html=True)
-        else: st.info("Select a tract on the map to view nearby assets.")
+                link_tag = f"<a href='{url}' target='_blank' class='asset-link'>{a['Name']} ↗</a>" if pd.notna(url) and str(url).strip() != "" else f"<span class='asset-link'>{a['Name']}</span>"
+                st.markdown(f"""
+                    <div class='asset-card'>
+                        <small style='color:#4ade80;'>{a['Type'].upper()}</small><br>
+                        {link_tag}<br>
+                        <small style='color:#94a3b8;'>{a['dist']:.1f} miles from center</small>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("Select a Tract to see nearest anchors.")
+            # Default list if no tract selected
+            wa = anchors_df.copy()
+            if anc_filter != "All Assets": wa = wa[wa['Type'] == anc_filter]
+            for _, a in wa.head(10).iterrows():
+                st.markdown(f"<div class='asset-card'><small style='color:#4ade80;'>{a['Type'].upper()}</small><br><b>{a['Name']}</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_prof:
-        st.markdown("#### 📊 Dynamic Tract Profile")
+        st.markdown("#### 📊 Census Tract Profile")
         if curr_id:
             row = master_df[master_df["geoid_str"] == curr_id].iloc[0]
-            if row['Eligibility_Status'] == 'Eligible':
-                st.markdown("<div style='background:rgba(74,222,128,0.1); border:1px solid #4ade80; padding:10px; border-radius:8px; text-align:center; color:#4ade80; font-weight:700;'>✅ QOZ 2.0 ELIGIBLE</div>", unsafe_allow_html=True)
+            
+            # Eligibility Banner
+            ebg = "rgba(74,222,128,0.1)" if row['Eligibility_Status'] == 'Eligible' else "rgba(203,213,225,0.1)"
+            etxt = "#4ade80" if row['Eligibility_Status'] == 'Eligible' else "#cbd5e1"
+            estat = "OZ 2.0 ELIGIBLE" if row['Eligibility_Status'] == 'Eligible' else "INELIGIBLE"
+            st.markdown(f"<div style='background:{ebg}; border:1px solid {etxt}; padding:10px; border-radius:8px; text-align:center; color:{etxt}; font-weight:900; margin-bottom:15px;'>{estat}</div>", unsafe_allow_html=True)
+            
+            # Metrics Grid
             m_grid = [st.columns(3) for _ in range(3)]
-            metrics = [(f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "Poverty"),
-                       (f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "MFI"),
-                       (f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%", "Unemp."),
-                       (row.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Metro"),
-                       (f"{safe_int(row.get('Population 18 to 24', 0)):,}", "Pop 18-24"),
-                       (f"{safe_int(row.get('Population 65 years and over', 0)):,}", "Pop 65+"),
-                       (f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%", "Broadband"),
-                       (f"{safe_int(row.get('Total Housing Units', 0)):,}", "Housing"),
-                       (row.get('NMTC_Calculated', 'Ineligible'), "NMTC")]
+            metrics = [
+                (f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "Poverty"),
+                (f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "MFI"),
+                (f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%", "Unemp."),
+                (row.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Metro"),
+                (f"{safe_int(row.get('Population 18 to 24', 0)):,}", "Pop 18-24"),
+                (f"{safe_int(row.get('Population 65 years and over', 0)):,}", "Pop 65+"),
+                (f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%", "Broadband"),
+                (f"{safe_int(row.get('Total Housing Units', 0)):,}", "Housing"),
+                (row.get('NMTC_Calculated', 'Ineligible'), "NMTC")
+            ]
             for i, (v, l) in enumerate(metrics):
                 m_grid[i//3][i%3].markdown(f"<div class='metric-box'><div class='m-val'>{v}</div><div class='m-lab'>{l}</div></div>", unsafe_allow_html=True)
-        else: st.info("Select a tract to view metrics.")
+        else:
+            st.info("Input a GEOID or select a region to populate metrics.")
 
     with col_rec:
-        st.markdown("#### ✍️ Qualitative Justification")
-        cat = st.selectbox("Investment Class", ["Industrial", "Housing", "Retail", "Infrastructure", "Other"])
-        just = st.text_area("Investment Thesis", height=325, placeholder="Define the strategic justification for this tract...")
-        if st.button("Commit to Final Report", use_container_width=True, type="primary"):
+        st.markdown("#### ✍️ Investment Thesis")
+        cat = st.selectbox("Asset Class", ["Industrial", "Housing", "Retail", "Healthcare", "Infrastructure"])
+        just = st.text_area("Justification", height=230, placeholder="Explain the strategic alignment for this specific tract...")
+        if st.button("Commit to Report", use_container_width=True, type="primary"):
             if curr_id:
                 st.session_state["session_recs"].append({"Tract": curr_id, "Class": cat, "Thesis": just})
-                st.toast("Committed!")
+                st.toast(f"Tract {curr_id} added to report.")
 
-    # --- SECTION 6: FINAL REPORT ---
-    st.markdown("---")
-    st.markdown("### Strategic Report Export")
+    # --- FINAL REPORT ---
     if st.session_state["session_recs"]:
+        st.markdown("### 06. Generated Investment Pipeline")
         st.dataframe(pd.DataFrame(st.session_state["session_recs"]), use_container_width=True, hide_index=True)
-    else: st.info("No recommendations committed yet.")
