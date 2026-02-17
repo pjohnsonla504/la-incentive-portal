@@ -101,8 +101,6 @@ if check_password():
         .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; min-height: 220px; transition: all 0.3s ease; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); }
         .benefit-card h3 { color: #f8fafc; margin-bottom: 15px; font-weight: 800; font-size: 1.3rem; }
-        .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
-        .benefit-card a { color: #4ade80; text-decoration: none; font-weight: 700; }
         
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 95px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
@@ -206,139 +204,46 @@ if check_password():
                           height=600, clickmode='event+select', uirevision=str(center))
         return fig
 
-    # --- SECTION 1: HERO ---
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 1</div>
-        <div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div>
-        <div class='hero-title'>Louisiana OZ 2.0 Portal</div>
-        <div class='narrative-text'>
-            Welcome to the definitive portal for Louisiana's Opportunity Zone 2.0 initiative. 
-            By leveraging advanced data analytics and spatial mapping, we identify census tracts 
-            primed for transformative capital investment and sustainable economic growth.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- SECTION 2: BENEFITS ---
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 2</div>
-        <div class='section-title'>The Benefit Framework</div>
-        <div class='narrative-text'>
-            Opportunity Zones offer powerful federal tax incentives designed to drive long-term 
-            private investment into distressed communities.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    b_col1, b_col2, b_col3 = st.columns(3)
-    with b_col1:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Capital Gain Deferral</h3>
-            <p>Investors can defer federal taxes on prior gains until December 31, 2026, if those gains are reinvested into a Qualified Opportunity Fund (QOF).</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with b_col2:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Basis Step-Up</h3>
-            <p>For gains held in a QOF for at least 5 years, the basis is increased by 10%. If held for 7 years, the basis increase reaches 15%.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with b_col3:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Permanent Exclusion</h3>
-            <p>After 10 years, any appreciation in the QOF investment is completely exempt from federal capital gains taxes.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # --- SECTION 3: TRACT ADVOCACY ---
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 3</div>
-        <div class='section-title'>Strategic Tract Advocacy</div>
-        <div class='narrative-text'>
-            Our advocacy focuses on "Project-Ready" tracts—areas that balance federal distressed 
-            designations with proximity to high-value anchor assets like universities, ports, and healthcare hubs.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    a_col1, a_col2, a_col3 = st.columns(3)
-    with a_col1:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Geographical Diversity</h3>
-            <p>Ensuring that Opportunity Zone benefits reach both urban centers and rural parishes across all Louisiana regions.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with a_col2:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>NMTC Alignment</h3>
-            <p>Prioritizing tracts that also qualify for New Markets Tax Credits (NMTC), allowing for complex capital stack layering.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with a_col3:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Anchor Density</h3>
-            <p>Focusing on tracts within a 5-mile radius of major economic drivers to ensure project viability and workforce access.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # --- SECTION 4: BEST PRACTICES ---
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 4</div>
-        <div class='section-title'>National Best Practices</div>
-        <div class='narrative-text'>
-            Louisiana's framework is built upon successful models and guidance from the 
-            nation's leading economic policy and legal institutions.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    p_col1, p_col2, p_col3 = st.columns(3)
-    with p_col1:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Economic Innovation Group</h3>
-            <p>Utilizing EIG's research on OZ impact and reporting standards to ensure transparency.</p>
-            <a href='https://eig.org/' target='_blank'>Explore Research ↗</a>
-        </div>
-        """, unsafe_allow_html=True)
-    with p_col2:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Frost Brown Todd</h3>
-            <p>Implementing legal structures and compliance best practices for Qualified Opportunity Funds.</p>
-            <a href='https://fbtgibbons.com/' target='_blank'>Legal Guidance ↗</a>
-        </div>
-        """, unsafe_allow_html=True)
-    with p_col3:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>America First Policy</h3>
-            <p>Aligning with state-level blue prints for revitalizing American communities through private investment.</p>
-            <a href='https://americafirstpolicy.com/' target='_blank'>Policy Blueprint ↗</a>
-        </div>
-        """, unsafe_allow_html=True)
+    # --- SECTIONS 1-4 ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Tract Advocacy</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>Best Practices</div></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: STRATEGIC MAPPING & PROFILING ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Mapping & Profiling</div>", unsafe_allow_html=True)
     
-    f_col1, f_col2 = st.columns(2)
-    with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
-    filtered_df = master_df.copy()
-    if selected_region != "All Louisiana": filtered_df = filtered_df[filtered_df['Region'] == selected_region]
-    with f_col2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
-    if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
+    # User Request: Narrative below Section 5 header
+    st.markdown("""
+    <div class='narrative-text'>
+        Use the interactive mapping interface below to filter by region, parish, or specific census tract. 
+        Each tract is evaluated based on federal eligibility and distance to anchor institutions. 
+        Select a tract to view its deep demographic profile and proximity to strategic assets.
+    </div>
+    """, unsafe_allow_html=True)
 
-    # FULL WIDTH MAP
+    # Filter Row: Region, Parish, and Census Tract Search
+    f_col1, f_col2, f_col3 = st.columns(3)
+    with f_col1:
+        selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
+    
+    filtered_df = master_df.copy()
+    if selected_region != "All Louisiana":
+        filtered_df = filtered_df[filtered_df['Region'] == selected_region]
+        
+    with f_col2:
+        selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
+        if selected_parish != "All in Region":
+            filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
+            
+    with f_col3:
+        # User Request: Census Tract Search Tool
+        tract_search_list = ["Search Tract GEOID..."] + sorted(filtered_df['geoid_str'].tolist())
+        selected_search = st.selectbox("Find Census Tract", tract_search_list)
+        if selected_search != "Search Tract GEOID...":
+            st.session_state["active_tract"] = selected_search
+
+    # THE MAP
     combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map")
     if combined_map and "selection" in combined_map and combined_map["selection"]["points"]:
         new_id = str(combined_map["selection"]["points"][0]["location"])
@@ -352,7 +257,7 @@ if check_password():
         curr = st.session_state["active_tract"]
         row = master_df[master_df["geoid_str"] == curr].iloc[0]
         
-        # Header Box
+        # Header Info Card
         st.markdown(f"""
             <div style='display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 20px;'>
                 <div>
@@ -371,7 +276,7 @@ if check_password():
         with d_col1:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>TRACT DEMOGRAPHICS</p>", unsafe_allow_html=True)
             
-            # 3x3 Metric Grid
+            # Grid 1
             m1 = st.columns(3)
             m1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
             is_nmtc = "YES" if row['NMTC_Calculated'] in ["Eligible", "Deep Distress"] else "NO"
@@ -379,6 +284,7 @@ if check_password():
             is_deep = "YES" if row['NMTC_Calculated'] == "Deep Distress" else "NO"
             m1[2].markdown(f"<div class='metric-card'><div class='metric-value'>{is_deep}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
             
+            # Grid 2
             m2 = st.columns(3)
             pov_val = safe_float(row.get("Estimate!!Percent below poverty level!!Population for whom poverty status is determined", 0))
             mfi_val = safe_float(row.get("Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)", 0))
@@ -386,6 +292,7 @@ if check_password():
             m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${mfi_val:,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
             m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
             
+            # Grid 3
             m3 = st.columns(3)
             m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
             m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
@@ -399,6 +306,7 @@ if check_password():
 
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS</p>", unsafe_allow_html=True)
+            # Filter remains below map/header and above the anchor cards
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             
             list_html = ""
