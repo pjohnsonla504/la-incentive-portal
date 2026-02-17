@@ -42,11 +42,12 @@ st.markdown("""
     .benefit-card h3 { color: #4ade80; font-size: 1.25rem; margin-bottom: 12px; font-weight: 700; }
     .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
 
-    /* SECTION 5 FILTER TITLES (WHITE FONT) */
+    /* SECTION 5 FILTER TITLES (FORCE WHITE FONT) */
     div[data-testid="stWidgetLabel"] p {
         color: white !important;
         font-weight: 600 !important;
         font-size: 1.1rem !important;
+        opacity: 1 !important;
     }
 
     /* ANCHOR ASSET UI */
@@ -59,7 +60,6 @@ st.markdown("""
 @st.cache_data(ttl=3600)
 def load_assets():
     this_dir = Path(__file__).parent
-    # Standardizing GeoJSON name based on your repository listing
     gj_path = this_dir / "tl_2025_22_tract.json"
     master_path = this_dir / "Opportunity Zones 2.0 - Master Data File.csv"
     anchors_path = this_dir / "la_anchors.csv"
@@ -75,8 +75,8 @@ def load_assets():
     with open(gj_path, "r") as f:
         gj = json.load(f)
 
-    # Standardize GEOID and Eligibility
     master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+    # Highlights eligible tracks green per user instructions
     master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
         lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
     )
@@ -149,6 +149,7 @@ st.markdown("""
     <div class='section-title'>Best Practices</div>
     <div class='narrative-text'>Successful OZ projects leverage public-private partnerships and local community engagement.</div>
     <div class='benefit-grid'>
+        <div class='benefit-grid'>
         <div class='benefit-card'>
             <h3>Community Alignment</h3>
             <p>Ensure projects meet local needs such as workforce housing, grocery access, or high-speed internet infrastructure.</p>
@@ -168,7 +169,7 @@ st.markdown("""
 # --- SECTION 5: COMMAND CENTER ---
 st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>Section 05</div><div class='section-title'>Strategic Analysis Command Center</div>", unsafe_allow_html=True)
 
-# Filter titles now styled to white via CSS above
+# Filter titles (labels) are now white due to the CSS selector at the top
 col_f1, col_f2 = st.columns(2)
 with col_f1:
     selected_region = st.selectbox("Select Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
@@ -181,7 +182,7 @@ display_df = filtered_by_reg.copy()
 if selected_parish != "All in Region":
     display_df = display_df[display_df['Parish'] == selected_parish]
 
-# DYNAMIC VIEW LOGIC
+# DYNAMIC VIEW LOGIC (Statewide by default)
 is_filtered = (selected_region != "All Louisiana" or selected_parish != "All in Region")
 map_center = LA_CENTER
 map_zoom = LA_ZOOM
@@ -200,7 +201,7 @@ fig = px.choropleth_mapbox(
     locations="geoid_str",
     featureidkey="properties.GEOID",
     color="Eligibility_Status",
-    color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#1e293b"},
+    color_discrete_map={"Eligible": "#4ade80", "Ineligible": "#1e293b"}, # Green for Eligible OZ 2.0
     mapbox_style="carto-darkmatter",
     center=map_center,
     zoom=map_zoom,
