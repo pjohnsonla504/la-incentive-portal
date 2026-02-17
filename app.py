@@ -17,33 +17,41 @@ LA_ZOOM = 6.2
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    
+    /* Global Background and Font */
     html, body, [class*="stApp"] { 
         font-family: 'Inter', sans-serif !important; 
         background-color: #0b0f19 !important; 
         color: #ffffff; 
     }
+    
+    /* SECTION STYLING */
     .content-section { padding: 50px 0; border-bottom: 1px solid #1e293b; }
     .section-num { font-size: 0.85rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
     .section-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -0.02em; }
     .narrative-text { color: #94a3b8; font-size: 1.1rem; line-height: 1.6; max-width: 800px; margin-bottom: 30px; }
     
-    /* Benefit Cards */
+    /* BENEFIT CARDS */
     .benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
     .benefit-card { 
         background-color: #111827 !important; 
         padding: 30px; 
         border: 1px solid #1e293b; 
         border-radius: 12px; 
-        transition: transform 0.2s ease;
     }
-    .benefit-card:hover { border-color: #4ade80; transform: translateY(-5px); }
     .benefit-card h3 { color: #4ade80; font-size: 1.25rem; margin-bottom: 12px; font-weight: 700; }
     .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
 
-    /* Command Center UI */
+    /* SECTION 5 FILTER TITLES (WHITE FONT) */
+    div[data-testid="stWidgetLabel"] p {
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+    }
+
+    /* ANCHOR ASSET UI */
     .anchor-scroll-container { height: 450px; overflow-y: auto; padding-right: 10px; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; background: #0f172a; }
     .anchor-ui-box { background: #1f2937; border: 1px solid #374151; padding: 15px; border-radius: 10px; margin-bottom: 12px; }
-    .anchor-link { color: #4ade80 !important; text-decoration: none; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-top: 8px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -51,6 +59,7 @@ st.markdown("""
 @st.cache_data(ttl=3600)
 def load_assets():
     this_dir = Path(__file__).parent
+    # Standardizing GeoJSON name based on your repository listing
     gj_path = this_dir / "tl_2025_22_tract.json"
     master_path = this_dir / "Opportunity Zones 2.0 - Master Data File.csv"
     anchors_path = this_dir / "la_anchors.csv"
@@ -66,6 +75,7 @@ def load_assets():
     with open(gj_path, "r") as f:
         gj = json.load(f)
 
+    # Standardize GEOID and Eligibility
     master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
     master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
         lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
@@ -158,19 +168,20 @@ st.markdown("""
 # --- SECTION 5: COMMAND CENTER ---
 st.markdown("<div class='content-section' style='border-bottom:none;'><div class='section-num'>Section 05</div><div class='section-title'>Strategic Analysis Command Center</div>", unsafe_allow_html=True)
 
+# Filter titles now styled to white via CSS above
 col_f1, col_f2 = st.columns(2)
 with col_f1:
-    selected_region = st.selectbox("Region Filter", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
+    selected_region = st.selectbox("Select Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
 with col_f2:
     filtered_by_reg = master_df[master_df['Region'] == selected_region] if selected_region != "All Louisiana" else master_df
-    selected_parish = st.selectbox("Parish Filter", ["All in Region"] + sorted(filtered_by_reg['Parish'].dropna().unique().tolist()))
+    selected_parish = st.selectbox("Select Parish", ["All in Region"] + sorted(filtered_by_reg['Parish'].dropna().unique().tolist()))
 
 # Final Filtered Data
 display_df = filtered_by_reg.copy()
 if selected_parish != "All in Region":
     display_df = display_df[display_df['Parish'] == selected_parish]
 
-# Dynamic Zoom Logic
+# DYNAMIC VIEW LOGIC
 is_filtered = (selected_region != "All Louisiana" or selected_parish != "All in Region")
 map_center = LA_CENTER
 map_zoom = LA_ZOOM
