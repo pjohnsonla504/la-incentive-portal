@@ -85,22 +85,21 @@ if check_password():
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
 
-        /* Sidebar Navigation */
+        /* Navigation */
         [data-testid="stSidebar"] { background-color: #0f172a !important; border-right: 1px solid #1e293b; }
-        .toc-link { display: block; padding: 10px; color: #94a3b8 !important; text-decoration: none; font-weight: 600; font-size: 0.85rem; border-radius: 5px; transition: 0.2s; }
-        .toc-link:hover { background-color: #1e293b; color: #4ade80 !important; }
-
-        /* Professional Typography */
+        
+        /* Expert Layout */
         .content-section { padding: 40px 0; border-bottom: 1px solid #1e293b; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; }
         .narrative { font-size: 1.1rem; color: #94a3b8; line-height: 1.7; max-width: 900px; }
 
-        /* Fixed-Height Dashboard Alignment */
+        /* The Internal Scroll Area (Red Oval Area) */
         .anchor-scroll-area {
-            height: 440px; 
+            height: 540px; 
             overflow-y: auto;
             padding-right: 15px;
+            margin-top: 10px;
             scrollbar-width: thin;
             scrollbar-color: #4ade80 #1f2937;
         }
@@ -110,8 +109,8 @@ if check_password():
         .asset-card { background: #1f2937; border: 1px solid #374151; padding: 15px; border-radius: 12px; margin-bottom: 12px; }
         .asset-link { color: #4ade80 !important; text-decoration: none !important; font-weight: 700; }
         
-        /* Metric Card Styling */
-        .metric-box { background: #1f2937; border: 1px solid #374151; padding: 12px; border-radius: 10px; text-align: center; height: 100px; display: flex; flex-direction: column; justify-content: center; }
+        /* Metric Styling */
+        .metric-box { background: #1f2937; border: 1px solid #374151; padding: 12px; border-radius: 10px; text-align: center; height: 105px; display: flex; flex-direction: column; justify-content: center; }
         .m-val { font-size: 1.1rem; font-weight: 900; color: #4ade80; }
         .m-lab { font-size: 0.6rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
         
@@ -128,7 +127,6 @@ if check_password():
 
     @st.cache_data(ttl=3600)
     def load_data():
-        gj = None
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: gj = json.load(f)
         def read_csv(path):
@@ -158,17 +156,17 @@ if check_password():
     gj, master_df, anchors_df, tract_centers = load_data()
 
     # --- SECTIONS 1-4: EXPERT NARRATIVE ---
-    st.markdown("<div id='section-1' class='content-section'><div class='section-num'>01</div><div class='section-title'>Executive Overview</div><p class='narrative'>The Louisiana Opportunity Zone 2.0 Portal centralizes geospatial intelligence and socioeconomic distress metrics to identify 'High-Conviction' census tracts where capital deployment meets community impact.</p></div>", unsafe_allow_html=True)
+    st.markdown("<div id='section-1' class='content-section'><div class='section-num'>01</div><div class='section-title'>Executive Overview</div><p class='narrative'>This strategic portal identifies high-potential census tracts across Louisiana by cross-referencing socioeconomic distress markers with institutional anchor proximity.</p></div>", unsafe_allow_html=True)
     
-    st.markdown("<div id='section-2' class='content-section'><div class='section-num'>02</div><div class='section-title'>Economic Framework</div><p class='narrative'>Our methodology focuses on the long-term hold benefits of QOFs, including the permanent exclusion of appreciation tax on Qualified Opportunity Zone investments held for over 10 years.</p></div>", unsafe_allow_html=True)
+    st.markdown("<div id='section-2' class='content-section'><div class='section-num'>02</div><div class='section-title'>Economic Framework</div><p class='narrative'>Qualified Opportunity Zone 2.0 focuses on three tiers of tax incentives: deferral of capital gains, step-up in basis, and permanent exclusion of appreciation tax.</p></div>", unsafe_allow_html=True)
     
-    st.markdown("<div id='section-3' class='content-section'><div class='section-num'>03</div><div class='section-title'>Strategic Best Practices</div><p class='narrative'>By leveraging proximity to Institutional Anchors such as universities and healthcare hubs, investors can mitigate development risks and ensure long-term viability.</p></div>", unsafe_allow_html=True)
+    st.markdown("<div id='section-3' class='content-section'><div class='section-num'>03</div><div class='section-title'>Strategic Best Practices</div><p class='narrative'>Deploying capital near 'Institutional Anchors'—such as major hospitals and universities—de-risks investments and supports long-term community stabilization.</p></div>", unsafe_allow_html=True)
     
     st.markdown("<div id='section-4' class='content-section'><div class='section-num'>04</div><div class='section-title'>Expert Resources</div>", unsafe_allow_html=True)
     c4 = st.columns(3)
-    c4[0].info("[EIG Policy Hub ↗](https://eig.org/ozs-guidance/) - National Policy & Regulation Updates.")
-    c4[1].info("[FBT Gibbons ↗](https://fbtgibbons.com/) - Technical Legal Framework for QOF Structuring.")
-    c4[2].info("[AFPI Prosperity ↗](https://americafirstpolicy.com/) - Community-Centric Opportunity Blueprints.")
+    c4[0].info("[EIG Policy Hub ↗](https://eig.org/ozs-guidance/) - National Regulation Updates.")
+    c4[1].info("[FBT Gibbons ↗](https://fbtgibbons.com/) - Technical Legal Structuring.")
+    c4[2].info("[AFPI Prosperity ↗](https://americafirstpolicy.com/) - Prosperity Blueprints.")
 
     # --- SECTION 5: COMMAND CENTER ---
     st.markdown("### 05. Strategic Analysis Command Center")
@@ -181,7 +179,6 @@ if check_password():
         search = st.text_input("GEOID Search", placeholder="11-digit FIPS")
         if search in master_df['geoid_str'].values: st.session_state["active_tract"] = search
 
-    # Map Rendering
     map_df = f_df[f_df['Parish'] == s_par] if s_par != "All in Region" else f_df
     fig = go.Figure(go.Choroplethmapbox(
         geojson=gj, locations=map_df['geoid_str'], z=map_df['Eligibility_Status'].apply(lambda x: 1 if x == 'Eligible' else 0),
@@ -189,9 +186,9 @@ if check_password():
         marker=dict(opacity=0.6, line=dict(width=0.5, color='white'))
     ))
     fig.update_layout(mapbox=dict(style="carto-positron", zoom=6, center={"lat": 30.9, "lon": -91.8}), margin={"r":0,"t":0,"l":0,"b":0}, height=500)
-    st.plotly_chart(fig, use_container_width=True, key="map")
+    st.plotly_chart(fig, use_container_width=True)
 
-    # --- THE 3-COLUMN ANALYSIS ROW ---
+    # --- 3-COLUMN SIDE-BY-SIDE ANALYSIS ---
     st.markdown("<br>", unsafe_allow_html=True)
     curr_id = st.session_state["active_tract"]
     col_anc, col_prof, col_rec = st.columns([1, 1, 1])
@@ -200,7 +197,7 @@ if check_password():
         st.markdown("#### 📍 Institutional Anchors")
         anc_filter = st.selectbox("Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), label_visibility="collapsed")
         
-        # Anchors List immediately below the filter
+        # This is the "Red Oval" scroll area
         st.markdown("<div class='anchor-scroll-area'>", unsafe_allow_html=True)
         if curr_id and curr_id in tract_centers:
             lon, lat = tract_centers[curr_id]
@@ -220,19 +217,16 @@ if check_password():
             row = master_df[master_df["geoid_str"] == curr_id].iloc[0]
             if row['Eligibility_Status'] == 'Eligible':
                 st.markdown("<div style='background:rgba(74,222,128,0.1); border:1px solid #4ade80; padding:10px; border-radius:8px; text-align:center; color:#4ade80; font-weight:700;'>✅ QOZ 2.0 ELIGIBLE</div>", unsafe_allow_html=True)
-            
             m_grid = [st.columns(3) for _ in range(3)]
-            metrics = [
-                (f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "Poverty"),
-                (f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "MFI"),
-                (f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%", "Unemp."),
-                (row.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Metro"),
-                (f"{safe_int(row.get('Population 18 to 24', 0)):,}", "Pop 18-24"),
-                (f"{safe_int(row.get('Population 65 years and over', 0)):,}", "Pop 65+"),
-                (f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%", "Broadband"),
-                (f"{safe_int(row.get('Total Housing Units', 0)):,}", "Housing"),
-                (row.get('NMTC_Calculated', 'Ineligible'), "NMTC")
-            ]
+            metrics = [(f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "Poverty"),
+                       (f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "MFI"),
+                       (f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%", "Unemp."),
+                       (row.get('Metro Status (Metropolitan/Rural)', 'N/A'), "Metro"),
+                       (f"{safe_int(row.get('Population 18 to 24', 0)):,}", "Pop 18-24"),
+                       (f"{safe_int(row.get('Population 65 years and over', 0)):,}", "Pop 65+"),
+                       (f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%", "Broadband"),
+                       (f"{safe_int(row.get('Total Housing Units', 0)):,}", "Housing"),
+                       (row.get('NMTC_Calculated', 'Ineligible'), "NMTC")]
             for i, (v, l) in enumerate(metrics):
                 m_grid[i//3][i%3].markdown(f"<div class='metric-box'><div class='m-val'>{v}</div><div class='m-lab'>{l}</div></div>", unsafe_allow_html=True)
         else: st.info("Select a tract to view metrics.")
@@ -240,7 +234,7 @@ if check_password():
     with col_rec:
         st.markdown("#### ✍️ Qualitative Justification")
         cat = st.selectbox("Investment Class", ["Industrial", "Housing", "Retail", "Infrastructure", "Other"])
-        just = st.text_area("Investment Thesis", height=265, placeholder="Define the strategic justification for this tract...")
+        just = st.text_area("Investment Thesis", height=325, placeholder="Define the strategic justification for this tract...")
         if st.button("Commit to Final Report", use_container_width=True, type="primary"):
             if curr_id:
                 st.session_state["session_recs"].append({"Tract": curr_id, "Class": cat, "Thesis": just})
