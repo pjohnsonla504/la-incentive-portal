@@ -94,7 +94,16 @@ if check_password():
         .metric-card-inner { background-color: #1f2937; padding: 10px; border: 1px solid #374151; border-radius: 8px; text-align: center; margin-bottom: 8px; height: 80px; display: flex; flex-direction: column; justify-content: center; }
         .m-val { font-size: 1.0rem; font-weight: 900; color: #4ade80; }
         .m-lab { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
-        .anchor-ui-box { background: #1f2937; border: 1px solid #374151; padding: 10px; border-radius: 8px; margin-bottom: 6px; }
+        
+        /* Anchor Asset Scroll Area */
+        .anchor-scroll-container {
+            height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #4ade80 #1f2937;
+        }
+        .anchor-ui-box { background: #1f2937; border: 1px solid #374151; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
         
         /* Global Space Reduction */
         .block-container { padding-top: 1.5rem !important; }
@@ -158,30 +167,23 @@ if check_password():
         map_df['Color_Category'] = map_df['Eligibility_Status'].apply(lambda x: 1 if x == 'Eligible' else 0)
         active = st.session_state.get("active_tract")
         
-        # Default Louisiana bounding box
         center = {"lat": 30.9, "lon": -91.8}
         zoom = 6.5
 
-        # Handle zooming logic
         if active and active in tract_centers:
-            # Zoom to individual tract
             center = {"lat": tract_centers[active][1], "lon": tract_centers[active][0]}
             zoom = 12.0
         elif not map_df.empty:
-            # Zoom to the boundary of the filtered data
             lats = [tract_centers[gid][1] for gid in map_df['geoid_str'] if gid in tract_centers]
             lons = [tract_centers[gid][0] for gid in map_df['geoid_str'] if gid in tract_centers]
-            
             if lats and lons:
                 center = {"lat": np.mean(lats), "lon": np.mean(lons)}
-                # Basic heuristic to adjust zoom based on geographical spread
                 lat_range = max(lats) - min(lats)
                 lon_range = max(lons) - min(lons)
                 max_range = max(lat_range, lon_range)
-                
-                if max_range > 2: zoom = 6.5  # Statewide
-                elif max_range > 0.5: zoom = 8.5 # Region
-                else: zoom = 10.5 # Parish
+                if max_range > 2: zoom = 6.5
+                elif max_range > 0.5: zoom = 8.5
+                else: zoom = 10.5
 
         fig = go.Figure(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'],
@@ -198,7 +200,7 @@ if check_password():
         )
         return fig
 
-    # --- RESTORED NARRATIVE SECTIONS ---
+    # --- NARRATIVE SECTIONS ---
     st.markdown("<div id='section-1'></div><div class='content-section'><div class='section-num'>SECTION 1</div><div class='section-title'>Portal Overview</div><div class='narrative-text'>This portal provides a unified interface for identifying high-impact census tracts eligible for the Opportunity Zones 2.0 initiative. It combines real-time geographic data with socioeconomic metrics to support strategic investment and community advocacy.</div></div>", unsafe_allow_html=True)
     
     st.markdown("<div id='section-2'></div><div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>Benefit Framework</div><div class='narrative-text'>Opportunity Zones 2.0 builds upon the original tax incentive structure to drive long-term capital into under-resourced communities.</div>", unsafe_allow_html=True)
@@ -228,7 +230,6 @@ if check_password():
     # Filter Bar
     f1, f2, f3 = st.columns([1, 1, 1])
     
-    # Reset active tract if Region or Parish changes to allow the map to zoom to the new boundary
     with f1: 
         selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
         if "prev_region" not in st.session_state: st.session_state["prev_region"] = selected_region
@@ -267,14 +268,21 @@ if check_password():
     with col_anchors:
         st.subheader("📍 Anchor Assets")
         anc_f = st.selectbox("Filter Assets", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
+        
+        # Fixed Height Scrollable Container
+        st.markdown("<div class='anchor-scroll-container'>", unsafe_allow_html=True)
         if curr_id and curr_id in tract_centers:
             lon, lat = tract_centers[curr_id]
             wa = anchors_df.copy()
             if anc_f != "All Assets": wa = wa[wa['Type'] == anc_f]
             wa['dist'] = wa.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-            for _, a in wa.sort_values('dist').head(10).iterrows():
+            
+            # Sorted by distance - showing top 20 for scrollability
+            for _, a in wa.sort_values('dist').head(20).iterrows():
                 st.markdown(f"<div class='anchor-ui-box'><b style='color:#4ade80;'>{a['Type']}</b><br>{a['Name']}<br><small>{a['dist']:.1f} miles away</small></div>", unsafe_allow_html=True)
-        else: st.info("Select a tract to see local anchors.")
+        else: 
+            st.info("Select a tract to see local anchors.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with col_data:
         st.subheader("📊 Tract Profile")
