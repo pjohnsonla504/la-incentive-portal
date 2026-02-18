@@ -324,7 +324,7 @@ if check_password():
         <div class='section-num'>SECTION 5</div>
         <div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div>
         <div class='narrative-text'>
-        Utilize the interactive map below to explore census tracts across Louisiana. This engine integrates <b>Opportunity Zones 2.0</b> eligibility with real-time demographic data and proximity to economic anchors. Select a tract to view its deep distress metrics, poverty levels, and nearby assets. Use the recommendation tool to categorize and justify tracts for strategic designation in the 2026-2030 cycle.
+        Utilize the interactive map below to explore census tracts across Louisiana. This engine integrates <b>Opportunity Zones 2.0</b> eligibility with real-time demographic data and proximity to economic anchors. Select a tract to view its deep distress metrics, poverty levels, and nearby assets. Use the recommendation tool to categorize and justify tracts for OZ 2.0 designation.
         </div>
     </div>
     """, unsafe_allow_html=True)
