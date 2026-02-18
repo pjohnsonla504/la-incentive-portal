@@ -319,7 +319,7 @@ if check_password():
             m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
             m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
-            # --- DROPDOWN PLACEMENT ---
+            # DROPDOWN PLACEMENT 
             rec_cat = st.selectbox(
                 "Recommendation Category", 
                 ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Agricultural Innovation", "Technology & Research", "Healthcare Expansion", "Small Business Support"],
@@ -328,10 +328,16 @@ if check_password():
             
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
+                # Capturing all requested variables into session state
                 st.session_state["session_recs"].append({
                     "Tract": curr, 
+                    "Parish": row['Parish'],
                     "Category": rec_cat,
-                    "Justification": justification
+                    "Justification": justification,
+                    "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
+                    "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
+                    "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
+                    "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
                 })
                 st.toast("Tract Added!"); st.rerun()
         with d_col2:
@@ -351,8 +357,25 @@ if check_password():
     # --- SECTION 6: REPORT ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
-        final_recs = [{"Tract": r['Tract'], "Category": r.get('Category', 'N/A'), "Justification": r['Justification']} for r in st.session_state["session_recs"]]
-        st.dataframe(pd.DataFrame(final_recs), use_container_width=True, hide_index=True)
-        if st.button("Clear Report"): st.session_state["session_recs"] = []; st.rerun()
-    else: st.info("No tracts selected.")
+        # Generating formatted report with custom headers
+        report_data = []
+        for i, r in enumerate(st.session_state["session_recs"], 1):
+            report_data.append({
+                "Recommendation Count": i,
+                "Census Tract Number": r['Tract'],
+                "Parish": r['Parish'],
+                "Recommendation Category": r['Category'],
+                "Population": r['Population'],
+                "Poverty Rate": r['Poverty'],
+                "Median Family Income": r['MFI'],
+                "Broadband Accessibility": r['Broadband']
+            })
+            
+        st.dataframe(pd.DataFrame(report_data), use_container_width=True, hide_index=True)
+        
+        if st.button("Clear Report"): 
+            st.session_state["session_recs"] = []
+            st.rerun()
+    else: 
+        st.info("No tracts selected.")
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
