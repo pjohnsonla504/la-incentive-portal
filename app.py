@@ -121,7 +121,7 @@ if check_password():
             letter-spacing: 0.1em;
             transition: color 0.3s ease;
         }
-        .nav-link:hover { color: #94a3b8; }
+        .nav-link:hover { color: #2d3748; }
 
         /* Padding for Main Content to avoid Nav overlap */
         .main .block-container { padding-top: 80px !important; }
