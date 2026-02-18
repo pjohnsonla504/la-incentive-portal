@@ -370,7 +370,7 @@ if check_password():
             
             rec_cat = st.selectbox(
                 "Recommendation Category", 
-                ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Technology & Research", "Healthcare Expansion"],
+                ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Innovative Technology & Research", "Healthcare Expansion"],
                 key="recommendation_category"
             )
             
