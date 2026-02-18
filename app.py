@@ -51,16 +51,85 @@ def check_password():
                     st.session_state["password_correct"] = True
                     return
             st.session_state["password_correct"] = False
-        except: pass
+            st.error("Invalid username or password")
+        except Exception as e:
+            st.error(f"Error connecting to database: {e}")
 
     if not st.session_state["password_correct"]:
-        st.markdown("<style>.stApp { background-color: #0b0f19; }</style>", unsafe_allow_html=True)
+        # Custom CSS for the Login Page to match the dashboard design
+        st.markdown("""
+            <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+            
+            /* Background and Container */
+            .stApp {
+                background-color: #0b0f19 !important;
+                font-family: 'Inter', sans-serif;
+            }
+            
+            /* Login Box Styling */
+            div[data-testid="stVerticalBlock"] > div:has(input) {
+                background-color: #111827;
+                padding: 40px;
+                border-radius: 15px;
+                border: 1px solid #1e293b;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            }
+
+            /* Input Labels */
+            label {
+                color: #94a3b8 !important;
+                font-weight: 700 !important;
+                text-transform: uppercase;
+                font-size: 0.75rem !important;
+                letter-spacing: 0.05em;
+            }
+
+            /* Text Input Customization */
+            input {
+                background-color: #0b0f19 !important;
+                color: white !important;
+                border: 1px solid #2d3748 !important;
+                border-radius: 8px !important;
+            }
+
+            /* Button Styling */
+            button[kind="primary"], .stButton > button {
+                background-color: #4ade80 !important;
+                color: #0b0f19 !important;
+                font-weight: 900 !important;
+                border: none !important;
+                height: 3em !important;
+                margin-top: 10px;
+            }
+            
+            button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+            }
+
+            .login-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
         _, col_mid, _ = st.columns([1, 0.8, 1])
         with col_mid:
-            st.markdown("<h2 style='text-align:center; color:white; font-family: sans-serif;'>OZ 2.0 Portal</h2>", unsafe_allow_html=True)
-            st.text_input("Username", key="username")
-            st.text_input("Password", type="password", key="password")
-            st.button("Sign In", on_click=password_entered, use_container_width=True)
+            st.markdown("""
+                <div class="login-header">
+                    <p style='color: #4ade80; font-weight: 900; letter-spacing: 0.2em; font-size: 0.8rem; margin-bottom: 0;'>SECURE ACCESS</p>
+                    <h1 style='color: white; font-weight: 900; margin-top: 0;'>OZ 2.0 Portal</h1>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            with st.container():
+                st.text_input("Username", key="username", placeholder="Enter your username")
+                st.text_input("Password", type="password", key="password", placeholder="••••••••")
+                st.button("Sign In", on_click=password_entered, use_container_width=True)
+                
+            st.markdown("<p style='text-align:center; color:#475569; font-size:0.8rem; margin-top:20px;'>Louisiana Opportunity Zones 2.0 | Admin Access Only</p>", unsafe_allow_html=True)
         return False
     return True
 
@@ -366,7 +435,6 @@ if check_password():
         final_recs = []
         for i, entry in enumerate(st.session_state["session_recs"], 1):
             t_id = entry['Tract']
-            # Lookup full data from master_df for the specific tract
             t_data = master_df[master_df['geoid_str'] == t_id].iloc[0]
             
             final_recs.append({
