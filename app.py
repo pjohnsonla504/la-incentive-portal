@@ -98,7 +98,6 @@ if check_password():
         .hero-title { font-size: 3.8rem; font-weight: 900; color: #f8fafc; margin-bottom: 20px; line-height: 1.1; }
         .narrative-text { font-size: 1.15rem; color: #94a3b8; line-height: 1.7; max-width: 900px; margin-bottom: 30px; }
         
-        /* Consistent Card Sizing Logic */
         [data-testid="stHorizontalBlock"] {
             align-items: stretch;
             display: flex;
@@ -118,7 +117,7 @@ if check_password():
             padding: 30px; 
             border: 1px solid #2d3748; 
             border-radius: 12px; 
-            height: 100%; /* Stretch to fill column height */
+            height: 100%;
             min-height: 280px; 
             transition: all 0.3s ease; 
             display: flex;
@@ -345,7 +344,7 @@ if check_password():
             m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                st.session_state["session_recs"].append({"Tract": curr, "Parish": row['Parish'], "Justification": justification})
+                st.session_state["session_recs"].append({"Tract": curr, "Justification": justification})
                 st.toast("Tract Added!"); st.rerun()
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS</p>", unsafe_allow_html=True)
@@ -364,7 +363,24 @@ if check_password():
     # --- SECTION 6: REPORT ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
-        report_df = pd.DataFrame(st.session_state["session_recs"])
+        final_recs = []
+        for i, entry in enumerate(st.session_state["session_recs"], 1):
+            t_id = entry['Tract']
+            # Lookup full data from master_df for the specific tract
+            t_data = master_df[master_df['geoid_str'] == t_id].iloc[0]
+            
+            final_recs.append({
+                "Recommendation Count": i,
+                "Census Tract Number": t_id,
+                "Parish": t_data.get('Parish', 'N/A'),
+                "Population": f"{safe_int(t_data.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}",
+                "Poverty Rate": f"{safe_float(t_data.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
+                "Median Family Income": f"${safe_float(t_data.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
+                "Broadband Accessibility": f"{safe_float(t_data.get('Broadband Internet (%)', 0)):.1f}%",
+                "Justification": entry.get('Justification', '')
+            })
+            
+        report_df = pd.DataFrame(final_recs)
         st.dataframe(report_df, use_container_width=True, hide_index=True)
         if st.button("Clear Report"): st.session_state["session_recs"] = []; st.rerun()
     else: st.info("No tracts selected.")
