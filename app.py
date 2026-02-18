@@ -95,7 +95,7 @@ if check_password():
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
         /* Global Styles */
-        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; scroll-behavior: smooth; }
+        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #ffffff !important; color: #ffffff; scroll-behavior: smooth; }
         
         /* Frozen Top Navigation */
         .nav-container {
