@@ -239,16 +239,43 @@ if check_password():
         <div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div>
         <div class='hero-title'>Louisiana OZ 2.0 Portal</div>
         <div class='narrative-text'>
-        The Opportuntiy Zones Program is a federal capital gains tax incentive program and is designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.
+        The Opportunity Zones Program is a federal capital gains tax incentive program and is designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 2, 3, 4 (OMITTED FOR BREVITY - KEEP YOUR ORIGINAL CODE HERE) ---
-    # [Sections 2 through 4 remain identical to your original provided script]
+    # --- SECTION 2: BENEFITS ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div><div class='narrative-text'>Opportunity Zones encourage investment by providing a series of capital gains tax incentives for qualifying activities in designated areas.</div></div>", unsafe_allow_html=True)
+    b_col1, b_col2, b_col3 = st.columns(3)
+    with b_col1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>The OZ 2.0 policy is more flexible for investors with a rolling deferral schedule. Starting on the date of the investment, Investors may defer taxes on capital gains that are reinvested in a QOF for up to five years.</p></div>", unsafe_allow_html=True)
+    with b_col2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>For gains held in a Qualified Opportunity Fund (QOF) for at least 5 years, investors receive a 10% increase in their investment basis (urban). For Qualified Rural Opportunity Funds (QROF), investors receive a 30% increase.</p></div>", unsafe_allow_html=True)
+    with b_col3: st.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>If the investment is held for at least 10 years, new capital gains generated from the sale of a QOZ investment are permanently excluded from taxable income.</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 3: ADVOCACY ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div><div class='narrative-text'>The most effective OZ selections combine community need, investment readiness, and policy alignment.</div></div>", unsafe_allow_html=True)
+    a_col1, a_col2, a_col3 = st.columns(3)
+    with a_col1: st.markdown("<div class='benefit-card'><h3>Geographical Diversity</h3><p>Ensuring that Opportunity Zone benefits reach both urban centers and rural parishes across all regions of Louisiana.</p></div>", unsafe_allow_html=True)
+    with a_col2: st.markdown("<div class='benefit-card'><h3>Market Assessment</h3><p>Focusing on areas that have a reasonable chance to attract private capital and put it to productive use within policy timelines.</p></div>", unsafe_allow_html=True)
+    with a_col3: st.markdown("<div class='benefit-card'><h3>Anchor Density</h3><p>Targeting tracts within a 5-mile radius of major economic drivers, universities, or industrial hubs to ensure project viability.</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 4: BEST PRACTICES ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div><div class='narrative-text'>Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks.</div></div>", unsafe_allow_html=True)
+    p_col1, p_col2, p_col3 = st.columns(3)
+    with p_col1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>This guide defines successful OZ designation strategies around eight core principles.</p><a href='https://eig.org/ozs-guidance/' target='_blank'>A Guide for Governors ↗</a></div>", unsafe_allow_html=True)
+    with p_col2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Craft a strategy that supports diverse project types, including commercial, industrial, and mixed-use developments.</p><a href='https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/' target='_blank'>Strategic Selection Guide ↗</a></div>", unsafe_allow_html=True)
+    with p_col3: st.markdown("<div class='benefit-card'><h3>America First Policy Institute</h3><p>Aligning with state-level blueprints for revitalizing American communities through reform.</p><a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: MAPPING ---
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class='content-section'>
+        <div class='section-num'>SECTION 5</div>
+        <div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div>
+        <div class='narrative-text'>
+        Utilize the interactive map below to explore census tracts across Louisiana. This engine integrates <b>Opportunity Zones 2.0</b> eligibility with real-time demographic data and proximity to economic anchors. Select a tract to view its deep distress metrics, poverty levels, and nearby assets. Use the recommendation tool to categorize and justify tracts for strategic designation in the 2026-2030 cycle.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
     filtered_df = master_df.copy()
@@ -292,7 +319,7 @@ if check_password():
             m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
             m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
-            # --- NEW: RECOMMENDATION CATEGORY DROPDOWN ---
+            # --- DROPDOWN PLACEMENT ---
             rec_cat = st.selectbox(
                 "Recommendation Category", 
                 ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Agricultural Innovation", "Technology & Research", "Healthcare Expansion", "Small Business Support"],
@@ -324,7 +351,6 @@ if check_password():
     # --- SECTION 6: REPORT ---
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
-        # Update dataframe to show Category
         final_recs = [{"Tract": r['Tract'], "Category": r.get('Category', 'N/A'), "Justification": r['Justification']} for r in st.session_state["session_recs"]]
         st.dataframe(pd.DataFrame(final_recs), use_container_width=True, hide_index=True)
         if st.button("Clear Report"): st.session_state["session_recs"] = []; st.rerun()
