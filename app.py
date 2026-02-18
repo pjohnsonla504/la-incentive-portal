@@ -113,7 +113,7 @@ if check_password():
             backdrop-filter: blur(10px);
         }
         .nav-link {
-            color: #4ade80;
+            color: #ffffff;
             text-decoration: none;
             font-weight: 700;
             font-size: 0.75rem;
