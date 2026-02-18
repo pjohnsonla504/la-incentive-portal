@@ -94,7 +94,6 @@ if check_password():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
-        /* Global Styles */
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; scroll-behavior: smooth; }
         
         /* Frozen Top Navigation */
@@ -103,30 +102,37 @@ if check_password():
             top: 0;
             left: 0;
             width: 100%;
-            background-color: rgba(11, 15, 25, 0.95);
+            background-color: rgba(11, 15, 25, 0.98);
             border-bottom: 1px solid #1e293b;
             padding: 15px 50px;
             z-index: 999999;
             display: flex;
             justify-content: center;
-            gap: 25px;
+            gap: 30px;
             backdrop-filter: blur(10px);
         }
-        .nav-link {
-            color: #94a3b8;
-            text-decoration: none;
+        
+        /* Force text to stay white and override browser defaults */
+        .nav-link, .nav-link:link, .nav-link:visited {
+            color: #ffffff !important; 
+            text-decoration: none !important;
             font-weight: 700;
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             transition: color 0.3s ease;
         }
-        .nav-link:hover { color: #4ade80; }
+        
+        /* Turn green on hover */
+        .nav-link:hover, .nav-link:active {
+            color: #4ade80 !important;
+            text-decoration: none !important;
+        }
 
-        /* Padding for Main Content to avoid Nav overlap */
+        /* Prevent content from hiding under nav */
         .main .block-container { padding-top: 80px !important; }
 
-        /* Existing Styles */
+        /* General UI Elements */
         div[data-baseweb="select"] > div { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important; }
         div[data-baseweb="select"] * { color: #0f172a !important; }
         label[data-testid="stWidgetLabel"] { color: #94a3b8 !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.75rem !important; letter-spacing: 0.05em; }
@@ -330,7 +336,6 @@ if check_password():
     with f_col2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
     if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
     with f_col3:
-        # Sort tracts as strings to prevent numeric sort issues
         tract_list = ["Search Tract GEOID..."] + sorted([str(x) for x in filtered_df['geoid_str'].tolist()])
         selected_search = st.selectbox("Find Census Tract", tract_list)
         if selected_search != "Search Tract GEOID...":
@@ -347,7 +352,6 @@ if check_password():
 
     if st.session_state["active_tract"]:
         curr = st.session_state["active_tract"]
-        # Ensure curr is treated as string for lookup
         row = master_df[master_df["geoid_str"] == str(curr)].iloc[0]
         st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 20px;'><div><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {curr}</div></div><div style='text-align: right;'><div style='font-size: 1.6rem; font-weight: 900; color: #f8fafc;'>{safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}</div><div style='color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;'>Population</div></div></div>", unsafe_allow_html=True)
         d_col1, d_col2 = st.columns([0.6, 0.4], gap="large")
