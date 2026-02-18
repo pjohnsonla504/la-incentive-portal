@@ -176,19 +176,29 @@ if check_password():
             gid = feature['properties'].get(id_key)
             if gid in geoids:
                 geom = feature['geometry']
-                if geom['type'] == 'Polygon': coords = np.array(geom['coordinates'][0])
-                elif geom['type'] == 'MultiPolygon': coords = np.array(geom['coordinates'][0][0])
-                else: continue
-                lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
+                if geom['type'] == 'Polygon':
+                    coords = np.array(geom['coordinates'][0])
+                    lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
+                elif geom['type'] == 'MultiPolygon':
+                    for poly in geom['coordinates']:
+                        coords = np.array(poly[0])
+                        lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
         if not lats: return {"lat": 30.9, "lon": -91.8}, 6.0
+        
         min_lat, max_lat = min(lats), max(lats)
         min_lon, max_lon = min(lons), max(lons)
         center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
-        lat_diff, lon_diff = max_lat - min_lat, max_lon - min_lon
+        
+        lat_diff = max_lat - min_lat
+        lon_diff = max_lon - min_lon
         max_diff = max(lat_diff, lon_diff)
+        
+        # Aggressive bound calculation
         if max_diff == 0: zoom = 12.5
+        elif max_diff < 0.05: zoom = 12.0
         elif max_diff < 0.1: zoom = 11.0
-        elif max_diff < 0.5: zoom = 9.0
+        elif max_diff < 0.3: zoom = 10.0
+        elif max_diff < 0.8: zoom = 8.5
         elif max_diff < 1.5: zoom = 7.5
         else: zoom = 6.2
         return center, zoom
@@ -201,7 +211,6 @@ if check_password():
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
         
-        # New zoom logic: if active tract exists, focus there, otherwise show filtered set
         if st.session_state.get("active_tract") and st.session_state["active_tract"] in map_df['geoid_str'].values:
             focus_geoids = {st.session_state["active_tract"]}
         else:
@@ -210,6 +219,9 @@ if check_password():
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
         
+        # uirevision is set to the current focus_geoids to force a camera reset on filter/selection change
+        revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
+
         fig = go.Figure(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
@@ -219,7 +231,7 @@ if check_password():
         ))
         fig.update_layout(mapbox=dict(style="carto-positron", zoom=zoom, center=center),
                           margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
-                          height=600, clickmode='event+select', uirevision=str(center))
+                          height=600, clickmode='event+select', uirevision=revision_key)
         return fig
 
     # --- SECTION 1: HERO ---
