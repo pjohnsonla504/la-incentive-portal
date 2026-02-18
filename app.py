@@ -113,7 +113,7 @@ if check_password():
             backdrop-filter: blur(10px);
         }
         .nav-link {
-            color: #0f172a;
+            color: #4ade80;
             text-decoration: none;
             font-weight: 700;
             font-size: 0.75rem;
@@ -121,7 +121,7 @@ if check_password():
             letter-spacing: 0.1em;
             transition: color 0.3s ease;
         }
-        .nav-link:hover { color: #2d3748; }
+        .nav-link:hover { color: #4ade80; }
 
         /* Padding for Main Content to avoid Nav overlap */
         .main .block-container { padding-top: 80px !important; }
