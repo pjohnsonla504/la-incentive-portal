@@ -193,7 +193,7 @@ if check_password():
         lon_diff = max_lon - min_lon
         max_diff = max(lat_diff, lon_diff)
         
-        # Aggressive bound calculation
+        # Aggressive bound calculation logic
         if max_diff == 0: zoom = 12.5
         elif max_diff < 0.05: zoom = 12.0
         elif max_diff < 0.1: zoom = 11.0
@@ -219,7 +219,7 @@ if check_password():
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
         
-        # uirevision is set to the current focus_geoids to force a camera reset on filter/selection change
+        # Create a unique key for uirevision based on the focus set to force camera refresh
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
 
         fig = go.Figure(go.Choroplethmapbox(
