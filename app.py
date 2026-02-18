@@ -98,30 +98,13 @@ if check_password():
         .hero-title { font-size: 3.8rem; font-weight: 900; color: #f8fafc; margin-bottom: 20px; line-height: 1.1; }
         .narrative-text { font-size: 1.15rem; color: #94a3b8; line-height: 1.7; max-width: 900px; margin-bottom: 30px; }
         
-        [data-testid="stHorizontalBlock"] {
-            align-items: stretch;
-            display: flex;
-            flex-direction: row;
-        }
-        [data-testid="stColumn"] {
-            display: flex;
-        }
-        [data-testid="stColumn"] > div {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        [data-testid="stHorizontalBlock"] { align-items: stretch; display: flex; flex-direction: row; }
+        [data-testid="stColumn"] { display: flex; }
+        [data-testid="stColumn"] > div { flex: 1; display: flex; flex-direction: column; }
 
         .benefit-card { 
-            background-color: #111827 !important; 
-            padding: 30px; 
-            border: 1px solid #2d3748; 
-            border-radius: 12px; 
-            height: 100%;
-            min-height: 280px; 
-            transition: all 0.3s ease; 
-            display: flex;
-            flex-direction: column;
+            background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; 
+            height: 100%; min-height: 280px; transition: all 0.3s ease; display: flex; flex-direction: column;
         }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); }
         .benefit-card h3 { color: #f8fafc; margin-bottom: 15px; font-weight: 800; font-size: 1.3rem; }
@@ -161,7 +144,6 @@ if check_password():
 
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
-        
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -186,10 +168,16 @@ if check_password():
             for feature in gj['features']:
                 geoid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
                 try:
-                    coords = feature['geometry']['coordinates'][0]
-                    if feature['geometry']['type'] == 'MultiPolygon': coords = coords[0]
-                    pts = np.array(coords)
-                    centers[geoid] = [np.mean(pts[:, 0]), np.mean(pts[:, 1])]
+                    geom = feature['geometry']
+                    coords = geom['coordinates']
+                    lons, lats = [], []
+                    def process_poly(poly):
+                        for ring in poly:
+                            for pt in ring:
+                                lons.append(pt[0]); lats.append(pt[1])
+                    if geom['type'] == 'Polygon': process_poly(coords)
+                    else: [process_poly(p) for p in coords]
+                    centers[geoid] = [np.mean(lons), np.mean(lats)]
                 except: continue
         return gj, master, anchors, centers
 
@@ -197,27 +185,51 @@ if check_password():
 
     def get_zoom_center(geoids):
         if not geoids or not gj: return {"lat": 30.9, "lon": -91.8}, 6.0
-        lats, lons = [], []
+        all_lats, all_lons = [], []
         for feature in gj['features']:
             gid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
             if gid in geoids:
-                coords = feature['geometry']['coordinates'][0]
-                if feature['geometry']['type'] == 'MultiPolygon': coords = coords[0]
-                pts = np.array(coords)
-                lons.extend(pts[:, 0]); lats.extend(pts[:, 1])
-        if not lats: return {"lat": 30.9, "lon": -91.8}, 6.0
-        center = {"lat": (min(lats) + max(lats)) / 2, "lon": (min(lons) + max(lons)) / 2}
-        return center, 6.5
+                geom = feature['geometry']
+                coords = geom['coordinates']
+                def collect(poly):
+                    for ring in poly:
+                        for pt in ring:
+                            all_lons.append(pt[0]); all_lats.append(pt[1])
+                if geom['type'] == 'Polygon': collect(coords)
+                else: [collect(p) for p in coords]
+        
+        if not all_lats: return {"lat": 30.9, "lon": -91.8}, 6.0
+        
+        min_lat, max_lat = min(all_lats), max(all_lats)
+        min_lon, max_lon = min(all_lons), max(all_lons)
+        center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
+        
+        lat_diff = max_lat - min_lat
+        lon_diff = max_lon - min_lon
+        max_diff = max(lat_diff, lon_diff)
+        
+        if max_diff < 0.001: zoom = 12.5 
+        else: zoom = max(6.0, min(13.0, 8.5 - np.log2(max_diff + 0.001)))
+        
+        return center, zoom
 
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
-        selected_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
+        selected_geoids = [rec['Census Tract Number'] for rec in st.session_state["session_recs"]]
+        
         def get_color_cat(row):
             if row['geoid_str'] in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
+            
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
-        center, zoom = get_zoom_center(set(map_df['geoid_str'].tolist()))
+        
+        if st.session_state["active_tract"]:
+            center, zoom = get_zoom_center([st.session_state["active_tract"]])
+        else:
+            center, zoom = get_zoom_center(set(map_df['geoid_str'].tolist()))
+            
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
+        
         fig = go.Figure(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
@@ -225,9 +237,21 @@ if check_password():
             showscale=False, marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx, hoverinfo="location"
         ))
-        fig.update_layout(mapbox=dict(style="carto-positron", zoom=zoom, center=center),
-                          margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
-                          height=600, clickmode='event+select', uirevision=str(center))
+        
+        fig.update_layout(
+            mapbox=dict(
+                style="carto-positron", 
+                zoom=zoom, 
+                center=center
+            ),
+            # Scroll Zoom and Drag interaction settings
+            mapbox_style="carto-positron",
+            margin={"r":0,"t":0,"l":0,"b":0}, 
+            paper_bgcolor='rgba(0,0,0,0)',
+            height=600, 
+            clickmode='event+select', 
+            uirevision=str(center)
+        )
         return fig
 
     # --- SECTION 1: HERO ---
@@ -366,20 +390,20 @@ if check_password():
         final_recs = []
         for i, entry in enumerate(st.session_state["session_recs"], 1):
             t_id = entry['Tract']
-            # Lookup full data from master_df for the specific tract
-            t_data = master_df[master_df['geoid_str'] == t_id].iloc[0]
-            
-            final_recs.append({
-                "Recommendation Count": i,
-                "Census Tract Number": t_id,
-                "Parish": t_data.get('Parish', 'N/A'),
-                "Population": f"{safe_int(t_data.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}",
-                "Poverty Rate": f"{safe_float(t_data.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
-                "Median Family Income": f"${safe_float(t_data.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
-                "Broadband Accessibility": f"{safe_float(t_data.get('Broadband Internet (%)', 0)):.1f}%",
-                "Justification": entry.get('Justification', '')
-            })
-            
+            t_match = master_df[master_df['geoid_str'] == t_id]
+            if not t_match.empty:
+                t_data = t_match.iloc[0]
+                final_recs.append({
+                    "Recommendation Count": i,
+                    "Census Tract Number": t_id,
+                    "Parish": t_data.get('Parish', 'N/A'),
+                    "Population": f"{safe_int(t_data.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}",
+                    "Poverty Rate": f"{safe_float(t_data.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
+                    "Median Family Income": f"${safe_float(t_data.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
+                    "Broadband Accessibility": f"{safe_float(t_data.get('Broadband Internet (%)', 0)):.1f}%",
+                    "Justification": entry.get('Justification', '')
+                })
+        
         report_df = pd.DataFrame(final_recs)
         st.dataframe(report_df, use_container_width=True, hide_index=True)
         if st.button("Clear Report"): st.session_state["session_recs"] = []; st.rerun()
