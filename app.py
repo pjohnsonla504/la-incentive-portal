@@ -102,7 +102,7 @@ if check_password():
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
         .hero-title { font-size: 3.8rem; font-weight: 900; color: #f8fafc; margin-bottom: 20px; line-height: 1.1; }
         .narrative-text { font-size: 1.15rem; color: #94a3b8; line-height: 1.7; max-width: 900px; margin-bottom: 30px; }
-        .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; height: 100%; min-height: 280px; transition: all 0.3s depth; display: flex; flex-direction: column; }
+        .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; height: 100%; min-height: 280px; transition: all 0.3s ease; display: flex; flex-direction: column; }
         .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); }
         .benefit-card h3 { color: #f8fafc; margin-bottom: 15px; font-weight: 800; font-size: 1.3rem; }
         .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; flex-grow: 1; }
@@ -221,18 +221,9 @@ if check_password():
             showscale=False, marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx, hoverinfo="location"
         ))
-        
-        # --- SCROLL ZOOM ADDED HERE ---
-        fig.update_layout(
-            mapbox=dict(style="carto-positron", zoom=zoom, center=center),
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)',
-            height=600, 
-            clickmode='event+select', 
-            uirevision=str(center)
-        )
-        
-        # Explicitly enable scroll zoom in the config
+        fig.update_layout(mapbox=dict(style="carto-positron", zoom=zoom, center=center),
+                          margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
+                          height=600, clickmode='event+select', uirevision=str(center))
         return fig
 
     # --- SECTION 1: HERO ---
@@ -319,15 +310,7 @@ if check_password():
                 st.session_state["active_tract"] = selected_search
                 st.rerun()
 
-    # Pass scrollZoom in the config dictionary of plotly_chart
-    combined_map = st.plotly_chart(
-        render_map_go(filtered_df), 
-        use_container_width=True, 
-        on_select="rerun", 
-        key="combined_map",
-        config={'scrollZoom': True}
-    )
-
+    combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map")
     if combined_map and "selection" in combined_map and combined_map["selection"]["points"]:
         new_id = str(combined_map["selection"]["points"][0]["location"])
         if st.session_state["active_tract"] != new_id:
