@@ -89,11 +89,44 @@ def check_password():
     return True
 
 if check_password():
-    # --- 2. GLOBAL STYLING ---
+    # --- 2. GLOBAL STYLING & FROZEN NAV ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
+        
+        /* Global Styles */
+        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; scroll-behavior: smooth; }
+        
+        /* Frozen Top Navigation */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(11, 15, 25, 0.95);
+            border-bottom: 1px solid #1e293b;
+            padding: 15px 50px;
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            backdrop-filter: blur(10px);
+        }
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover { color: #4ade80; }
+
+        /* Padding for Main Content to avoid Nav overlap */
+        .main .block-container { padding-top: 80px !important; }
+
+        /* Existing Styles */
         div[data-baseweb="select"] > div { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important; }
         div[data-baseweb="select"] * { color: #0f172a !important; }
         label[data-testid="stWidgetLabel"] { color: #94a3b8 !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.75rem !important; letter-spacing: 0.05em; }
@@ -113,6 +146,15 @@ if check_password():
         .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
         .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 6px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }
         </style>
+
+        <div class="nav-container">
+            <a class="nav-link" href="#section-1">Overview</a>
+            <a class="nav-link" href="#section-2">Benefits</a>
+            <a class="nav-link" href="#section-3">Strategy</a>
+            <a class="nav-link" href="#section-4">Best Practices</a>
+            <a class="nav-link" href="#section-5">Mapping</a>
+            <a class="nav-link" href="#section-6">Report</a>
+        </div>
         """, unsafe_allow_html=True)
 
     # --- 3. DATA ENGINE ---
@@ -233,6 +275,7 @@ if check_password():
         return fig
 
     # --- SECTION 1: HERO ---
+    st.markdown("<div id='section-1'></div>", unsafe_allow_html=True)
     st.markdown("""
     <div class='content-section'>
         <div class='section-num'>SECTION 1</div>
@@ -245,6 +288,7 @@ if check_password():
     """, unsafe_allow_html=True)
 
     # --- SECTION 2: BENEFITS ---
+    st.markdown("<div id='section-2'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div><div class='narrative-text'>Opportunity Zones encourage investment by providing a series of capital gains tax incentives for qualifying activities in designated areas.</div></div>", unsafe_allow_html=True)
     b_col1, b_col2, b_col3 = st.columns(3)
     with b_col1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>The OZ 2.0 policy is more flexible for investors with a rolling deferral schedule. Starting on the date of the investment, Investors may defer taxes on capital gains that are reinvested in a QOF for up to five years.</p></div>", unsafe_allow_html=True)
@@ -252,6 +296,7 @@ if check_password():
     with b_col3: st.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>If the investment is held for at least 10 years, new capital gains generated from the sale of a QOZ investment are permanently excluded from taxable income.</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 3: ADVOCACY ---
+    st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div><div class='narrative-text'>The most effective OZ selections combine community need, investment readiness, and policy alignment.</div></div>", unsafe_allow_html=True)
     a_col1, a_col2, a_col3 = st.columns(3)
     with a_col1: st.markdown("<div class='benefit-card'><h3>Geographical Diversity</h3><p>Ensuring that Opportunity Zone benefits reach both urban centers and rural parishes across all regions of Louisiana.</p></div>", unsafe_allow_html=True)
@@ -259,6 +304,7 @@ if check_password():
     with a_col3: st.markdown("<div class='benefit-card'><h3>Anchor Density</h3><p>Targeting tracts within a 5-mile radius of major economic drivers, universities, or industrial hubs to ensure project viability.</p></div>", unsafe_allow_html=True)
 
     # --- SECTION 4: BEST PRACTICES ---
+    st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div><div class='narrative-text'>Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks.</div></div>", unsafe_allow_html=True)
     p_col1, p_col2, p_col3 = st.columns(3)
     with p_col1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>This guide defines successful OZ designation strategies around eight core principles.</p><a href='https://eig.org/ozs-guidance/' target='_blank'>A Guide for Governors ↗</a></div>", unsafe_allow_html=True)
@@ -266,6 +312,7 @@ if check_password():
     with p_col3: st.markdown("<div class='benefit-card'><h3>America First Policy Institute</h3><p>Aligning with state-level blueprints for revitalizing American communities through reform.</p><a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: MAPPING ---
+    st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
     st.markdown("""
     <div class='content-section'>
         <div class='section-num'>SECTION 5</div>
@@ -283,7 +330,8 @@ if check_password():
     with f_col2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
     if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
     with f_col3:
-        tract_list = ["Search Tract GEOID..."] + sorted(filtered_df['geoid_str'].tolist())
+        # Sort tracts as strings to prevent numeric sort issues
+        tract_list = ["Search Tract GEOID..."] + sorted([str(x) for x in filtered_df['geoid_str'].tolist()])
         selected_search = st.selectbox("Find Census Tract", tract_list)
         if selected_search != "Search Tract GEOID...":
             if st.session_state["active_tract"] != selected_search:
@@ -299,7 +347,8 @@ if check_password():
 
     if st.session_state["active_tract"]:
         curr = st.session_state["active_tract"]
-        row = master_df[master_df["geoid_str"] == curr].iloc[0]
+        # Ensure curr is treated as string for lookup
+        row = master_df[master_df["geoid_str"] == str(curr)].iloc[0]
         st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 20px;'><div><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {curr}</div></div><div style='text-align: right;'><div style='font-size: 1.6rem; font-weight: 900; color: #f8fafc;'>{safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}</div><div style='color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;'>Population</div></div></div>", unsafe_allow_html=True)
         d_col1, d_col2 = st.columns([0.6, 0.4], gap="large")
         with d_col1:
@@ -353,11 +402,11 @@ if check_password():
                 components.html(f"<style>body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- SECTION 6: REPORT ---
+    st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         report_data = []
         for i, r in enumerate(st.session_state["session_recs"], 1):
-            # Using .get() ensures the app doesn't crash if old data is in session
             report_data.append({
                 "Recommendation Count": i,
                 "Census Tract Number": r.get('Tract', 'N/A'),
