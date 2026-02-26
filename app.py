@@ -181,7 +181,6 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -200,7 +199,7 @@ if check_password():
 
         master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
         
-        # Anchor Data from LA anchors CSV
+        # Anchor Data integration
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         centers = {}
@@ -237,7 +236,6 @@ if check_password():
         min_lat, max_lat = min(lats), max(lats)
         min_lon, max_lon = min(lons), max(lons)
         center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
-        
         lat_diff = max_lat - min_lat
         lon_diff = max_lon - min_lon
         max_diff = max(lat_diff, lon_diff)
@@ -266,12 +264,11 @@ if check_password():
             
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
-        
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
 
         fig = go.Figure()
 
-        # BASE LAYER: Census Tracts (Eligible OZ 2.0 = Green)
+        # BASE LAYER: Census Tracts
         fig.add_trace(go.Choroplethmapbox(
             geojson=gj, 
             locations=map_df['geoid_str'], 
@@ -286,24 +283,27 @@ if check_password():
             name="Census Tracts"
         ))
 
-        # ANCHOR PINS WITH UNIQUE COLORS
+        # ANCHOR PINS WITH UNIQUE COLORS & SHAPES
         anchor_types = sorted(anchors_df['Type'].unique())
-        # Uses D3 qualitative palette for maximum color variety
         color_palette = px.colors.qualitative.D3 
 
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
             marker_color = color_palette[i % len(color_palette)]
+            
+            # Use Star symbol for Main Street, Circle for others
+            marker_symbol = "star" if "main street" in a_type.lower() else "circle"
+            marker_size = 14 if marker_symbol == "star" else 12
 
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'],
                 lon=type_data['Lon'],
                 mode='markers',
-                marker=go.scattermapbox.Marker(size=12, color=marker_color),
+                marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
                 text=type_data['Name'],
                 hoverinfo='text',
                 name=f"{a_type}",
-                visible="legendonly" # Start as hidden to keep map clean; user toggles on
+                visible="legendonly"
             ))
 
         fig.update_layout(
@@ -315,32 +315,18 @@ if check_password():
             uirevision=revision_key,
             legend=dict(
                 title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)),
-                yanchor="top",
-                y=0.98,
-                xanchor="left",
-                x=0.02,
+                yanchor="top", y=0.98, xanchor="left", x=0.02,
                 bgcolor="rgba(255, 255, 255, 0.9)",
                 font=dict(size=11, color="#1e293b"),
-                bordercolor="#cbd5e1",
-                borderwidth=1
+                bordercolor="#cbd5e1", borderwidth=1
             )
         )
         return fig
 
-    # --- SECTION 1: HERO ---
+    # --- SECTION 1-4: HERO, BENEFITS, STRATEGY, BEST PRACTICES ---
     st.markdown("<div id='section-1'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 1</div>
-        <div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div>
-        <div class='hero-title'>Louisiana OZ 2.0 Portal</div>
-        <div class='narrative-text'>
-        The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- SECTION 2: BENEFITS ---
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.</div></div>", unsafe_allow_html=True)
+    
     st.markdown("<div id='section-2'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div><div class='narrative-text'>Opportunity Zones encourage investment by providing a series of capital gains tax incentives for qualifying activities in designated areas.</div></div>", unsafe_allow_html=True)
     b_col1, b_col2, b_col3 = st.columns(3)
@@ -348,7 +334,6 @@ if check_password():
     with b_col2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>For gains held in a Qualified Opportunity Fund (QOF) for at least 5 years, investors receive a 10% increase in their investment basis (urban). For Qualified Rural Opportunity Funds (QROF), investors receive a 30% increase.</p></div>", unsafe_allow_html=True)
     with b_col3: st.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>If the investment is held for at least 10 years, new capital gains generated from the sale of a QOZ investment are permanently excluded from taxable income.</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 3: STRATEGY ---
     st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div><div class='narrative-text'>The most effective OZ selections combine community need, investment readiness, and policy alignment.</div></div>", unsafe_allow_html=True)
     a_col1, a_col2, a_col3 = st.columns(3)
@@ -356,7 +341,6 @@ if check_password():
     with a_col2: st.markdown("<div class='benefit-card'><h3>Market Assessment</h3><p>Focusing on areas that have a reasonable chance to attract private capital and put it to productive use within policy timelines.</p></div>", unsafe_allow_html=True)
     with a_col3: st.markdown("<div class='benefit-card'><h3>Anchor Density</h3><p>Targeting tracts within a 5-mile radius of major economic drivers, universities, or industrial hubs to ensure project viability.</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 4: BEST PRACTICES ---
     st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div><div class='narrative-text'>Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks.</div></div>", unsafe_allow_html=True)
     p_col1, p_col2, p_col3 = st.columns(3)
@@ -414,24 +398,16 @@ if check_password():
             m2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
             m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
             m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
-            m3 = st.columns(3)
-            m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
-            m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
-            m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
             rec_cat = st.selectbox(
                 "Recommendation Category", 
                 ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Agricultural Innovation", "Technology & Research", "Healthcare Expansion", "Small Business Support"],
                 key="recommendation_category"
             )
-            
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
                 st.session_state["session_recs"].append({
-                    "Tract": curr, 
-                    "Parish": row['Parish'],
-                    "Category": rec_cat,
-                    "Justification": justification,
+                    "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification,
                     "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
                     "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
                     "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
@@ -440,6 +416,7 @@ if check_password():
                 st.toast("Tract Added!"); st.rerun()
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS</p>", unsafe_allow_html=True)
+            # The filter below will now include 'Louisiana Main Street' automatically
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
@@ -458,21 +435,10 @@ if check_password():
     if st.session_state["session_recs"]:
         report_data = []
         for i, r in enumerate(st.session_state["session_recs"], 1):
-            report_data.append({
-                "Recommendation Count": i,
-                "Census Tract Number": r.get('Tract', 'N/A'),
-                "Parish": r.get('Parish', 'N/A'),
-                "Recommendation Category": r.get('Category', 'N/A'),
-                "Population": r.get('Population', 'N/A'),
-                "Poverty Rate": r.get('Poverty', 'N/A'),
-                "Median Family Income": r.get('MFI', 'N/A'),
-                "Broadband Accessibility": r.get('Broadband', 'N/A')
-            })
-            
+            report_data.append({"Recommendation Count": i, "Census Tract Number": r.get('Tract', 'N/A'), "Parish": r.get('Parish', 'N/A'), "Recommendation Category": r.get('Category', 'N/A'), "Population": r.get('Population', 'N/A'), "Poverty Rate": r.get('Poverty', 'N/A'), "Median Family Income": r.get('MFI', 'N/A'), "Broadband Accessibility": r.get('Broadband', 'N/A')})
         st.dataframe(pd.DataFrame(report_data), use_container_width=True, hide_index=True)
         if st.button("Clear Report"): 
             st.session_state["session_recs"] = []
             st.rerun()
-    else: 
-        st.info("No tracts selected.")
+    else: st.info("No tracts selected.")
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
