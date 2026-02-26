@@ -286,15 +286,13 @@ if check_password():
             name="Census Tracts"
         ))
 
-        # ANCHOR PIN COLORS
-        # We use a broad qualitative palette to ensure diversity
+        # ANCHOR PINS WITH UNIQUE COLORS
         anchor_types = sorted(anchors_df['Type'].unique())
-        color_palette = px.colors.qualitative.Bold # High contrast colors
+        # Uses D3 qualitative palette for maximum color variety
+        color_palette = px.colors.qualitative.D3 
 
-        # Add traces for each anchor type
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
-            # Cycle through colors if there are more types than colors in the palette
             marker_color = color_palette[i % len(color_palette)]
 
             fig.add_trace(go.Scattermapbox(
@@ -305,7 +303,7 @@ if check_password():
                 text=type_data['Name'],
                 hoverinfo='text',
                 name=f"{a_type}",
-                visible="legendonly" # DEFAULT OFF
+                visible="legendonly" # Start as hidden to keep map clean; user toggles on
             ))
 
         fig.update_layout(
@@ -316,7 +314,7 @@ if check_password():
             clickmode='event+select', 
             uirevision=revision_key,
             legend=dict(
-                title=dict(text="<b>Toggle Anchor Layers</b>", font=dict(size=12)),
+                title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)),
                 yanchor="top",
                 y=0.98,
                 xanchor="left",
