@@ -181,7 +181,7 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # TRACKS HIGHLIGHTED GREEN ARE ONLY THOSE ELIGIBLE FOR OZ 2.0
+        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -199,6 +199,8 @@ if check_password():
             return "Ineligible"
 
         master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
+        
+        # Anchor Data from LA anchors CSV
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         centers = {}
@@ -269,7 +271,7 @@ if check_password():
 
         fig = go.Figure()
 
-        # Trace 0: The Choropleth (Tracts)
+        # BASE LAYER: Census Tracts (Eligible OZ 2.0 = Green)
         fig.add_trace(go.Choroplethmapbox(
             geojson=gj, 
             locations=map_df['geoid_str'], 
@@ -278,36 +280,32 @@ if check_password():
             colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], 
             zmin=0, zmax=2,
             showscale=False, 
-            marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
+            marker=dict(opacity=0.6, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx, 
             hoverinfo="location",
             name="Census Tracts"
         ))
 
-        # Define Unique Colors for Anchor Types
-        anchor_colors = {
-            "Education": "#3b82f6", # Blue
-            "Health": "#ef4444",    # Red
-            "Land": "#f59e0b",      # Amber/Yellow
-            "Industrial": "#8b5cf6", # Purple
-            "Other": "#64748b"       # Slate
-        }
+        # ANCHOR PIN COLORS
+        # We use a broad qualitative palette to ensure diversity
+        anchor_types = sorted(anchors_df['Type'].unique())
+        color_palette = px.colors.qualitative.Bold # High contrast colors
 
-        # Add Anchor Type Toggles (Pins)
-        # These are 'visible="legendonly"' by default so they start OFF
-        for a_type in sorted(anchors_df['Type'].unique()):
+        # Add traces for each anchor type
+        for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
-            color = anchor_colors.get(a_type, "#10b981") # Default to green if type missing
+            # Cycle through colors if there are more types than colors in the palette
+            marker_color = color_palette[i % len(color_palette)]
 
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'],
                 lon=type_data['Lon'],
                 mode='markers',
-                marker=go.scattermapbox.Marker(size=10, color=color),
+                marker=go.scattermapbox.Marker(size=12, color=marker_color),
                 text=type_data['Name'],
                 hoverinfo='text',
-                name=f"Anchor: {a_type}",
-                visible="legendonly" 
+                name=f"{a_type}",
+                visible="legendonly" # DEFAULT OFF
             ))
 
         fig.update_layout(
@@ -318,12 +316,15 @@ if check_password():
             clickmode='event+select', 
             uirevision=revision_key,
             legend=dict(
+                title=dict(text="<b>Toggle Anchor Layers</b>", font=dict(size=12)),
                 yanchor="top",
-                y=0.99,
+                y=0.98,
                 xanchor="left",
-                x=0.01,
-                bgcolor="rgba(255, 255, 255, 0.8)",
-                font=dict(size=10, color="black")
+                x=0.02,
+                bgcolor="rgba(255, 255, 255, 0.9)",
+                font=dict(size=11, color="#1e293b"),
+                bordercolor="#cbd5e1",
+                borderwidth=1
             )
         )
         return fig
@@ -336,7 +337,7 @@ if check_password():
         <div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div>
         <div class='hero-title'>Louisiana OZ 2.0 Portal</div>
         <div class='narrative-text'>
-        The Opportunity Zones Program is a federal capital gains tax incentive program and is designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.
+        The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -349,7 +350,7 @@ if check_password():
     with b_col2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>For gains held in a Qualified Opportunity Fund (QOF) for at least 5 years, investors receive a 10% increase in their investment basis (urban). For Qualified Rural Opportunity Funds (QROF), investors receive a 30% increase.</p></div>", unsafe_allow_html=True)
     with b_col3: st.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>If the investment is held for at least 10 years, new capital gains generated from the sale of a QOZ investment are permanently excluded from taxable income.</p></div>", unsafe_allow_html=True)
 
-    # --- SECTION 3: ADVOCACY ---
+    # --- SECTION 3: STRATEGY ---
     st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div><div class='narrative-text'>The most effective OZ selections combine community need, investment readiness, and policy alignment.</div></div>", unsafe_allow_html=True)
     a_col1, a_col2, a_col3 = st.columns(3)
@@ -372,7 +373,7 @@ if check_password():
         <div class='section-num'>SECTION 5</div>
         <div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div>
         <div class='narrative-text'>
-        Utilize the interactive map below to explore census tracts across Louisiana. Use the <b>Legend</b> in the top-left of the map to toggle Anchor Assets (Education, Land, etc.) on and off.
+        Eligible Opportunity Zone 2.0 tracks are highlighted in <b>Green</b>. Use the toggle legend on the top-left of the map to display anchor assets.
         </div>
     </div>
     """, unsafe_allow_html=True)
