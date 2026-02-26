@@ -112,7 +112,6 @@ if check_password():
             backdrop-filter: blur(10px);
         }
         
-        /* Force text to stay white and override browser defaults */
         .nav-link, .nav-link:link, .nav-link:visited {
             color: #ffffff !important; 
             text-decoration: none !important;
@@ -123,13 +122,11 @@ if check_password():
             transition: color 0.3s ease;
         }
         
-        /* Turn green on hover */
         .nav-link:hover, .nav-link:active {
             color: #4ade80 !important;
             text-decoration: none !important;
         }
 
-        /* Prevent content from hiding under nav */
         .main .block-container { padding-top: 80px !important; }
 
         /* General UI Elements */
@@ -183,6 +180,8 @@ if check_password():
 
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        
+        # TRACKS HIGHLIGHTED GREEN ARE ONLY THOSE ELIGIBLE FOR OZ 2.0
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -268,16 +267,65 @@ if check_password():
         
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
 
-        fig = go.Figure(go.Choroplethmapbox(
-            geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
+        fig = go.Figure()
+
+        # Trace 0: The Choropleth (Tracts)
+        fig.add_trace(go.Choroplethmapbox(
+            geojson=gj, 
+            locations=map_df['geoid_str'], 
+            z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2,
-            showscale=False, marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
-            selectedpoints=sel_idx, hoverinfo="location"
+            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], 
+            zmin=0, zmax=2,
+            showscale=False, 
+            marker=dict(opacity=0.7, line=dict(width=0.5, color='white')),
+            selectedpoints=sel_idx, 
+            hoverinfo="location",
+            name="Census Tracts"
         ))
-        fig.update_layout(mapbox=dict(style="carto-positron", zoom=zoom, center=center),
-                          margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)',
-                          height=600, clickmode='event+select', uirevision=revision_key)
+
+        # Define Unique Colors for Anchor Types
+        anchor_colors = {
+            "Education": "#3b82f6", # Blue
+            "Health": "#ef4444",    # Red
+            "Land": "#f59e0b",      # Amber/Yellow
+            "Industrial": "#8b5cf6", # Purple
+            "Other": "#64748b"       # Slate
+        }
+
+        # Add Anchor Type Toggles (Pins)
+        # These are 'visible="legendonly"' by default so they start OFF
+        for a_type in sorted(anchors_df['Type'].unique()):
+            type_data = anchors_df[anchors_df['Type'] == a_type]
+            color = anchor_colors.get(a_type, "#10b981") # Default to green if type missing
+
+            fig.add_trace(go.Scattermapbox(
+                lat=type_data['Lat'],
+                lon=type_data['Lon'],
+                mode='markers',
+                marker=go.scattermapbox.Marker(size=10, color=color),
+                text=type_data['Name'],
+                hoverinfo='text',
+                name=f"Anchor: {a_type}",
+                visible="legendonly" 
+            ))
+
+        fig.update_layout(
+            mapbox=dict(style="carto-positron", zoom=zoom, center=center),
+            margin={"r":0,"t":0,"l":0,"b":0}, 
+            paper_bgcolor='rgba(0,0,0,0)',
+            height=700, 
+            clickmode='event+select', 
+            uirevision=revision_key,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=0.01,
+                bgcolor="rgba(255, 255, 255, 0.8)",
+                font=dict(size=10, color="black")
+            )
+        )
         return fig
 
     # --- SECTION 1: HERO ---
@@ -324,7 +372,7 @@ if check_password():
         <div class='section-num'>SECTION 5</div>
         <div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div>
         <div class='narrative-text'>
-        Utilize the interactive map below to explore census tracts across Louisiana. This engine integrates <b>Opportunity Zones 2.0</b> eligibility with real-time demographic data and proximity to economic anchors. Select a tract to view its deep distress metrics, poverty levels, and nearby assets. Use the recommendation tool to categorize and justify tracts for strategic designation in the 2026-2030 cycle.
+        Utilize the interactive map below to explore census tracts across Louisiana. Use the <b>Legend</b> in the top-left of the map to toggle Anchor Assets (Education, Land, etc.) on and off.
         </div>
     </div>
     """, unsafe_allow_html=True)
