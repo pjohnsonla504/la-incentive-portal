@@ -315,7 +315,7 @@ if check_password():
     p_col1, p_col2, p_col3 = st.columns(3)
     with p_col1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>This guide defines successful OZ designation strategies around eight core principles.</p><a href='https://eig.org/ozs-guidance/' target='_blank'>A Guide for Governors ↗</a></div>", unsafe_allow_html=True)
     with p_col2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Craft a strategy that supports diverse project types, including commercial, industrial, and mixed-use developments.</p><a href='https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/' target='_blank'>Strategic Selection Guide ↗</a></div>", unsafe_allow_html=True)
-    with p_col3: st.markdown("<div class='benefit-card'><h3>America First Policy Institute</h3><p>Aligning with state-level blueprints for revitalizing American communities through reform.</p><a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a></div>", unsafe_allow_html=True)
+    with p_col3: st.markdown("<div class='benefit-card'><h3>Novogradac</h3><p>Aligning with state-level blueprints for revitalizing American communities through reform.</p><a href='https://www.novoco.com/periodicals/articles/oz-20-nominations-start-in-2026-a-guide-for-what-governors-and-mayors-should-do-now' target='_blank'>State Blueprint for Impact ↗</a></div>", unsafe_allow_html=True)
 
     # --- SECTION 5: MAPPING ---
     st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
