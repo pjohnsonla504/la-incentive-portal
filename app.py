@@ -181,7 +181,6 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -200,7 +199,7 @@ if check_password():
 
         master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
         
-        # Anchor Data from LA anchors CSV
+        # Anchor Data integration
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         centers = {}
@@ -237,7 +236,6 @@ if check_password():
         min_lat, max_lat = min(lats), max(lats)
         min_lon, max_lon = min(lons), max(lons)
         center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
-        
         lat_diff = max_lat - min_lat
         lon_diff = max_lon - min_lon
         max_diff = max(lat_diff, lon_diff)
@@ -266,12 +264,11 @@ if check_password():
             
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
-        
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
 
         fig = go.Figure()
 
-        # BASE LAYER: Census Tracts (Eligible OZ 2.0 = Green)
+        # BASE LAYER: Census Tracts
         fig.add_trace(go.Choroplethmapbox(
             geojson=gj, 
             locations=map_df['geoid_str'], 
@@ -286,23 +283,27 @@ if check_password():
             name="Census Tracts"
         ))
 
-        # ANCHOR PINS WITH UNIQUE COLORS (Uniform Circles)
+        # ANCHOR PINS WITH CONSISTENT SHAPES
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.D3 
 
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
             marker_color = color_palette[i % len(color_palette)]
+            
+            # Using circle for all to match the request
+            marker_symbol = "circle"
+            marker_size = 12
 
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'],
                 lon=type_data['Lon'],
                 mode='markers',
-                marker=go.scattermapbox.Marker(size=12, color=marker_color, symbol="circle"),
+                marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
                 text=type_data['Name'],
                 hoverinfo='text',
                 name=f"{a_type}",
-                visible="legendonly" 
+                visible="legendonly"
             ))
 
         fig.update_layout(
@@ -398,10 +399,9 @@ if check_password():
             m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
             m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
             
-            # Integrated "Downtown Revitalization (Main Street)" category
             rec_cat = st.selectbox(
                 "Recommendation Category", 
-                ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Downtown Revitalization (Main Street)", "Agricultural Innovation", "Technology & Research", "Healthcare Expansion", "Small Business Support"],
+                ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Agricultural Innovation", "Technology & Research", "Healthcare Expansion", "Small Business Support"],
                 key="recommendation_category"
             )
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
