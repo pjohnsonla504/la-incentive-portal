@@ -280,19 +280,23 @@ if check_password():
             name="Census Tracts"
         ))
 
-        # --- ANCHOR PINS (Automatically includes 'Maritime Assets' if in CSV) ---
+        # --- ANCHOR PINS ---
         anchor_types = sorted(anchors_df['Type'].unique())
-        color_palette = px.colors.qualitative.D3 
+        color_palette = px.colors.qualitative.Bold 
 
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
             marker_color = color_palette[i % len(color_palette)]
+            
+            # Use a star for Project Announcements to make them distinct
+            marker_symbol = "star" if a_type == "Project Announcements" else "circle"
+            marker_size = 14 if a_type == "Project Announcements" else 11
 
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'],
                 lon=type_data['Lon'],
                 mode='markers',
-                marker=go.scattermapbox.Marker(size=11, color=marker_color, symbol="circle"),
+                marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
                 text=type_data['Name'],
                 hoverinfo='text',
                 name=f"{a_type}",
@@ -406,9 +410,11 @@ if check_password():
                 })
                 st.toast("Tract Added!"); st.rerun()
         with d_col2:
-            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS</p>", unsafe_allow_html=True)
-            # THIS SELECTBOX AUTOMATICALLY INCLUDES 'MARITIME ASSETS'
+            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
+            
+            # This will now include "Project Announcements" in the filter automatically
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
+            
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
                 working = anchors_df.copy()
@@ -416,8 +422,11 @@ if check_password():
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
+                    # Color Project Announcements differently in the list
+                    type_color = "#f97316" if a['Type'] == "Project Announcements" else "#4ade80"
+                    
                     link_btn = f"<a href='{a['Link']}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>" if pd.notna(a.get('Link')) and str(a['Link']).strip() != "" else ""
-                    list_html += f"<div class='anchor-card'><div style='color:#4ade80; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
+                    list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- REPORT SECTION ---
