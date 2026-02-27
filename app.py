@@ -146,6 +146,7 @@ if check_password():
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
         .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 6px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }
+        .view-project-btn { display: block; background-color: transparent; color: #f97316 !important; padding: 6px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #f97316; }
         </style>
 
         <div class="nav-container">
@@ -248,6 +249,7 @@ if check_password():
 
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
+        # Highlight logic from instructions: tracks highlighted green are only those eligible for the Opportunity Zone 2.0.
         selected_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
         def get_color_cat(row):
             if row['geoid_str'] in selected_geoids: return 2
@@ -288,7 +290,7 @@ if check_password():
             type_data = anchors_df[anchors_df['Type'] == a_type]
             marker_color = color_palette[i % len(color_palette)]
             
-            # Use star for Project Announcements
+            # Star icon for Announcements to distinguish from buildings/land
             marker_symbol = "star" if a_type == "Project Announcements" else "circle"
             marker_size = 14 if a_type == "Project Announcements" else 11
 
@@ -420,16 +422,18 @@ if check_password():
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
-                    # Highlight color for announcements
-                    type_color = "#f97316" if a['Type'] == "Project Announcements" else "#4ade80"
+                    is_announcement = (str(a['Type']).strip() == "Project Announcements")
+                    type_color = "#f97316" if is_announcement else "#4ade80"
                     
-                    # Logic to include link button for ALL types (including Announcements) if Link exists
+                    # Ensure links work for ALL types if a Link exists in CSV
                     link_btn = ""
                     if pd.notna(a.get('Link')) and str(a['Link']).strip() != "":
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>"
+                        btn_class = "view-project-btn" if is_announcement else "view-site-btn"
+                        btn_label = "VIEW PROJECT ↗" if is_announcement else "VIEW SITE ↗"
+                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='{btn_class}'>{btn_label}</a>"
                     
                     list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
-                components.html(f"<style>body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }}</style>{list_html}", height=440, scrolling=True)
+                components.html(f"<style>body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-project-btn {{ display: block; background-color: transparent; color: #f97316; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #f97316; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
