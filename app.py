@@ -398,7 +398,7 @@ if check_password():
             
             rec_cat = st.selectbox(
                 "Recommendation Category", 
-                ["Mixed-Use Development", "Affordable Housing", "Industrial Hub", "Downtown Revitalization (Main Street)", "Agricultural Innovation", "Technology & Research", "Healthcare Expansion", "Small Business Support"],
+                ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"],
                 key="recommendation_category"
             )
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
