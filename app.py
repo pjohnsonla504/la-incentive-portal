@@ -145,7 +145,7 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
-        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; margin-top: 10px; border: 1px solid #4ade80; transition: all 0.2s; }
+        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; margin-top: 10px; border: 1px solid #4ade80; transition: all 0.2s; cursor: pointer; }
         .view-site-btn:hover { background-color: #22c55e; border-color: #22c55e; }
         </style>
 
@@ -171,6 +171,7 @@ if check_password():
         gj = None
         if os.path.exists("tl_2025_22_tract.json"):
             with open("tl_2025_22_tract.json", "r") as f: gj = json.load(f)
+        
         def read_csv_with_fallback(path):
             for enc in ['utf-8', 'latin1', 'cp1252']:
                 try: return pd.read_csv(path, encoding=enc)
@@ -180,9 +181,10 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # Only tracks highlighted green (eligible)
+        # LOGIC CHANGE: Highlighting is now strictly driven by 'Opportunity Zones Insiders Eligibilty'
+        # We check for variations of "Eligible", "Yes", or "1" to ensure robustness.
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
-            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
+            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
         )
 
         pov_col = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
@@ -289,7 +291,6 @@ if check_password():
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
             marker_color = "#f97316" if a_type == "Project Announcements" else color_palette[i % len(color_palette)]
-            
             marker_symbol = "star" if a_type == "Project Announcements" else "circle"
             marker_size = 15 if a_type == "Project Announcements" else 11
 
@@ -422,11 +423,10 @@ if check_password():
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
-                    # Highlighting Project Announcements
                     is_announcement = (a['Type'] == "Project Announcements")
                     type_color = "#f97316" if is_announcement else "#4ade80"
                     
-                    # --- PROJECT ANNOUNCEMENT LINK LOGIC ---
+                    # LINK BUTTON LOGIC
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
@@ -440,7 +440,7 @@ if check_password():
                         {link_btn}
                     </div>"""
                 
-                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; cursor: pointer; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
+                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
