@@ -145,7 +145,8 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
-        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 6px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }
+        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; margin-top: 10px; border: 1px solid #4ade80; transition: all 0.2s; }
+        .view-site-btn:hover { background-color: #22c55e; border-color: #22c55e; }
         </style>
 
         <div class="nav-container">
@@ -179,6 +180,7 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
+        # Only tracks highlighted green (eligible)
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1'] else 'Ineligible'
         )
@@ -286,11 +288,10 @@ if check_password():
 
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
-            marker_color = color_palette[i % len(color_palette)]
+            marker_color = "#f97316" if a_type == "Project Announcements" else color_palette[i % len(color_palette)]
             
-            # Use a star for Project Announcements to make them distinct
             marker_symbol = "star" if a_type == "Project Announcements" else "circle"
-            marker_size = 14 if a_type == "Project Announcements" else 11
+            marker_size = 15 if a_type == "Project Announcements" else 11
 
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'],
@@ -412,7 +413,6 @@ if check_password():
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             
-            # This will now include "Project Announcements" in the filter automatically
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             
             if curr in tract_centers:
@@ -422,13 +422,15 @@ if check_password():
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
-                    # Color Project Announcements differently in the list
-                    type_color = "#f97316" if a['Type'] == "Project Announcements" else "#4ade80"
+                    # Highlighting Project Announcements
+                    is_announcement = (a['Type'] == "Project Announcements")
+                    type_color = "#f97316" if is_announcement else "#4ade80"
                     
-                    # Ensure the 'Link' exists and is valid for all types (including Project Announcements)
+                    # --- PROJECT ANNOUNCEMENT LINK LOGIC ---
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>"
+                        btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
+                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>{btn_label}</a>"
                     
                     list_html += f"""
                     <div class='anchor-card'>
@@ -438,7 +440,7 @@ if check_password():
                         {link_btn}
                     </div>"""
                 
-                components.html(f"<style>body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }}</style>{list_html}", height=440, scrolling=True)
+                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; cursor: pointer; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
