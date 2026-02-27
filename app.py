@@ -412,7 +412,6 @@ if check_password():
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             
-            # This will now include "Project Announcements" in the filter automatically
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             
             if curr in tract_centers:
@@ -420,15 +419,17 @@ if check_password():
                 working = anchors_df.copy()
                 if selected_asset_type != "All Assets": working = working[working['Type'] == selected_asset_type]
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
+                
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
-                    # Color Project Announcements differently in the list
                     type_color = "#f97316" if a['Type'] == "Project Announcements" else "#4ade80"
                     
-                    # Ensure the 'Link' exists and is valid for all types (including Project Announcements)
+                    # --- DYNAMIC BUTTON LOGIC ---
+                    # Directly check if 'Link' exists and contains a non-empty string
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>"
+                        link_val = str(a['Link']).strip()
+                        link_btn = f"<a href='{link_val}' target='_blank' class='view-site-btn'>VIEW SITE ↗</a>"
                     
                     list_html += f"""
                     <div class='anchor-card'>
@@ -438,7 +439,15 @@ if check_password():
                         {link_btn}
                     </div>"""
                 
-                components.html(f"<style>body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }}</style>{list_html}", height=440, scrolling=True)
+                components.html(f"""
+                    <style>
+                        body {{ background: transparent; font-family: sans-serif; margin:0; padding:0; }} 
+                        .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} 
+                        .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 6px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }}
+                        .view-site-btn:hover {{ background-color: #22c55e; }}
+                    </style>
+                    {list_html}
+                """, height=440, scrolling=True)
 
     # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
