@@ -8,11 +8,16 @@ st.set_page_config(page_title="Opportunity Zones 2.0 Explorer", layout="wide")
 
 def load_data():
     # Load Master Data (Map Eligibility & Metrics)
-    # Using the file: Opportunity Zones 2.0 - Master Data File (V2).csv
+    # This uses the specific Master Data File from your records
     df = pd.read_csv("Opportunity Zones 2.0 - Master Data File (V2).csv")
     
+    # Clean numeric columns that may have commas or non-numeric placeholder strings
+    cols_to_fix = ['Median Household Income', 'Population']
+    for col in cols_to_fix:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '').replace('-', '0'), errors='coerce')
+
     # Load Anchors Data
-    # Using the file: LA anchors.csv (Assumed filename based on instructions)
     try:
         anchors_df = pd.read_csv("LA anchors.csv")
     except FileNotFoundError:
@@ -25,7 +30,7 @@ df, anchors_df = load_data()
 # --- SIDEBAR FILTERS ---
 st.sidebar.header("Map Controls")
 
-# OZ 2.0 Eligibility Toggle (Green Highlight Rule)
+# OZ 2.0 Eligibility Toggle (Highlighted Green per Instructions)
 show_oz2 = st.sidebar.checkbox("Highlight OZ 2.0 Eligible Tracts", value=True)
 
 # OZ 1.0 Overlay Toggle
@@ -34,7 +39,7 @@ show_oz1 = st.sidebar.checkbox("Overlay Current OZ 1.0 (Expires 2028)", value=Fa
 # Anchor Toggle
 show_anchors = st.sidebar.checkbox("Show Economic Anchors", value=True)
 
-# Metric Selection for Heatmap
+# Metric Selection for Heatmap (Based on CSV Columns)
 metric_options = {
     "Poverty %": "Poverty %",
     "Unemployment %": "Unemploy  %",
@@ -57,7 +62,7 @@ st.title("Louisiana Opportunity Zones 2.0 Transition Map")
 # Base Choropleth for Metrics
 fig = px.choropleth_mapbox(
     df,
-    geojson=None, # Assuming GEOID matches a standard geometry or internal plotly mapping
+    geojson=None, # Streamlit/Plotly will look for standard FIPS geometry
     locations="GEOID",
     color=selected_col,
     color_continuous_scale="Viridis",
@@ -83,7 +88,7 @@ if show_oz2:
         )
     )
 
-# Add OZ 1.0 Overlay (Outline/Pattern)
+# Add OZ 1.0 Overlay (Outline)
 if show_oz1:
     fig.add_trace(
         go.Choroplethmapbox(
