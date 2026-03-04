@@ -68,12 +68,13 @@ def check_password():
             input { background-color: #0b0f19 !important; color: white !important; border: 1px solid #2d3748 !important; border-radius: 8px !important; }
             button[kind="primary"], .stButton > button { background-color: #4ade80 !important; color: #0b0f19 !important; font-weight: 900 !important; border: none !important; height: 3em !important; margin-top: 10px; }
             button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3); }
+            .login-header { text-align: center; margin-bottom: 2rem; }
             </style>
         """, unsafe_allow_html=True)
 
         _, col_mid, _ = st.columns([1, 0.8, 1])
         with col_mid:
-            st.markdown("<h1 style='color: white; font-weight: 900; text-align: center;'>OZ 2.0 Portal</h1>", unsafe_allow_html=True)
+            st.markdown("<div class='login-header'><h1 style='color: white; font-weight: 900;'>OZ 2.0 Portal</h1></div>", unsafe_allow_html=True)
             with st.container():
                 st.text_input("Username", key="username")
                 st.text_input("Password", type="password", key="password")
@@ -82,23 +83,36 @@ def check_password():
     return True
 
 if check_password():
-    # --- 2. GLOBAL STYLING ---
+    # --- 2. GLOBAL STYLING & FROZEN NAV ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; }
+        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; scroll-behavior: smooth; }
         .nav-container { position: fixed; top: 0; left: 0; width: 100%; background-color: rgba(11, 15, 25, 0.98); border-bottom: 1px solid #1e293b; padding: 15px 50px; z-index: 999999; display: flex; justify-content: center; gap: 30px; backdrop-filter: blur(10px); }
         .nav-link { color: #ffffff !important; text-decoration: none !important; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; }
         .nav-link:hover { color: #4ade80 !important; }
         .main .block-container { padding-top: 80px !important; }
-        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 95px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
+        .content-section { padding: 60px 0; border-bottom: 1px solid #1e293b; width: 100%; }
+        .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
+        .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
+        .hero-title { font-size: 3.8rem; font-weight: 900; color: #f8fafc; margin-bottom: 20px; line-height: 1.1; }
+        .narrative-text { font-size: 1.15rem; color: #94a3b8; line-height: 1.7; max-width: 900px; margin-bottom: 30px; }
+        .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; height: 100%; min-height: 280px; transition: all 0.3s ease; display: flex; flex-direction: column; }
+        .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); }
+        .benefit-card h3 { color: #f8fafc; margin-bottom: 15px; font-weight: 800; font-size: 1.3rem; }
+        .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; flex-grow: 1; }
+        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 95px; display: flex; flex-direction: column; justify-content: center; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; }
         .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
         .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; margin-top: 10px; border: 1px solid #4ade80; }
         </style>
+
         <div class="nav-container">
             <a class="nav-link" href="#section-1">Overview</a>
+            <a class="nav-link" href="#section-2">Benefits</a>
+            <a class="nav-link" href="#section-3">Strategy</a>
+            <a class="nav-link" href="#section-4">Best Practices</a>
             <a class="nav-link" href="#section-5">Mapping</a>
             <a class="nav-link" href="#section-6">Report</a>
         </div>
@@ -119,15 +133,21 @@ if check_password():
         
         def read_csv_with_fallback(path):
             for enc in ['utf-8', 'latin1', 'cp1252']:
-                try: return pd.read_csv(path, encoding=enc)
+                try: 
+                    df = pd.read_csv(path, encoding=enc)
+                    df.columns = df.columns.str.strip()
+                    return df
                 except: continue
             return pd.read_csv(path)
 
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File (V2).csv")
-        master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # KEY UPDATE: Using the specific V2 column for 2.0 eligibility
-        master['Eligibility_Status'] = master['Eligibility for OZ 2.0 Designation'].apply(
+        # COLUMN IDENTIFICATION: Using 'GEOID' (Column A)
+        master['geoid_str'] = master['GEOID'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else "").str.zfill(11)
+        
+        # HIGHLIGHTING: Driven by OZ 2.0 Eligibility Column
+        oz_col = 'Eligibility for OZ 2.0 Designation'
+        master['Eligibility_Status'] = master[oz_col].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
         )
 
@@ -189,16 +209,15 @@ if check_password():
             marker=dict(opacity=0.6, line=dict(width=0.5, color='white')),
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
-
-        # Anchors Pins
-        anchor_types = sorted(anchors_df['Type'].unique())
+        
+        # Anchor Pins
         color_palette = px.colors.qualitative.Bold 
-        for i, a_type in enumerate(anchor_types):
+        for i, a_type in enumerate(sorted(anchors_df['Type'].unique())):
             type_data = anchors_df[anchors_df['Type'] == a_type]
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
                 marker=go.scattermapbox.Marker(size=11, color=color_palette[i % len(color_palette)]),
-                text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly"
+                text=type_data['Name'], name=f"{a_type}", visible="legendonly"
             ))
 
         fig.update_layout(
@@ -207,9 +226,34 @@ if check_password():
         )
         return fig
 
-    # --- UI SECTIONS ---
-    st.markdown("<div id='section-5' style='padding-top:60px;'></div>", unsafe_allow_html=True)
-    st.title("Strategic OZ 2.0 Mapping")
+    # --- CONTENT SECTIONS (RESTORED) ---
+    st.markdown("<div id='section-1'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.</div></div>", unsafe_allow_html=True)
+    
+    st.markdown("<div id='section-2'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div><div class='narrative-text'>Opportunity Zones encourage investment by providing a series of capital gains tax incentives for qualifying activities in designated areas.</div></div>", unsafe_allow_html=True)
+    b_col1, b_col2, b_col3 = st.columns(3)
+    with b_col1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>The OZ 2.0 policy is more flexible for investors with a rolling deferral schedule. Starting on the date of the investment, Investors may defer taxes on capital gains that are reinvested in a QOF for up to five years.</p></div>", unsafe_allow_html=True)
+    with b_col2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>For gains held in a Qualified Opportunity Fund (QOF) for at least 5 years, investors receive a 10% increase in their investment basis (urban). For Qualified Rural Opportunity Funds (QROF), investors receive a 30% increase.</p></div>", unsafe_allow_html=True)
+    with b_col3: st.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>If the investment is held for at least 10 years, new capital gains generated from the sale of a QOF investment are permanently excluded from taxable income.</p></div>", unsafe_allow_html=True)
+
+    st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div><div class='narrative-text'>The most effective OZ selections combine community need, investment readiness, and policy alignment.</div></div>", unsafe_allow_html=True)
+    a_col1, a_col2, a_col3 = st.columns(3)
+    with a_col1: st.markdown("<div class='benefit-card'><h3>Geographical Diversity</h3><p>Tailor recommendations to geography, economic structure, and investment realities. Larger metro states may skew urban, while rural or resource-based states may emphasize rural regions.</p></div>", unsafe_allow_html=True)
+    with a_col2: st.markdown("<div class='benefit-card'><h3>Market Assessment</h3><p>Effective Opportunity Zone designations balance three factors: market viability, community need, and policy readiness.</p></div>", unsafe_allow_html=True)
+    with a_col3: st.markdown("<div class='benefit-card'><h3>Anchor Density</h3><p>Targeting tracts within a 5-mile radius of major economic drivers, universities, or industrial hubs to ensure project viability.</p></div>", unsafe_allow_html=True)
+
+    st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div><div class='narrative-text'>Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks.</div></div>", unsafe_allow_html=True)
+    p_col1, p_col2, p_col3 = st.columns(3)
+    with p_col1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>A Guide for Governors defines successful OZ designation strategies around core principles.</p></div>", unsafe_allow_html=True)
+    with p_col2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Craft a strategy that supports diverse project types, including commercial, industrial, and mixed-use developments.</p></div>", unsafe_allow_html=True)
+    with p_col3: st.markdown("<div class='benefit-card'><h3>America First Policy Institute</h3><p>Aligning with state-level blueprints for revitalizing American communities through reform.</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: MAPPING ---
+    st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Opportunity Zone Mapping</div></div>", unsafe_allow_html=True)
     
     f_col1, f_col2, f_col3 = st.columns(3)
     with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
@@ -223,43 +267,40 @@ if check_password():
         if selected_search != "Search Tract GEOID...":
             st.session_state["active_tract"] = selected_search
 
-    combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map")
-    if combined_map and "selection" in combined_map and combined_map["selection"]["points"]:
-        new_id = str(combined_map["selection"]["points"][0]["location"])
-        if st.session_state["active_tract"] != new_id:
-            st.session_state["active_tract"] = new_id
-            st.rerun()
+    st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map")
 
     if st.session_state["active_tract"]:
         curr = st.session_state["active_tract"]
         row = master_df[master_df["geoid_str"] == str(curr)].iloc[0]
-        st.subheader(f"Tract {curr} - {row['Parish']}")
+        st.write(f"### Tract Detail: {curr} ({row['Parish']})")
         
         d_col1, d_col2 = st.columns([0.6, 0.4], gap="large")
         with d_col1:
-            st.write("### Tract Metrics")
             m1, m2, m3 = st.columns(3)
-            m1.metric("Poverty Rate", f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%")
-            m2.metric("Median Family Income", f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}")
-            m3.metric("Broadband Access", f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%")
+            pov_col = 'Estimate!!Percent below poverty level!!Population for whom poverty status is determined'
+            inc_col = 'Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)'
+            m1.markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get(pov_col, 0)):.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
+            m2.markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get(inc_col, 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
+            m3.markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
-            just = st.text_area("Justification for Recommendation")
-            if st.button("Add to Report"):
+            just = st.text_area("Justification")
+            if st.button("Add to Recommendation Report"):
                 st.session_state["session_recs"].append({"Tract": curr, "Parish": row['Parish'], "Justification": just})
                 st.toast("Added!")
-        
         with d_col2:
-            st.write("### Nearby Anchors")
+            st.write("#### Nearby Anchors")
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
                 anchors_df['dist'] = anchors_df.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 for _, a in anchors_df.sort_values('dist').head(5).iterrows():
-                    st.markdown(f"**{a['Name']}** ({a['dist']:.1f} mi)  \n*{a['Type']}*")
+                    st.markdown(f"**{a['Name']}** ({a['dist']:.1f} mi)")
 
-    st.markdown("<div id='section-6' style='padding-top:60px;'></div>", unsafe_allow_html=True)
-    st.title("Recommendation Report")
+    # --- SECTION 6: REPORT ---
+    st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         st.table(pd.DataFrame(st.session_state["session_recs"]))
-        if st.button("Clear Selections"): 
+        if st.button("Clear Report"): 
             st.session_state["session_recs"] = []
             st.rerun()
+    else: st.info("No tracts selected for recommendation.")
