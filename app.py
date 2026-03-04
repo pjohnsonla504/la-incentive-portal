@@ -13,6 +13,7 @@ import streamlit.components.v1 as components
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
+# Initialize session states
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
@@ -20,7 +21,8 @@ if "active_tract" not in st.session_state:
 if "password_correct" not in st.session_state:
     st.session_state["password_correct"] = False
 
-# NEW: Track visibility of each anchor type across reruns
+# --- NEW: PERSISTENT LAYER VISIBILITY ---
+# This dictionary tracks whether an anchor type is True (visible) or "legendonly" (hidden)
 if "layer_visibility" not in st.session_state:
     st.session_state["layer_visibility"] = {}
 
@@ -93,7 +95,7 @@ def check_password():
     return True
 
 if check_password():
-    # --- 2. GLOBAL STYLING & FROZEN NAV ---
+    # --- 2. GLOBAL STYLING & NAVIGATION ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -220,6 +222,7 @@ if check_password():
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
         selected_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
+        
         def get_color_cat(row):
             if row['geoid_str'] in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
@@ -235,6 +238,8 @@ if check_password():
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
 
         fig = go.Figure()
+        
+        # Base Tract Layer
         fig.add_trace(go.Choroplethmapbox(
             geojson=gj, 
             locations=map_df['geoid_str'], 
@@ -249,7 +254,7 @@ if check_password():
             name="Census Tracts"
         ))
 
-        # --- ANCHOR PINS WITH STATEFUL VISIBILITY ---
+        # Anchor Pins with Session State Persistence
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
 
@@ -259,7 +264,7 @@ if check_password():
             marker_symbol = "star" if a_type == "Project Announcements" else "circle"
             marker_size = 15 if a_type == "Project Announcements" else 11
 
-            # Retrieve visibility from state, default to 'legendonly' if not set
+            # LOOKUP VISIBILITY FROM STATE: Default to 'legendonly' (off) if never clicked
             current_vis = st.session_state["layer_visibility"].get(a_type, "legendonly")
 
             fig.add_trace(go.Scattermapbox(
@@ -270,7 +275,7 @@ if check_password():
                 text=type_data['Name'],
                 hoverinfo='text',
                 name=f"{a_type}",
-                visible=current_vis
+                visible=current_vis  # Apply the saved state here
             ))
 
         fig.update_layout(
@@ -290,31 +295,6 @@ if check_password():
         )
         return fig
 
-    # --- CONTENT SECTIONS ---
-    st.markdown("<div id='section-1'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.</div></div>", unsafe_allow_html=True)
-    
-    st.markdown("<div id='section-2'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div><div class='narrative-text'>Opportunity Zones encourage investment by providing a series of capital gains tax incentives for qualifying activities in designated areas.</div></div>", unsafe_allow_html=True)
-    b_col1, b_col2, b_col3 = st.columns(3)
-    with b_col1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>The OZ 2.0 policy is more flexible for investors with a rolling deferral schedule. Starting on the date of the investment, Investors may defer taxes on capital gains that are reinvested in a QOF for up to five years.</p></div>", unsafe_allow_html=True)
-    with b_col2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>For gains held in a Qualified Opportunity Fund (QOF) for at least 5 years, investors receive a 10% increase in their investment basis (urban). For Qualified Rural Opportunity Funds (QROF), investors receive a 30% increase.</p></div>", unsafe_allow_html=True)
-    with b_col3: st.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>If the investment is held for at least 10 years, new capital gains generated from the sale of a QOZ investment are permanently excluded from taxable income.</p></div>", unsafe_allow_html=True)
-
-    st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div><div class='narrative-text'>The most effective OZ selections combine community need, investment readiness, and policy alignment.</div></div>", unsafe_allow_html=True)
-    a_col1, a_col2, a_col3 = st.columns(3)
-    with a_col1: st.markdown("<div class='benefit-card'><h3>Geographical Diversity</h3><p>Tailor recommendations to geography, economic structure, and investment realities. Larger metro states may skew urban, while rural or resource-based states may emphasize rural regions. Prioritize rural areas with strong transportation access and economic anchors, create regional clusters, and avoid remote tracts lacking infrastructure or market viability.</p></div>", unsafe_allow_html=True)
-    with a_col2: st.markdown("<div class='benefit-card'><h3>Market Assessment</h3><p>Effective Opportunity Zone designations balance three factors: market viability, community need, and policy readiness. Areas must demonstrate investment potential, genuine economic distress, and supportive regulatory environments. By using data, engaging stakeholders, preparing projects, and aligning incentives, states can ensure OZ selections attract capital while delivering meaningful, equitable economic impact.</p></div>", unsafe_allow_html=True)
-    with a_col3: st.markdown("<div class='benefit-card'><h3>Anchor Density</h3><p>Opportunity Zones should be centered around community anchors—such as hospitals, universities, downtowns, ports, and major employers—because anchors create built-in economic activity, infrastructure, and credibility for investors. Targeting tracts within a 5-mile radius of major economic drivers, universities, or industrial hubs to ensure project viability.</p></div>", unsafe_allow_html=True)
-
-    st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div><div class='narrative-text'>Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks.</div></div>", unsafe_allow_html=True)
-    p_col1, p_col2, p_col3 = st.columns(3)
-    with p_col1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>This guide defines successful OZ designation strategies around eight core principles.</p><a href='https://eig.org/ozs-guidance/' target='_blank'>A Guide for Governors ↗</a></div>", unsafe_allow_html=True)
-    with p_col2: st.markdown("<div class='benefit-card'><h3>Frost Brown Todd</h3><p>Craft a strategy that supports diverse project types, including commercial, industrial, and mixed-use developments.</p><a href='https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/' target='_blank'>Strategic Selection Guide ↗</a></div>", unsafe_allow_html=True)
-    with p_col3: st.markdown("<div class='benefit-card'><h3>America First Policy Institute</h3><p>Aligning with state-level blueprints for revitalizing American communities through reform.</p><a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a></div>", unsafe_allow_html=True)
-
     # --- MAPPING SECTION ---
     st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div></div>", unsafe_allow_html=True)
@@ -333,18 +313,19 @@ if check_password():
                 st.session_state["active_tract"] = selected_search
                 st.rerun()
 
+    # Create the map
     combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map", config={'scrollZoom': True})
     
-    # NEW: CAPTURE LEGEND STATE & SELECTION
+    # --- UPDATE SESSION STATE BASED ON USER INTERACTION ---
     if combined_map and "selection" in combined_map:
-        # 1. Update layer visibility based on the user's current legend toggles
+        # 1. Capture Legend State (On/Off)
+        # Plotly returns 'traces' status. If a user clicked 'Healthcare', trace['visible'] will change.
         for trace in combined_map.get("traces", []):
             if "name" in trace:
-                # Plotly returns True for visible, False for hidden. 
-                # We store 'True' or 'legendonly' to feed back into the visible property
+                # Store the visibility: True or "legendonly"
                 st.session_state["layer_visibility"][trace["name"]] = True if trace["visible"] else "legendonly"
         
-        # 2. Handle the tract selection
+        # 2. Capture Tract Selection
         if combined_map["selection"]["points"]:
             new_id = str(combined_map["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
