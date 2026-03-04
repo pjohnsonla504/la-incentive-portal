@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -14,12 +13,16 @@ import streamlit.components.v1 as components
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
+# Initialize Session States
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
     st.session_state["active_tract"] = None 
 if "password_correct" not in st.session_state:
     st.session_state["password_correct"] = False
+# This keeps track of which anchor layers are toggled "on"
+if "map_layer_visibility" not in st.session_state:
+    st.session_state["map_layer_visibility"] = {}
 
 try:
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -182,8 +185,6 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
-        # LOGIC CHANGE: Highlighting is now strictly driven by 'Opportunity Zones Insiders Eligibilty'
-        # We check for variations of "Eligible", "Yes", or "1" to ensure robustness.
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
         )
@@ -254,6 +255,7 @@ if check_password():
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
         selected_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
+        
         def get_color_cat(row):
             if row['geoid_str'] in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
@@ -285,7 +287,7 @@ if check_password():
             name="Census Tracts"
         ))
 
-        # --- ANCHOR PINS ---
+        # --- ANCHOR PINS WITH PERSISTENT VISIBILITY ---
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
 
@@ -295,6 +297,10 @@ if check_password():
             marker_symbol = "star" if a_type == "Project Announcements" else "circle"
             marker_size = 15 if a_type == "Project Announcements" else 11
 
+            # Check if this specific layer was previously turned ON in session_state
+            # Default to "legendonly" if never touched
+            current_visibility = st.session_state["map_layer_visibility"].get(a_type, "legendonly")
+
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'],
                 lon=type_data['Lon'],
@@ -303,7 +309,7 @@ if check_password():
                 text=type_data['Name'],
                 hoverinfo='text',
                 name=f"{a_type}",
-                visible="legendonly" 
+                visible=current_visibility 
             ))
 
         fig.update_layout(
@@ -318,7 +324,9 @@ if check_password():
                 yanchor="top", y=0.98, xanchor="left", x=0.02,
                 bgcolor="rgba(255, 255, 255, 0.9)",
                 font=dict(size=11, color="#1e293b"),
-                bordercolor="#cbd5e1", borderwidth=1
+                bordercolor="#cbd5e1", borderwidth=1,
+                itemclick="toggle", # Ensures clicking legend doesn't trigger selection logic
+                itemdoubleclick="toggle"
             )
         )
         return fig
@@ -367,11 +375,22 @@ if check_password():
                 st.rerun()
 
     combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map", config={'scrollZoom': True})
-    if combined_map and "selection" in combined_map and combined_map["selection"]["points"]:
-        new_id = str(combined_map["selection"]["points"][0]["location"])
-        if st.session_state["active_tract"] != new_id:
-            st.session_state["active_tract"] = new_id
-            st.rerun()
+    
+    # --- VISIBILITY SYNC LOGIC ---
+    # This block captures the state of the legend right after a rerun
+    if combined_map and "selection" in combined_map:
+        # Update visibility state based on user legend clicks
+        for trace in combined_map.get("traces", []):
+            if "name" in trace and trace["name"] in [t for t in anchors_df['Type'].unique()]:
+                # Streamlit returns True/False for trace visibility in the selection event
+                st.session_state["map_layer_visibility"][trace["name"]] = True if trace.get("visible", True) else "legendonly"
+        
+        # Handle Tract Selection
+        if combined_map["selection"]["points"]:
+            new_id = str(combined_map["selection"]["points"][0]["location"])
+            if st.session_state["active_tract"] != new_id:
+                st.session_state["active_tract"] = new_id
+                st.rerun()
 
     if st.session_state["active_tract"]:
         curr = st.session_state["active_tract"]
@@ -427,7 +446,6 @@ if check_password():
                     is_announcement = (a['Type'] == "Project Announcements")
                     type_color = "#f97316" if is_announcement else "#4ade80"
                     
-                    # LINK BUTTON LOGIC
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
