@@ -178,34 +178,33 @@ if check_password():
                 except: continue
             return pd.read_csv(path)
 
-        master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
-        master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
+        # UPDATED: Loading the V2 Data File
+        master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File (V2).csv")
+        master = master.dropna(subset=['GEOID']) # Remove trailing empty rows from the spreadsheet
         
-        # LOGIC CHANGE: Highlighting is now strictly driven by 'Opportunity Zones Insiders Eligibilty'
-        # We check for variations of "Eligible", "Yes", or "1" to ensure robustness.
-        master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
-            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
+        # Clean GEOID to 11-digit string for mapping
+        master['geoid_str'] = master['GEOID'].apply(lambda x: str(int(float(x))).zfill(11))
+        
+        # LOGIC CHANGE: Tracks highlighted green are those marked ELIGIBLE in the new file
+        master['Eligibility_Status'] = master['Eligibility for OZ 2.0 Designation'].apply(
+            lambda x: 'Eligible' if str(x).strip().upper() == 'ELIGIBLE' else 'Ineligible'
         )
 
-        pov_col = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
-        mfi_ratio_col = "Percentage of Benchmarked Median Family Income"
-        unemp_ratio_col = "Unemployment Ratio"
-
-        def calc_nmtc_status(row):
-            pov = safe_float(row.get(pov_col, 0))
-            mfi_pct = safe_float(row.get(mfi_ratio_col, 0)) if mfi_ratio_col in row else 100
-            unemp_ratio = safe_float(row.get(unemp_ratio_col, 0)) if unemp_ratio_col in row else 1.0
-            if pov > 40 or mfi_pct <= 40 or unemp_ratio >= 2.5: return "Deep Distress"
-            elif pov >= 20 or mfi_pct <= 80 or unemp_ratio >= 1.5: return "Eligible"
+        # NMTC Status mapping from existing columns
+        def map_nmtc_status(row):
+            if str(row.get('NMTC Deep Distress Eligibility', '')).strip().upper() == 'YES': return "Deep Distress"
+            elif str(row.get('NMTC Basic Eligibility', '')).strip().upper() == 'YES': return "Eligible"
             return "Ineligible"
 
-        master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
+        master['NMTC_Calculated'] = master.apply(map_nmtc_status, axis=1)
+        
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         centers = {}
         if gj:
+            id_key = "GEOID" if "GEOID" in str(gj['features'][0]['properties']) else "GEOID20"
             for feature in gj['features']:
-                geoid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
+                geoid = feature['properties'].get(id_key)
                 try:
                     geom = feature['geometry']
                     if geom['type'] == 'Polygon': pts = np.array(geom['coordinates'][0])
@@ -375,26 +374,30 @@ if check_password():
     if st.session_state["active_tract"]:
         curr = st.session_state["active_tract"]
         row = master_df[master_df["geoid_str"] == str(curr)].iloc[0]
-        st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 20px;'><div><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {curr}</div></div><div style='text-align: right;'><div style='font-size: 1.6rem; font-weight: 900; color: #f8fafc;'>{safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}</div><div style='color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;'>Population</div></div></div>", unsafe_allow_html=True)
+        # UPDATED: Population Metric Mapping
+        st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 20px;'><div><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {curr}</div></div><div style='text-align: right;'><div style='font-size: 1.6rem; font-weight: 900; color: #f8fafc;'>{safe_int(row.get('Population', 0)):,}</div><div style='color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;'>Population</div></div></div>", unsafe_allow_html=True)
         d_col1, d_col2 = st.columns([0.6, 0.4], gap="large")
         with d_col1:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>TRACT DEMOGRAPHICS</p>", unsafe_allow_html=True)
             m1 = st.columns(3)
-            m1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
+            # UPDATED: Metro/Rural Logic
+            m1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Rural Eligibility for OZ 2.0', 'N/A')}</div><div class='metric-label'>Rural Status</div></div>", unsafe_allow_html=True)
             is_nmtc = "YES" if row['NMTC_Calculated'] in ["Eligible", "Deep Distress"] else "NO"
             m1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{is_nmtc}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
             is_deep = "YES" if row['NMTC_Calculated'] == "Deep Distress" else "NO"
             m1[2].markdown(f"<div class='metric-card'><div class='metric-value'>{is_deep}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
             
             m2 = st.columns(3)
-            m2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
-            m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
-            m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
+            # UPDATED: Poverty, MFI, and Unemployment mapping
+            m2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Poverty %', 0)):.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
+            m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Median Household Income', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
+            m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemploy  %', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
             
             m3 = st.columns(3)
-            m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
-            m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
-            m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
+            # UPDATED: Pop 18-24, Pop 65+, and Broadband mapping
+            m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18-24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
+            m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65+', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
+            m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('% of tract with Broadband Accessibility', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
             rec_cat = st.selectbox(
                 "Recommendation Category", 
@@ -405,10 +408,10 @@ if check_password():
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
                 st.session_state["session_recs"].append({
                     "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification,
-                    "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
-                    "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
-                    "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
-                    "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
+                    "Population": safe_int(row.get('Population', 0)),
+                    "Poverty": f"{safe_float(row.get('Poverty %', 0)):.1f}%",
+                    "MFI": f"${safe_float(row.get('Median Household Income', 0)):,.0f}",
+                    "Broadband": f"{safe_float(row.get('% of tract with Broadband Accessibility', 0)):.1f}%"
                 })
                 st.toast("Tract Added!"); st.rerun()
         with d_col2:
