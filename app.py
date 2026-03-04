@@ -13,16 +13,16 @@ import streamlit.components.v1 as components
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
-# Initialize Session States
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
     st.session_state["active_tract"] = None 
 if "password_correct" not in st.session_state:
     st.session_state["password_correct"] = False
-# This keeps track of which anchor layers are toggled "on"
-if "map_layer_visibility" not in st.session_state:
-    st.session_state["map_layer_visibility"] = {}
+
+# NEW: Track visibility of each anchor type across reruns
+if "layer_visibility" not in st.session_state:
+    st.session_state["layer_visibility"] = {}
 
 try:
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -97,41 +97,11 @@ if check_password():
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; scroll-behavior: smooth; }
-        
-        .nav-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: rgba(11, 15, 25, 0.98);
-            border-bottom: 1px solid #1e293b;
-            padding: 15px 50px;
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .nav-link, .nav-link:link, .nav-link:visited {
-            color: #ffffff !important; 
-            text-decoration: none !important;
-            font-weight: 700;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            transition: color 0.3s ease;
-        }
-        
-        .nav-link:hover, .nav-link:active {
-            color: #4ade80 !important;
-            text-decoration: none !important;
-        }
-
+        .nav-container { position: fixed; top: 0; left: 0; width: 100%; background-color: rgba(11, 15, 25, 0.98); border-bottom: 1px solid #1e293b; padding: 15px 50px; z-index: 999999; display: flex; justify-content: center; gap: 30px; backdrop-filter: blur(10px); }
+        .nav-link, .nav-link:link, .nav-link:visited { color: #ffffff !important; text-decoration: none !important; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s ease; }
+        .nav-link:hover, .nav-link:active { color: #4ade80 !important; text-decoration: none !important; }
         .main .block-container { padding-top: 80px !important; }
-
         div[data-baseweb="select"] > div { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important; }
         div[data-baseweb="select"] * { color: #0f172a !important; }
         label[data-testid="stWidgetLabel"] { color: #94a3b8 !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.75rem !important; letter-spacing: 0.05em; }
@@ -152,7 +122,6 @@ if check_password():
         .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; margin-top: 10px; border: 1px solid #4ade80; transition: all 0.2s; cursor: pointer; }
         .view-site-btn:hover { background-color: #22c55e; border-color: #22c55e; }
         </style>
-
         <div class="nav-container">
             <a class="nav-link" href="#section-1">Overview</a>
             <a class="nav-link" href="#section-2">Benefits</a>
@@ -184,7 +153,6 @@ if check_password():
 
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
-        
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
         )
@@ -234,15 +202,12 @@ if check_password():
                         coords = np.array(poly[0])
                         lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
         if not lats: return {"lat": 30.9, "lon": -91.8}, 6.0
-        
         min_lat, max_lat = min(lats), max(lats)
         min_lon, max_lon = min(lons), max(lons)
         center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
-        
         lat_diff = max_lat - min_lat
         lon_diff = max_lon - min_lon
         max_diff = max(lat_diff, lon_diff)
-        
         if max_diff == 0: zoom = 12.5
         elif max_diff < 0.05: zoom = 12.0
         elif max_diff < 0.1: zoom = 11.0
@@ -255,7 +220,6 @@ if check_password():
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
         selected_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
-        
         def get_color_cat(row):
             if row['geoid_str'] in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
@@ -268,11 +232,9 @@ if check_password():
             
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
-        
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
 
         fig = go.Figure()
-
         fig.add_trace(go.Choroplethmapbox(
             geojson=gj, 
             locations=map_df['geoid_str'], 
@@ -287,7 +249,7 @@ if check_password():
             name="Census Tracts"
         ))
 
-        # --- ANCHOR PINS WITH PERSISTENT VISIBILITY ---
+        # --- ANCHOR PINS WITH STATEFUL VISIBILITY ---
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
 
@@ -297,9 +259,8 @@ if check_password():
             marker_symbol = "star" if a_type == "Project Announcements" else "circle"
             marker_size = 15 if a_type == "Project Announcements" else 11
 
-            # Check if this specific layer was previously turned ON in session_state
-            # Default to "legendonly" if never touched
-            current_visibility = st.session_state["map_layer_visibility"].get(a_type, "legendonly")
+            # Retrieve visibility from state, default to 'legendonly' if not set
+            current_vis = st.session_state["layer_visibility"].get(a_type, "legendonly")
 
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'],
@@ -309,7 +270,7 @@ if check_password():
                 text=type_data['Name'],
                 hoverinfo='text',
                 name=f"{a_type}",
-                visible=current_visibility 
+                visible=current_vis
             ))
 
         fig.update_layout(
@@ -324,9 +285,7 @@ if check_password():
                 yanchor="top", y=0.98, xanchor="left", x=0.02,
                 bgcolor="rgba(255, 255, 255, 0.9)",
                 font=dict(size=11, color="#1e293b"),
-                bordercolor="#cbd5e1", borderwidth=1,
-                itemclick="toggle", # Ensures clicking legend doesn't trigger selection logic
-                itemdoubleclick="toggle"
+                bordercolor="#cbd5e1", borderwidth=1
             )
         )
         return fig
@@ -376,16 +335,16 @@ if check_password():
 
     combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map", config={'scrollZoom': True})
     
-    # --- VISIBILITY SYNC LOGIC ---
-    # This block captures the state of the legend right after a rerun
+    # NEW: CAPTURE LEGEND STATE & SELECTION
     if combined_map and "selection" in combined_map:
-        # Update visibility state based on user legend clicks
+        # 1. Update layer visibility based on the user's current legend toggles
         for trace in combined_map.get("traces", []):
-            if "name" in trace and trace["name"] in [t for t in anchors_df['Type'].unique()]:
-                # Streamlit returns True/False for trace visibility in the selection event
-                st.session_state["map_layer_visibility"][trace["name"]] = True if trace.get("visible", True) else "legendonly"
+            if "name" in trace:
+                # Plotly returns True for visible, False for hidden. 
+                # We store 'True' or 'legendonly' to feed back into the visible property
+                st.session_state["layer_visibility"][trace["name"]] = True if trace["visible"] else "legendonly"
         
-        # Handle Tract Selection
+        # 2. Handle the tract selection
         if combined_map["selection"]["points"]:
             new_id = str(combined_map["selection"]["points"][0]["location"])
             if st.session_state["active_tract"] != new_id:
@@ -405,22 +364,16 @@ if check_password():
             m1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{is_nmtc}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
             is_deep = "YES" if row['NMTC_Calculated'] == "Deep Distress" else "NO"
             m1[2].markdown(f"<div class='metric-card'><div class='metric-value'>{is_deep}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
-            
             m2 = st.columns(3)
             m2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
             m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
             m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
-            
             m3 = st.columns(3)
             m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
             m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
             m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
             
-            rec_cat = st.selectbox(
-                "Recommendation Category", 
-                ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"],
-                key="recommendation_category"
-            )
+            rec_cat = st.selectbox("Recommendation Category", ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"], key="recommendation_category")
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
                 st.session_state["session_recs"].append({
@@ -433,9 +386,7 @@ if check_password():
                 st.toast("Tract Added!"); st.rerun()
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
-            
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
-            
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
                 working = anchors_df.copy()
@@ -445,20 +396,11 @@ if check_password():
                 for _, a in working.sort_values('dist').head(15).iterrows():
                     is_announcement = (a['Type'] == "Project Announcements")
                     type_color = "#f97316" if is_announcement else "#4ade80"
-                    
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
                         link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>{btn_label}</a>"
-                    
-                    list_html += f"""
-                    <div class='anchor-card'>
-                        <div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div>
-                        <div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div>
-                        <div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>
-                        {link_btn}
-                    </div>"""
-                
+                    list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- REPORT SECTION ---
