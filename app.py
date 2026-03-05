@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -9,14 +10,10 @@ import ssl
 from math import radians, cos, sin, asin, sqrt
 from streamlit_gsheets import GSheetsConnection
 import streamlit.components.v1 as components
-from datetime import datetime
 
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
-# Added initialization for logged_in_user to prevent KeyErrors
-if "logged_in_user" not in st.session_state:
-    st.session_state["logged_in_user"] = "Unknown"
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
@@ -53,7 +50,6 @@ def check_password():
                 user_row = users_df[users_df['username'].astype(str) == u]
                 if str(user_row['password'].values[0]).strip() == p:
                     st.session_state["password_correct"] = True
-                    st.session_state["logged_in_user"] = u
                     return
             st.session_state["password_correct"] = False
             st.error("Invalid username or password")
@@ -186,6 +182,8 @@ if check_password():
         master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
         master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
         
+        # LOGIC CHANGE: Highlighting is now strictly driven by 'Opportunity Zones Insiders Eligibilty'
+        # We check for variations of "Eligible", "Yes", or "1" to ensure robustness.
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
         )
@@ -287,6 +285,7 @@ if check_password():
             name="Census Tracts"
         ))
 
+        # --- ANCHOR PINS ---
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
 
@@ -406,8 +405,6 @@ if check_password():
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
                 st.session_state["session_recs"].append({
-                    "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "User": st.session_state.get("logged_in_user", "Unknown"),
                     "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification,
                     "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
                     "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
@@ -430,6 +427,7 @@ if check_password():
                     is_announcement = (a['Type'] == "Project Announcements")
                     type_color = "#f97316" if is_announcement else "#4ade80"
                     
+                    # LINK BUTTON LOGIC
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
@@ -445,40 +443,14 @@ if check_password():
                 
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
-    # --- 6. REPORT SECTION ---
+    # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
-    
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
         st.dataframe(report_df, use_container_width=True, hide_index=True)
-        
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("Final Submit to Master Sheet", type="primary", use_container_width=True):
-                try:
-                    conn = st.connection("gsheets", type=GSheetsConnection)
-                    
-                    try:
-                        existing_data = conn.read(worksheet="Master_Submissions")
-                        updated_df = pd.concat([existing_data, report_df], ignore_index=True)
-                    except:
-                        updated_df = report_df
-                    
-                    conn.update(worksheet="Master_Submissions", data=updated_df)
-                    
-                    st.balloons()
-                    st.success(f"Report synced to Master_Submissions! Logged as {st.session_state.get('logged_in_user', 'Unknown')}.")
-                    st.session_state["session_recs"] = []
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Sync Error: {e}. Check if 'Master_Submissions' tab exists.")
-
-        with c2:
-            if st.button("Clear Draft Report", use_container_width=True): 
-                st.session_state["session_recs"] = []
-                st.rerun()
-    else: 
-        st.info("No tracts selected in the map above. Add a tract to the report to begin submission.")
-        
+        if st.button("Clear Report"): 
+            st.session_state["session_recs"] = []
+            st.rerun()
+    else: st.info("No tracts selected.")
     st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
