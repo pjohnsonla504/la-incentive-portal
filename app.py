@@ -14,6 +14,9 @@ from datetime import datetime
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
+# Added initialization for logged_in_user to prevent KeyErrors
+if "logged_in_user" not in st.session_state:
+    st.session_state["logged_in_user"] = "Unknown"
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
@@ -50,7 +53,6 @@ def check_password():
                 user_row = users_df[users_df['username'].astype(str) == u]
                 if str(user_row['password'].values[0]).strip() == p:
                     st.session_state["password_correct"] = True
-                    # Store username for submission tracking
                     st.session_state["logged_in_user"] = u
                     return
             st.session_state["password_correct"] = False
@@ -443,7 +445,7 @@ if check_password():
                 
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
-    # --- 6. UPDATED REPORT SECTION WITH MASTER SUBMISSION ---
+    # --- 6. REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     
@@ -457,19 +459,16 @@ if check_password():
                 try:
                     conn = st.connection("gsheets", type=GSheetsConnection)
                     
-                    # Read existing data from Master_Submissions
                     try:
                         existing_data = conn.read(worksheet="Master_Submissions")
                         updated_df = pd.concat([existing_data, report_df], ignore_index=True)
                     except:
-                        # Fallback if sheet is totally empty/doesn't have headers yet
                         updated_df = report_df
                     
-                    # Push back to Master_Submissions tab
                     conn.update(worksheet="Master_Submissions", data=updated_df)
                     
                     st.balloons()
-                    st.success(f"Report synced to Master_Submissions! Logged as {st.session_state['logged_in_user']}.")
+                    st.success(f"Report synced to Master_Submissions! Logged as {st.session_state.get('logged_in_user', 'Unknown')}.")
                     st.session_state["session_recs"] = []
                     st.rerun()
                 except Exception as e:
