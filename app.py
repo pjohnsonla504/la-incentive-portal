@@ -446,11 +446,30 @@ if check_password():
     # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
+    
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
-        st.dataframe(report_df, use_container_width=True, hide_index=True)
-        if st.button("Clear Report"): 
-            st.session_state["session_recs"] = []
-            st.rerun()
-    else: st.info("No tracts selected.")
-    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
+        st.table(report_df)
+        
+        if st.button("Submit Report to Master_Submissions", type="primary", use_container_width=True):
+            try:
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                
+                # Appending Logic
+                try:
+                    existing = conn.read(worksheet="Master_Submissions")
+                    final_df = pd.concat([existing, report_df], ignore_index=True)
+                except:
+                    final_df = report_df
+                
+                conn.update(worksheet="Master_Submissions", data=final_df)
+                st.balloons()
+                st.success(f"Report successfully uploaded by {st.session_state['username']}!")
+                st.session_state["session_recs"] = []
+                st.rerun()
+            except Exception as e:
+                st.error(f"Submission Failed: {e}")
+    else:
+        st.info("Select a tract on the map and add it to the draft to generate a report.")
+
+    st.markdown("<p style='text-align:center; color:#475569; padding: 50px;'>Louisiana OZ 2.0 Admin Portal | 2026</p>", unsafe_allow_html=True)
