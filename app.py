@@ -13,15 +13,12 @@ import streamlit.components.v1 as components
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
-# Persistent data state
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
     st.session_state["active_tract"] = None 
 if "password_correct" not in st.session_state:
     st.session_state["password_correct"] = False
-if "username" not in st.session_state:
-    st.session_state["username"] = ""
 
 try:
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -39,39 +36,6 @@ def safe_float(val):
 def safe_int(val):
     return int(safe_float(val))
 
-# --- NEW: PERSISTENCE ENGINE ---
-def load_user_recommendations(username):
-    """Loads recommendations from GSheets for a specific user."""
-    try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        # Read the Recommendations worksheet
-        recs_df = conn.read(worksheet="Recommendations", ttl="0")
-        if not recs_df.empty:
-            # Filter for current user
-            user_recs = recs_df[recs_df['username'] == username].to_dict('records')
-            st.session_state["session_recs"] = user_recs
-    except Exception as e:
-        st.warning(f"Could not load saved recommendations: {e}")
-        st.session_state["session_recs"] = []
-
-def save_recommendation_to_sheet(rec_data):
-    """Appends a new recommendation to the Google Sheet."""
-    try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        # Fetch current data to append to it
-        existing_recs = conn.read(worksheet="Recommendations", ttl="0")
-        
-        # Add the username to the record for ownership
-        rec_data['username'] = st.session_state["username"]
-        new_row = pd.DataFrame([rec_data])
-        
-        updated_df = pd.concat([existing_recs, new_row], ignore_index=True)
-        conn.update(worksheet="Recommendations", data=updated_df)
-        return True
-    except Exception as e:
-        st.error(f"Error saving to database: {e}")
-        return False
-
 # --- 1. AUTHENTICATION ---
 def check_password():
     def password_entered():
@@ -79,16 +43,12 @@ def check_password():
             conn = st.connection("gsheets", type=GSheetsConnection)
             users_df = conn.read(worksheet="Users", ttl="5m")
             users_df.columns = users_df.columns.str.strip().str.lower()
-            u = st.session_state["username_input"].strip()
-            p = str(st.session_state["password_input"]).strip()
-            
+            u = st.session_state["username"].strip()
+            p = str(st.session_state["password"]).strip()
             if u in users_df['username'].astype(str).values:
                 user_row = users_df[users_df['username'].astype(str) == u]
                 if str(user_row['password'].values[0]).strip() == p:
                     st.session_state["password_correct"] = True
-                    st.session_state["username"] = u
-                    # Sync recommendations from DB immediately upon login
-                    load_user_recommendations(u)
                     return
             st.session_state["password_correct"] = False
             st.error("Invalid username or password")
@@ -121,8 +81,8 @@ def check_password():
                 </div>
             """, unsafe_allow_html=True)
             with st.container():
-                st.text_input("Username", key="username_input", placeholder="Enter your username")
-                st.text_input("Password", type="password", key="password_input", placeholder="••••••••")
+                st.text_input("Username", key="username", placeholder="Enter your username")
+                st.text_input("Password", type="password", key="password", placeholder="••••••••")
                 st.button("Sign In", on_click=password_entered, use_container_width=True)
             st.markdown("<p style='text-align:center; color:#475569; font-size:0.8rem; margin-top:20px;'>Louisiana Opportunity Zones 2.0 | Admin Access Only</p>", unsafe_allow_html=True)
         return False
@@ -290,7 +250,7 @@ if check_password():
 
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
-        selected_geoids = [str(rec['Tract']) for rec in st.session_state["session_recs"]]
+        selected_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
         def get_color_cat(row):
             if row['geoid_str'] in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
@@ -457,24 +417,14 @@ if check_password():
             )
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                rec_to_save = {
-                    "Tract": str(curr), 
-                    "Parish": str(row['Parish']), 
-                    "Category": rec_cat, 
-                    "Justification": justification,
+                st.session_state["session_recs"].append({
+                    "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification,
                     "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
                     "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
                     "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
                     "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
-                }
-                
-                # SAVE TO PERSISTENT STORAGE (GSHEETS)
-                if save_recommendation_to_sheet(rec_to_save):
-                    # Reload the local state from the sheet to stay in sync
-                    load_user_recommendations(st.session_state["username"])
-                    st.toast("Tract Saved Persistently!")
-                    st.rerun()
-
+                })
+                st.toast("Tract Added!"); st.rerun()
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             
@@ -503,22 +453,20 @@ if check_password():
                         {link_btn}
                     </div>"""
                 
-                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=600, scrolling=True)
+                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Active Recommendation Report</div></div>", unsafe_allow_html=True)
-    
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
-        recs_table = pd.DataFrame(st.session_state["session_recs"])
-        # Remove username from display if it's in the dict
-        display_cols = [c for c in recs_table.columns if c != 'username']
-        st.dataframe(recs_table[display_cols], use_container_width=True, hide_index=True)
+        report_df = pd.DataFrame(st.session_state["session_recs"])
         
-        # Logout button to clear local session
-        if st.sidebar.button("Logout"):
-            for key in st.session_state.keys():
-                del st.session_state[key]
+        # Calculate current counts for the report to compare against the 25% limit
+        st.write(f"Total Tracts Recommended: {len(report_df)}")
+        st.dataframe(report_df, use_container_width=True, hide_index=True)
+        
+        if st.button("Clear Report"): 
+            st.session_state["session_recs"] = []
             st.rerun()
-    else:
-        st.info("No tracts have been added to the recommendation report yet.")
+    else: st.info("No tracts selected.")
+    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
