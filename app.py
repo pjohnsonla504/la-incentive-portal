@@ -13,12 +13,15 @@ import streamlit.components.v1 as components
 # --- 0. INITIAL CONFIG ---
 st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
 
+# Initialize session state keys
 if "session_recs" not in st.session_state:
     st.session_state["session_recs"] = []
 if "active_tract" not in st.session_state:
     st.session_state["active_tract"] = None 
 if "password_correct" not in st.session_state:
     st.session_state["password_correct"] = False
+if "username" not in st.session_state:
+    st.session_state["username"] = ""
 
 try:
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -36,19 +39,51 @@ def safe_float(val):
 def safe_int(val):
     return int(safe_float(val))
 
-# --- 1. AUTHENTICATION ---
+# --- 1. NEW: PERSISTENCE ENGINE ---
+def load_user_recs(username):
+    """Retrieves saved recommendations from Google Sheets for the specific user."""
+    try:
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        recs_df = conn.read(worksheet="Recommendations", ttl=0) # ttl=0 to ensure fresh data
+        # Filter for the current user
+        user_recs = recs_df[recs_df['username'] == username].to_dict('records')
+        return user_recs
+    except Exception as e:
+        # If worksheet doesn't exist or is empty, return empty list
+        return []
+
+def save_rec_to_cloud(rec_entry):
+    """Appends a single recommendation to the Google Sheet."""
+    try:
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        # Add the username to the entry before saving
+        rec_entry['username'] = st.session_state["username"]
+        
+        # Read existing, append new, and update
+        existing_df = conn.read(worksheet="Recommendations")
+        new_df = pd.concat([existing_df, pd.DataFrame([rec_entry])], ignore_index=True)
+        
+        conn.update(worksheet="Recommendations", data=new_df)
+    except Exception as e:
+        st.error(f"Cloud Save Failed: {e}")
+
+# --- 2. AUTHENTICATION ---
 def check_password():
     def password_entered():
         try:
             conn = st.connection("gsheets", type=GSheetsConnection)
             users_df = conn.read(worksheet="Users", ttl="5m")
             users_df.columns = users_df.columns.str.strip().str.lower()
-            u = st.session_state["username"].strip()
-            p = str(st.session_state["password"]).strip()
+            u = st.session_state["username_input"].strip()
+            p = str(st.session_state["password_input"]).strip()
+            
             if u in users_df['username'].astype(str).values:
                 user_row = users_df[users_df['username'].astype(str) == u]
                 if str(user_row['password'].values[0]).strip() == p:
                     st.session_state["password_correct"] = True
+                    st.session_state["username"] = u
+                    # --- NEW: Fetch their old reports immediately upon login ---
+                    st.session_state["session_recs"] = load_user_recs(u)
                     return
             st.session_state["password_correct"] = False
             st.error("Invalid username or password")
@@ -81,15 +116,15 @@ def check_password():
                 </div>
             """, unsafe_allow_html=True)
             with st.container():
-                st.text_input("Username", key="username", placeholder="Enter your username")
-                st.text_input("Password", type="password", key="password", placeholder="••••••••")
+                st.text_input("Username", key="username_input", placeholder="Enter your username")
+                st.text_input("Password", type="password", key="password_input", placeholder="••••••••")
                 st.button("Sign In", on_click=password_entered, use_container_width=True)
             st.markdown("<p style='text-align:center; color:#475569; font-size:0.8rem; margin-top:20px;'>Louisiana Opportunity Zones 2.0 | Admin Access Only</p>", unsafe_allow_html=True)
         return False
     return True
 
 if check_password():
-    # --- 2. GLOBAL STYLING & FROZEN NAV ---
+    # --- 3. GLOBAL STYLING & FROZEN NAV ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -159,7 +194,7 @@ if check_password():
         </div>
         """, unsafe_allow_html=True)
 
-    # --- 3. DATA ENGINE ---
+    # --- 4. DATA ENGINE ---
     def haversine(lon1, lat1, lon2, lat2):
         lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
         dlon, dlat = lon2 - lon1, lat2 - lat1
@@ -250,9 +285,9 @@ if check_password():
 
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
-        selected_geoids = [rec['Tract'] for rec in st.session_state["session_recs"]]
+        selected_geoids = [str(rec['Tract']) for rec in st.session_state["session_recs"]]
         def get_color_cat(row):
-            if row['geoid_str'] in selected_geoids: return 2
+            if str(row['geoid_str']) in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
         
@@ -417,14 +452,19 @@ if check_password():
             )
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                st.session_state["session_recs"].append({
+                new_entry = {
                     "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification,
                     "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
                     "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
                     "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
                     "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
-                })
-                st.toast("Tract Added!"); st.rerun()
+                }
+                # Update Local State
+                st.session_state["session_recs"].append(new_entry)
+                # Update Cloud (Google Sheet)
+                save_rec_to_cloud(new_entry)
+                
+                st.toast("Tract Added to Cloud!"); st.rerun()
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             
@@ -457,16 +497,13 @@ if check_password():
 
     # --- REPORT SECTION ---
     st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report</div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report Summary</div><div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div></div>", unsafe_allow_html=True)
+    
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
+        st.dataframe(report_df, use_container_width=True)
         
-        # Calculate current counts for the report to compare against the 25% limit
-        st.write(f"Total Tracts Recommended: {len(report_df)}")
-        st.dataframe(report_df, use_container_width=True, hide_index=True)
-        
-        if st.button("Clear Report"): 
-            st.session_state["session_recs"] = []
-            st.rerun()
-    else: st.info("No tracts selected.")
-    st.sidebar.button("Logout", on_click=lambda: st.session_state.clear())
+        csv_data = report_df.to_csv(index=False).encode('utf-8')
+        st.download_button("Download Report (.CSV)", csv_data, f"OZ_Recommendations_{st.session_state['username']}.csv", "text/csv", use_container_width=True)
+    else:
+        st.info("No recommendations added yet. Select a tract on the map to begin.")
