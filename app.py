@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -463,65 +462,28 @@ if check_password():
             )
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-    		new_entry = {
-        	    "username": st.session_state["username"], # Ensure username is key-aligned
-        	    "Tract": curr, 
-        	    "Parish": row['Parish'], 
-        	    "Category": rec_cat, 
-        	    "Justification": justification,
-        	    "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
+                new_entry = {
+                    "username": st.session_state["username"], # Ensure username is key-aligned
+                    "Tract": curr, 
+                    "Parish": row['Parish'], 
+                    "Category": rec_cat, 
+                    "Justification": justification,
+                    "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
                     "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
                     "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
                     "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
-    	    }
-    
-    		# Update Cloud first
-    		save_rec_to_cloud(new_entry)
-    
-    		# Refresh local session state from the cloud to ensure absolute parity
-    		st.session_state["session_recs"] = load_user_recs(st.session_state["username"])
-    
-    		st.toast(f"Tract {curr} added to report!")
-    		st.rerun()
+                }
+                
+                # Update Cloud first
+                save_rec_to_cloud(new_entry)
+                
+                # Refresh local session state from the cloud to ensure absolute parity
+                st.session_state["session_recs"] = load_user_recs(st.session_state["username"])
+                
+                st.toast(f"Tract {curr} added to report!")
+                st.rerun()
+
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             
-            selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
-            
-            if curr in tract_centers:
-                lon, lat = tract_centers[curr]
-                working = anchors_df.copy()
-                if selected_asset_type != "All Assets": working = working[working['Type'] == selected_asset_type]
-                working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-                list_html = ""
-                for _, a in working.sort_values('dist').head(15).iterrows():
-                    is_announcement = (a['Type'] == "Project Announcements")
-                    type_color = "#f97316" if is_announcement else "#4ade80"
-                    
-                    link_btn = ""
-                    if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
-                        btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>{btn_label}</a>"
-                    
-                    list_html += f"""
-                    <div class='anchor-card'>
-                        <div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div>
-                        <div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div>
-                        <div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>
-                        {link_btn}
-                    </div>"""
-                
-                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
-
-    # --- REPORT SECTION ---
-    st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report Summary</div><div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div></div>", unsafe_allow_html=True)
-    
-    if st.session_state["session_recs"]:
-        report_df = pd.DataFrame(st.session_state["session_recs"])
-        st.dataframe(report_df, use_container_width=True)
-        
-        csv_data = report_df.to_csv(index=False).encode('utf-8')
-        st.download_button("Download Report (.CSV)", csv_data, f"OZ_Recommendations_{st.session_state['username']}.csv", "text/csv", use_container_width=True)
-    else:
-        st.info("No recommendations added yet. Select a tract on the map to begin.")
+            selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()))
