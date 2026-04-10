@@ -45,26 +45,36 @@ def load_user_recs(username):
     """Retrieves saved recommendations from Google Sheets for the specific user."""
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
-        recs_df = conn.read(worksheet="Recommendations", ttl=0) # ttl=0 to ensure fresh data
-        # Filter for the current user
+        recs_df = conn.read(worksheet="Recommendations", ttl=0) 
+        if recs_df.empty:
+            return []
+        # Filter for the current user and convert to list of dicts
         user_recs = recs_df[recs_df['username'] == username].to_dict('records')
         return user_recs
     except Exception as e:
-        # If worksheet doesn't exist or is empty, return empty list
         return []
 
 def save_rec_to_cloud(rec_entry):
-    """Appends a single recommendation to the Google Sheet."""
+    """Appends a single recommendation to the Google Sheet while preserving history."""
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
-        # Add the username to the entry before saving
+        
+        # 1. Get the current state of the cloud sheet
+        # We use ttl=0 to ensure we aren't reading a cached version from 5 minutes ago
+        existing_df = conn.read(worksheet="Recommendations", ttl=0)
+        
+        # 2. Prepare the new entry
         rec_entry['username'] = st.session_state["username"]
+        new_row_df = pd.DataFrame([rec_entry])
         
-        # Read existing, append new, and update
-        existing_df = conn.read(worksheet="Recommendations")
-        new_df = pd.concat([existing_df, pd.DataFrame([rec_entry])], ignore_index=True)
-        
-        conn.update(worksheet="Recommendations", data=new_df)
+        # 3. Combine - Ensure we don't drop existing data
+        if not existing_df.empty:
+            updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
+        else:
+            updated_df = new_row_df
+            
+        # 4. Push back to cloud
+        conn.update(worksheet="Recommendations", data=updated_df)
     except Exception as e:
         st.error(f"Cloud Save Failed: {e}")
 
@@ -453,19 +463,26 @@ if check_password():
             )
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                new_entry = {
-                    "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification,
-                    "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
-                    "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
-                    "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
-                    "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
-                }
-                # Update Local State
-                st.session_state["session_recs"].append(new_entry)
-                # Update Cloud (Google Sheet)
-                save_rec_to_cloud(new_entry)
-                
-                st.toast("Tract Added to Cloud!"); st.rerun()
+    new_entry = {
+        "username": st.session_state["username"], # Ensure username is key-aligned
+        "Tract": curr, 
+        "Parish": row['Parish'], 
+        "Category": rec_cat, 
+        "Justification": justification,
+        "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
+        "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
+        "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
+        "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
+    }
+    
+    # Update Cloud first
+    save_rec_to_cloud(new_entry)
+    
+    # Refresh local session state from the cloud to ensure absolute parity
+    st.session_state["session_recs"] = load_user_recs(st.session_state["username"])
+    
+    st.toast(f"Tract {curr} added to report!")
+    st.rerun()
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             
