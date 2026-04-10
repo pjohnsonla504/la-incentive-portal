@@ -75,7 +75,7 @@ def check_password():
                     st.session_state["session_recs"] = load_user_recs(u)
                     return
             st.session_state["password_correct"] = False
-            st.error("Invalid credentials")
+            st.error("Invalid username or password")
         except Exception as e: st.error(f"Auth Error: {e}")
 
     if not st.session_state["password_correct"]:
@@ -102,8 +102,7 @@ if check_password():
         .content-section { padding: 60px 0; border-bottom: 1px solid #1e293b; width: 100%; }
         .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
         .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
-        .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; height: 100%; transition: all 0.3s ease; }
-        .benefit-card:hover { border-color: #4ade80 !important; }
+        .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; height: 100%; display: flex; flex-direction: column; }
         .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 95px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
@@ -137,7 +136,8 @@ if check_password():
         master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible')
         
         def calc_nmtc(row):
-            pov, mfi = safe_float(row.get("Estimate!!Percent below poverty level!!Population for whom poverty status is determined", 0)), safe_float(row.get("Percentage of Benchmarked Median Family Income", 0))
+            pov = safe_float(row.get("Estimate!!Percent below poverty level!!Population for whom poverty status is determined", 0))
+            mfi = safe_float(row.get("Percentage of Benchmarked Median Family Income", 0))
             unemp = safe_float(row.get("Unemployment Ratio", 0))
             if pov > 40 or mfi <= 40 or unemp >= 2.5: return "Deep Distress"
             elif pov >= 20 or mfi <= 80 or unemp >= 1.5: return "Eligible"
@@ -167,64 +167,66 @@ if check_password():
             colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2, showscale=False,
             marker=dict(opacity=0.6, line=dict(width=1, color='black'))
         ))
-        fig.update_layout(mapbox=dict(style="carto-positron", zoom=6, center={"lat": 30.9, "lon": -91.8}), margin={"r":0,"t":0,"l":0,"b":0}, height=600)
+        fig.update_layout(mapbox=dict(style="carto-positron", zoom=6.5, center={"lat": 31.0, "lon": -91.8}), margin={"r":0,"t":0,"l":0,"b":0}, height=600)
         return fig
 
-    # --- SECTIONS 1-4 (Narrative) ---
-    st.markdown("<div id='section-1' class='content-section'><div class='section-num'>SECTION 1</div><h1 class='section-title'>Louisiana OZ 2.0 Portal</h1><p>The Opportunity Zones Program drive long-term investments to low-income communities via H.R. 1 (OBBBA).</p></div>", unsafe_allow_html=True)
-    
-    # --- SECTION 5: MAPPING & TRACT DETAILS ---
-    st.markdown("<div id='section-5' class='content-section'><div class='section-num'>SECTION 5</div><h2 class='section-title'>Strategic Mapping</h2></div>", unsafe_allow_html=True)
-    
+    # --- SECTION 1-4: OVERVIEW ---
+    st.markdown("<div id='section-1' class='content-section'><h1>Louisiana OZ 2.0 Portal</h1><p>Federal bill H.R. 1 (OBBBA) strengthens the Opportunity Zone program.</p></div>", unsafe_allow_html=True)
+
+    # --- SECTION 5: MAPPING ---
+    st.markdown("<div id='section-5' class='content-section'><h2>Mapping & Analysis</h2></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     reg = c1.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
     filtered = master_df.copy()
     if reg != "All Louisiana": filtered = filtered[filtered['Region'] == reg]
     par = c2.selectbox("Parish", ["All in Region"] + sorted(filtered['Parish'].dropna().unique().tolist()))
     if par != "All in Region": filtered = filtered[filtered['Parish'] == par]
-    tract_id = c3.selectbox("Find Tract", ["Search..."] + sorted(filtered['geoid_str'].tolist()))
-    if tract_id != "Search...": st.session_state["active_tract"] = tract_id
+    tid = c3.selectbox("Find Tract", ["Search..."] + sorted(filtered['geoid_str'].tolist()))
+    if tid != "Search...": st.session_state["active_tract"] = tid
 
     st.plotly_chart(render_map_go(filtered), use_container_width=True)
 
     if st.session_state["active_tract"]:
-        row = master_df[master_df["geoid_str"] == st.session_state["active_tract"]].iloc[0]
-        st.markdown(f"### {row['Parish'].upper()} - {st.session_state['active_tract']}")
+        curr = st.session_state["active_tract"]
+        row = master_df[master_df["geoid_str"] == curr].iloc[0]
+        st.markdown(f"### {row['Parish'].upper()} | GEOID: {curr}")
         
         d_col1, d_col2 = st.columns([0.6, 0.4], gap="large")
         with d_col1:
-            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem;'>TRACT DEMOGRAPHICS (9 METRICS)</p>", unsafe_allow_html=True)
-            # Row 1
-            m1, m2, m3 = st.columns(3)
-            m1.markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}</div><div class='metric-label'>Total Population</div></div>", unsafe_allow_html=True)
-            m2.markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
-            m3.markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if row['NMTC_Calculated'] in ['Eligible', 'Deep Distress'] else 'NO'}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
-            # Row 2
-            m4, m5, m6 = st.columns(3)
-            m4.markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if row['NMTC_Calculated'] == 'Deep Distress' else 'NO'}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
-            m5.markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='metric-label'>Poverty Rate</div></div>", unsafe_allow_html=True)
-            m6.markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>Median Family Income</div></div>", unsafe_allow_html=True)
-            # Row 3
-            m7, m8, m9 = st.columns(3)
-            m7.markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
-            m8.markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,} / {safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 18-24 / 65+</div></div>", unsafe_allow_html=True)
-            m9.markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband Coverage</div></div>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem;'>TRACT DEMOGRAPHICS</p>", unsafe_allow_html=True)
+            # 9-Metric Grid
+            r1 = st.columns(3)
+            r1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
+            r1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if row['NMTC_Calculated'] in ['Eligible', 'Deep Distress'] else 'NO'}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
+            r1[2].markdown(f"<div class='metric-card'><div class='metric-value'>{'YES' if row['NMTC_Calculated'] == 'Deep Distress' else 'NO'}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
             
-            cat = st.selectbox("Category", ["Housing", "Business", "Tech", "Healthcare"])
-            just = st.text_area("Justification")
-            if st.button("Add to Report"):
-                new_e = {"Tract": st.session_state["active_tract"], "Parish": row['Parish'], "Category": cat, "Justification": just}
-                st.session_state["session_recs"].append(new_e)
-                save_rec_to_cloud(new_e)
-                st.toast("Saved!"); st.rerun()
+            r2 = st.columns(3)
+            r2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
+            r2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
+            r2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
+            
+            r3 = st.columns(3)
+            r3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
+            r3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
+            r3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
+            
+            cat = st.selectbox("Category", ["Housing", "Business", "Tech", "Healthcare"], key="cat_sel")
+            just = st.text_area("Justification", key="just_sel")
+            if st.button("Add to Report", type="primary", use_container_width=True):
+                new_entry = {"Tract": curr, "Parish": row['Parish'], "Category": cat, "Justification": just}
+                st.session_state["session_recs"].append(new_entry)
+                save_rec_to_cloud(new_entry)
+                st.toast("Saved to Cloud!"); st.rerun()
 
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem;'>NEARBY ANCHORS</p>", unsafe_allow_html=True)
-            if st.session_state["active_tract"] in tract_centers:
-                lon, lat = tract_centers[st.session_state["active_tract"]]
-                working = anchors_df.copy()
-                working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-                for _, a in working.sort_values('dist').head(4).iterrows():
+            filt_type = st.selectbox("Filter Type", ["All"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt")
+            if curr in tract_centers:
+                lon, lat = tract_centers[curr]
+                anch_data = anchors_df.copy()
+                if filt_type != "All": anch_data = anch_data[anch_data['Type'] == filt_type]
+                anch_data['dist'] = anch_data.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
+                for _, a in anch_data.sort_values('dist').head(4).iterrows():
                     st.markdown(f"""
                         <div class='anchor-card'>
                             <div style='display:flex; justify-content:space-between;'>
