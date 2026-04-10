@@ -463,26 +463,26 @@ if check_password():
             )
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-    new_entry = {
-        "username": st.session_state["username"], # Ensure username is key-aligned
-        "Tract": curr, 
-        "Parish": row['Parish'], 
-        "Category": rec_cat, 
-        "Justification": justification,
-        "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
-        "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
-        "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
-        "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
-    }
+    		new_entry = {
+        	    "username": st.session_state["username"], # Ensure username is key-aligned
+        	    "Tract": curr, 
+        	    "Parish": row['Parish'], 
+        	    "Category": rec_cat, 
+        	    "Justification": justification,
+        	    "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
+                    "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
+                    "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
+                    "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
+    	    }
     
-    # Update Cloud first
-    save_rec_to_cloud(new_entry)
+    		# Update Cloud first
+    		save_rec_to_cloud(new_entry)
     
-    # Refresh local session state from the cloud to ensure absolute parity
-    st.session_state["session_recs"] = load_user_recs(st.session_state["username"])
+    		# Refresh local session state from the cloud to ensure absolute parity
+    		st.session_state["session_recs"] = load_user_recs(st.session_state["username"])
     
-    st.toast(f"Tract {curr} added to report!")
-    st.rerun()
+    		st.toast(f"Tract {curr} added to report!")
+    		st.rerun()
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             
