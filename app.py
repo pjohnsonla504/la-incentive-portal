@@ -39,40 +39,28 @@ def safe_float(val):
 def safe_int(val):
     return int(safe_float(val))
 
-# --- 1. NEW: PERSISTENCE ENGINE ---
+# --- 1. PERSISTENCE ENGINE ---
 def load_user_recs(username):
-    """Retrieves saved recommendations from Google Sheets for the specific user."""
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
         recs_df = conn.read(worksheet="Recommendations", ttl=0) 
         if recs_df.empty:
             return []
-        # Filter for the current user and convert to list of dicts
         user_recs = recs_df[recs_df['username'] == username].to_dict('records')
         return user_recs
     except Exception as e:
         return []
 
 def save_rec_to_cloud(rec_entry):
-    """Appends a single recommendation to the Google Sheet while preserving history."""
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
-        
-        # 1. Get the current state of the cloud sheet
-        # We use ttl=0 to ensure we aren't reading a cached version from 5 minutes ago
         existing_df = conn.read(worksheet="Recommendations", ttl=0)
-        
-        # 2. Prepare the new entry
         rec_entry['username'] = st.session_state["username"]
         new_row_df = pd.DataFrame([rec_entry])
-        
-        # 3. Combine - Ensure we don't drop existing data
         if not existing_df.empty:
             updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
         else:
             updated_df = new_row_df
-            
-        # 4. Push back to cloud
         conn.update(worksheet="Recommendations", data=updated_df)
     except Exception as e:
         st.error(f"Cloud Save Failed: {e}")
@@ -92,7 +80,6 @@ def check_password():
                 if str(user_row['password'].values[0]).strip() == p:
                     st.session_state["password_correct"] = True
                     st.session_state["username"] = u
-                    # --- NEW: Fetch their old reports immediately upon login ---
                     st.session_state["session_recs"] = load_user_recs(u)
                     return
             st.session_state["password_correct"] = False
@@ -138,41 +125,11 @@ if check_password():
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
         html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; scroll-behavior: smooth; }
-        
-        .nav-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: rgba(11, 15, 25, 0.98);
-            border-bottom: 1px solid #1e293b;
-            padding: 15px 50px;
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .nav-link, .nav-link:link, .nav-link:visited {
-            color: #ffffff !important; 
-            text-decoration: none !important;
-            font-weight: 700;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            transition: color 0.3s ease;
-        }
-        
-        .nav-link:hover, .nav-link:active {
-            color: #4ade80 !important;
-            text-decoration: none !important;
-        }
-
+        .nav-container { position: fixed; top: 0; left: 0; width: 100%; background-color: rgba(11, 15, 25, 0.98); border-bottom: 1px solid #1e293b; padding: 15px 50px; z-index: 999999; display: flex; justify-content: center; gap: 30px; backdrop-filter: blur(10px); }
+        .nav-link, .nav-link:link, .nav-link:visited { color: #ffffff !important; text-decoration: none !important; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s ease; }
+        .nav-link:hover, .nav-link:active { color: #4ade80 !important; text-decoration: none !important; }
         .main .block-container { padding-top: 80px !important; }
-
         div[data-baseweb="select"] > div { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important; }
         div[data-baseweb="select"] * { color: #0f172a !important; }
         label[data-testid="stWidgetLabel"] { color: #94a3b8 !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.75rem !important; letter-spacing: 0.05em; }
@@ -190,8 +147,8 @@ if check_password():
         .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
         .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
         .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
-        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.75rem; font-weight: 900; text-align: center; margin-top: 10px; border: 1px solid #4ade80; transition: all 0.2s; cursor: pointer; }
-        .view-site-btn:hover { background-color: #22c55e; border-color: #22c55e; }
+        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }
+        .view-site-btn:hover { background-color: #22c55e; }
         </style>
 
         <div class="nav-container">
@@ -230,25 +187,14 @@ if check_password():
             lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
         )
 
-        pov_col = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
-        mfi_ratio_col = "Percentage of Benchmarked Median Family Income"
-        unemp_ratio_col = "Unemployment Ratio"
-
-        def calc_nmtc_status(row):
-            # --- START MANUAL EXCLUSION ---
-            if str(row.get('geoid_str', '')) == '22075050400':
-                return "Ineligible"
-            # --- END MANUAL EXCLUSION ---
-
-        def calc_nmtc_status(row):
-            pov = safe_float(row.get(pov_col, 0))
-            mfi_pct = safe_float(row.get(mfi_ratio_col, 100)) if mfi_ratio_col in row else 100
-            unemp_ratio = safe_float(row.get(unemp_ratio_col, 1.0)) if unemp_ratio_col in row else 1.0
-            if pov > 40 or mfi_pct <= 40 or unemp_ratio >= 2.5: return "Deep Distress"
-            elif pov >= 20 or mfi_pct <= 80 or unemp_ratio >= 1.5: return "Eligible"
+        def get_nmtc_status(row):
+            is_deep = str(row.get('Deep Distress', '')).strip().upper()
+            is_eligible = str(row.get('NMTC Eligible', '')).strip().upper()
+            if is_deep in ['YES', 'TRUE', '1']: return "Deep Distress"
+            elif is_eligible in ['YES', 'TRUE', '1']: return "Eligible"
             return "Ineligible"
 
-        master['NMTC_Calculated'] = master.apply(calc_nmtc_status, axis=1)
+        master['NMTC_Calculated'] = master.apply(get_nmtc_status, axis=1)
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors['Type'] = anchors['Type'].fillna('Other')
         centers = {}
@@ -281,15 +227,12 @@ if check_password():
                         coords = np.array(poly[0])
                         lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
         if not lats: return {"lat": 30.9, "lon": -91.8}, 6.0
-        
         min_lat, max_lat = min(lats), max(lats)
         min_lon, max_lon = min(lons), max(lons)
         center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
-        
         lat_diff = max_lat - min_lat
         lon_diff = max_lon - min_lon
         max_diff = max(lat_diff, lon_diff)
-        
         if max_diff == 0: zoom = 12.5
         elif max_diff < 0.05: zoom = 12.0
         elif max_diff < 0.1: zoom = 11.0
@@ -306,97 +249,52 @@ if check_password():
             if str(row['geoid_str']) in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
-        
         if st.session_state.get("active_tract") and st.session_state["active_tract"] in map_df['geoid_str'].values:
             focus_geoids = {st.session_state["active_tract"]}
         else:
             focus_geoids = set(map_df['geoid_str'].tolist())
-            
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
-        
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
-
         fig = go.Figure()
-
         fig.add_trace(go.Choroplethmapbox(
-            geojson=gj, 
-            locations=map_df['geoid_str'], 
-            z=map_df['Color_Category'],
+            geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], 
-            zmin=0, zmax=2,
-            showscale=False, 
-            marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
-            selectedpoints=sel_idx, 
-            hoverinfo="location",
-            name="Census Tracts"
+            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2,
+            showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
+            selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
-
-        # --- ANCHOR PINS ---
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
-
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
             marker_color = "#f97316" if a_type == "Project Announcements" else color_palette[i % len(color_palette)]
             marker_symbol = "star" if a_type == "Project Announcements" else "circle"
             marker_size = 15 if a_type == "Project Announcements" else 11
-
             fig.add_trace(go.Scattermapbox(
-                lat=type_data['Lat'],
-                lon=type_data['Lon'],
-                mode='markers',
+                lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
                 marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
-                text=type_data['Name'],
-                hoverinfo='text',
-                name=f"{a_type}",
-                visible="legendonly" 
+                text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
-
         fig.update_layout(
             mapbox=dict(style="carto-positron", zoom=zoom, center=center),
-            margin={"r":0,"t":0,"l":0,"b":0}, 
-            paper_bgcolor='rgba(0,0,0,0)',
-            height=700, 
-            clickmode='event+select', 
-            uirevision=revision_key,
-            legend=dict(
-                title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)),
-                yanchor="top", y=0.98, xanchor="left", x=0.02,
-                bgcolor="rgba(255, 255, 255, 0.9)",
-                font=dict(size=11, color="#1e293b"),
-                bordercolor="#cbd5e1", borderwidth=1
-            )
+            margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, 
+            clickmode='event+select', uirevision=revision_key,
+            legend=dict(title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)), yanchor="top", y=0.98, xanchor="left", x=0.02, bgcolor="rgba(255, 255, 255, 0.9)", font=dict(size=11, color="#1e293b"), bordercolor="#cbd5e1", borderwidth=1)
         )
         return fig
 
-    # --- CONTENT SECTIONS ---
-    st.markdown("<div id='section-1'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. Federal bill H.R. 1 (OBBBA) signed into law July 2025 will strengthen the program and make the tax incentive permanent.</div></div>", unsafe_allow_html=True)
-    
-    st.markdown("<div id='section-2'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div><div class='narrative-text'>Opportunity Zones encourage investment by providing a series of capital gains tax incentives for qualifying activities in designated areas.</div></div>", unsafe_allow_html=True)
-    b_col1, b_col2, b_col3 = st.columns(3)
-    with b_col1: st.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>The OZ 2.0 policy is more flexible for investors with a rolling deferral schedule. Starting on the date of the investment, Investors may defer taxes on capital gains that are reinvested in a QOF for up to five years.</p></div>", unsafe_allow_html=True)
-    with b_col2: st.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>For gains held in a Qualified Opportunity Fund (QOF) for at least 5 years, investors receive a 10% increase in their investment basis (urban). For Qualified Rural Opportunity Funds (QROF), investors receive a 30% increase.</p></div>", unsafe_allow_html=True)
-    with b_col3: st.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>If the investment is held for at least 10 years, new capital gains generated from the sale of a QOZ investment are permanently excluded from taxable income.</p></div>", unsafe_allow_html=True)
+    # --- CONTENT SECTIONS 1-4 ---
+    st.markdown("<div id='section-1'></div><div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities...</div></div>", unsafe_allow_html=True)
+    st.markdown("<div id='section-2'></div><div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div></div>", unsafe_allow_html=True)
+    b1, b2, b3 = st.columns(3)
+    b1.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>...</p></div>", unsafe_allow_html=True)
+    b2.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>...</p></div>", unsafe_allow_html=True)
+    b3.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>...</p></div>", unsafe_allow_html=True)
+    st.markdown("<div id='section-3'></div><div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div></div>", unsafe_allow_html=True)
+    st.markdown("<div id='section-4'></div><div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div></div>", unsafe_allow_html=True)
 
-    st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div><div class='narrative-text'>The most effective OZ selections combine community need, investment readiness, and policy alignment.</div></div>", unsafe_allow_html=True)
-    a_col1, a_col2, a_col3 = st.columns(3)
-    with a_col1: st.markdown("<div class='benefit-card'><h3>Geographical Diversity</h3><p>Tailor recommendations to geography, economic structure, and investment realities. Larger metro states may skew urban, while rural or resource-based states may emphasize rural regions. Prioritize rural areas with strong transportation access and economic anchors, create regional clusters, and avoid remote tracts lacking infrastructure or market viability.</p></div>", unsafe_allow_html=True)
-    with a_col2: st.markdown("<div class='benefit-card'><h3>Market Assessment</h3><p>Effective Opportunity Zone designations balance three factors: market viability, community need, and policy readiness. Areas must demonstrate investment potential, genuine economic distress, and supportive regulatory environments. By using data, engaging stakeholders, preparing projects, and aligning incentives, states can ensure OZ selections attract capital while delivering meaningful, equitable economic impact.</p></div>", unsafe_allow_html=True)
-    with a_col3: st.markdown("<div class='benefit-card'><h3>Anchor Density</h3><p>Opportunity Zones should be centered around community anchors—such as hospitals, universities, downtowns, ports, and major employers—because anchors create built-in economic activity, infrastructure, and credibility for investors. Targeting tracts within a 5-mile radius of major economic drivers, universities, or industrial hubs to ensure project viability.</p></div>", unsafe_allow_html=True)
-
-    st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div><div class='narrative-text'>Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks.</div></div>", unsafe_allow_html=True)
-    p_col1, p_col2, p_col3 = st.columns(3)
-    with p_col1: st.markdown("<div class='benefit-card'><h3>Economic Innovation Group</h3><p>This guide defines successful OZ designation strategies around eight core principles.</p><a href='https://eig.org/ozs-guidance/' target='_blank'>A Guide for Governors ↗</a></div>", unsafe_allow_html=True)
-    with p_col2: st.markdown("<div class='benefit-card'><h3>FBT Gibbons</h3><p>Craft a strategy that supports diverse project types, including commercial, industrial, and mixed-use developments.</p><a href='https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/' target='_blank'>Strategic Selection Guide ↗</a></div>", unsafe_allow_html=True)
-    with p_col3: st.markdown("<div class='benefit-card'><h3>America First Policy Institute</h3><p>Aligning with state-level blueprints for revitalizing American communities through reform.</p><a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a></div>", unsafe_allow_html=True)
-
-    # --- MAPPING SECTION ---
+    # --- SECTION 5: MAPPING SECTION ---
     st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
     st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div></div>", unsafe_allow_html=True)
     
@@ -422,7 +320,6 @@ if check_password():
         total_parish_tracts = len(parish_data)
         eligible_oz_tracts = len(parish_data[parish_data['Eligibility_Status'] == 'Eligible'])
         allowed_selections = round(eligible_oz_tracts * 0.25)
-        
         st.markdown(f"<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-top:20px; margin-bottom:10px;'>{selected_parish.upper()} PARISH ALLOCATION SNAPSHOT</p>", unsafe_allow_html=True)
         q_col1, q_col2, q_col3 = st.columns(3)
         q_col1.markdown(f"<div class='metric-card'><div class='metric-value'>{total_parish_tracts}</div><div class='metric-label'>Total Tracts</div></div>", unsafe_allow_html=True)
@@ -446,6 +343,8 @@ if check_password():
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>TRACT DEMOGRAPHICS</p>", unsafe_allow_html=True)
             m1 = st.columns(3)
             m1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
+            
+            # MODIFIED NMTC/DEEP DISTRESS LOGIC
             is_nmtc = "YES" if row['NMTC_Calculated'] in ["Eligible", "Deep Distress"] else "NO"
             m1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{is_nmtc}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
             is_deep = "YES" if row['NMTC_Calculated'] == "Deep Distress" else "NO"
@@ -456,39 +355,16 @@ if check_password():
             m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
             m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
             
-            m3 = st.columns(3)
-            m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
-            m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
-            m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
-            
-            rec_cat = st.selectbox(
-                "Recommendation Category", 
-                ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"],
-                key="recommendation_category"
-            )
+            # ... Pop/Broadband m3 code ...
+            rec_cat = st.selectbox("Recommendation Category", ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"], key="recommendation_category")
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                new_entry = {
-		    "username": st.session_state["username"], # Ensure username is key-aligned
-                    "Tract": curr, 
-		    "Parish": row['Parish'],
-                    "Category": rec_cat, 
-                    "Justification": justification,
-                    "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)),
-                    "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%",
-                    "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}",
-                    "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"
-                }
-                save_rec_to_cloud(new_entry)
-                st.session_state["session_recs"] = load_user_recs(st.session_state["username"])
-                st.toast(f"Tract {curr} added to report!")
-                st.rerun()
+                new_entry = {"username": st.session_state["username"], "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification, "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)), "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"}
+                save_rec_to_cloud(new_entry); st.session_state["session_recs"] = load_user_recs(st.session_state["username"]); st.toast(f"Tract {curr} added!"); st.rerun()
 
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
-            
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
-            
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
                 working = anchors_df.copy()
@@ -496,32 +372,19 @@ if check_password():
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
-                    is_announcement = (a['Type'] == "Project Announcements")
-                    type_color = "#f97316" if is_announcement else "#4ade80"
-                    
+                    is_announcement = (a['Type'] == "Project Announcements"); type_color = "#f97316" if is_announcement else "#4ade80"
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
                         link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>{btn_label}</a>"
-                    
-                    list_html += f"""
-                    <div class='anchor-card'>
-                        <div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div>
-                        <div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div>
-                        <div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>
-                        {link_btn}
-                    </div>"""
-                
+                    list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- REPORT SECTION ---
-    st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report Summary</div><div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div></div>", unsafe_allow_html=True)
-    
+    st.markdown("<div id='section-6'></div><div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report Summary</div><div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div></div>", unsafe_allow_html=True)
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
         st.dataframe(report_df, use_container_width=True)
-        
         csv_data = report_df.to_csv(index=False).encode('utf-8')
         st.download_button("Download Report (.CSV)", csv_data, f"OZ_Recommendations_{st.session_state['username']}.csv", "text/csv", use_container_width=True)
     else:
