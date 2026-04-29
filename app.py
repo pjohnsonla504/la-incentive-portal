@@ -334,22 +334,44 @@ if check_password():
     </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 4: BEST PRACTICES ---
+  # --- SECTION 4: NATIONAL BEST PRACTICES ---
     st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
     st.markdown("""
     <div class='content-section'>
         <div class='section-num'>SECTION 4</div>
         <div class='section-title'>National Best Practices</div>
         <div class='narrative-text'>
-            Successful OZ programs nationally have focused on transparency and local engagement. Key strategies include:
-            <ul>
-                <li>Developing public-facing data portals to reduce investor friction.</li>
-                <li>Creating localized "Prospectuses" for individual parishes.</li>
-                <li>Using public-private partnerships to de-risk complex developments.</li>
-            </ul>
+            Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks, 
+            ensuring our Opportunity Zone 2.0 strategy meets national standards for impact and transparency.
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    p_col1, p_col2, p_col3 = st.columns(3)
+
+    with p_col1:
+        st.markdown("""
+        <div class='benefit-card'>
+            <h3>Economic Innovation Group</h3>
+            <p>This guide defines successful OZ designation strategies around eight core principles focused on long-term growth and community equity.</p>
+            <a href='https://eig.org/ozs-guidance/' target='_blank'>A Guide for Governors ↗</a>
+        </div>""", unsafe_allow_html=True)
+
+    with p_col2:
+        st.markdown("""
+        <div class='benefit-card'>
+            <h3>FBT Gibbons</h3>
+            <p>Frameworks to support diverse project types, including commercial, industrial, and mixed-use developments that align with local needs.</p>
+            <a href='https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/' target='_blank'>Strategic Selection Guide ↗</a>
+        </div>""", unsafe_allow_html=True)
+
+    with p_col3:
+        st.markdown("""
+        <div class='benefit-card'>
+            <h3>America First Policy Institute</h3>
+            <p>Strategic alignment with state-level blueprints for revitalizing American communities through comprehensive policy reform and impact tracking.</p>
+            <a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a>
+        </div>""", unsafe_allow_html=True)
 
     # --- SECTION 5: MAPPING SECTION ---
     st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
