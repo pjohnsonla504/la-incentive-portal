@@ -235,9 +235,15 @@ if check_password():
         unemp_ratio_col = "Unemployment Ratio"
 
         def calc_nmtc_status(row):
+            # --- START MANUAL EXCLUSION ---
+            if str(row.get('geoid_str', '')) == '22075050400':
+                return "Ineligible"
+            # --- END MANUAL EXCLUSION ---
+
+        def calc_nmtc_status(row):
             pov = safe_float(row.get(pov_col, 0))
-            mfi_pct = safe_float(row.get(mfi_ratio_col, 0)) if mfi_ratio_col in row else 100
-            unemp_ratio = safe_float(row.get(unemp_ratio_col, 0)) if unemp_ratio_col in row else 1.0
+            mfi_pct = safe_float(row.get(mfi_ratio_col, 100)) if mfi_ratio_col in row else 100
+            unemp_ratio = safe_float(row.get(unemp_ratio_col, 1.0)) if unemp_ratio_col in row else 1.0
             if pov > 40 or mfi_pct <= 40 or unemp_ratio >= 2.5: return "Deep Distress"
             elif pov >= 20 or mfi_pct <= 80 or unemp_ratio >= 1.5: return "Eligible"
             return "Ineligible"
