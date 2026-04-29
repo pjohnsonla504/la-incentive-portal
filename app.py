@@ -284,15 +284,72 @@ if check_password():
         )
         return fig
 
-    # --- CONTENT SECTIONS 1-4 ---
-    st.markdown("<div id='section-1'></div><div class='content-section'><div class='section-num'>SECTION 1</div><div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div><div class='hero-title'>Louisiana OZ 2.0 Portal</div><div class='narrative-text'>The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities...</div></div>", unsafe_allow_html=True)
-    st.markdown("<div id='section-2'></div><div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div></div>", unsafe_allow_html=True)
+    # --- SECTION 1: OVERVIEW ---
+    st.markdown("<div id='section-1'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class='content-section'>
+        <div class='section-num'>SECTION 1</div>
+        <div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div>
+        <div class='hero-title'>Louisiana OZ 2.0 Portal</div>
+        <div class='narrative-text'>
+            The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. 
+            Under the new Opportunity Zones 2.0 framework, Louisiana is strategically aligning census tracts with high-growth industries like renewable energy, 
+            biotechnology, and advanced manufacturing to maximize both social impact and investor returns.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- SECTION 2: BENEFITS ---
+    st.markdown("<div id='section-2'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div>", unsafe_allow_html=True)
     b1, b2, b3 = st.columns(3)
-    b1.markdown("<div class='benefit-card'><h3>Capital Gain Deferral</h3><p>...</p></div>", unsafe_allow_html=True)
-    b2.markdown("<div class='benefit-card'><h3>Basis Step-Up</h3><p>...</p></div>", unsafe_allow_html=True)
-    b3.markdown("<div class='benefit-card'><h3>10-Year Gain Exclusion</h3><p>...</p></div>", unsafe_allow_html=True)
-    st.markdown("<div id='section-3'></div><div class='content-section'><div class='section-num'>SECTION 3</div><div class='section-title'>Strategic Tract Advocacy</div></div>", unsafe_allow_html=True)
-    st.markdown("<div id='section-4'></div><div class='content-section'><div class='section-num'>SECTION 4</div><div class='section-title'>National Best Practices</div></div>", unsafe_allow_html=True)
+    b1.markdown("""
+    <div class='benefit-card'>
+        <h3>Capital Gain Deferral</h3>
+        <p>Investors can defer federal taxes on any prior capital gains until December 31, 2026, or until the date on which the investment is sold or exchanged, whichever comes first, provided that the gain is reinvested in a Qualified Opportunity Fund (QOF).</p>
+    </div>""", unsafe_allow_html=True)
+    b2.markdown("""
+    <div class='benefit-card'>
+        <h3>Basis Step-Up</h3>
+        <p>For capital gains reinvested in a QOF, the basis is increased by 10% if the investment is held for at least 5 years and by an additional 5% if held for at least 7 years, excluding up to 15% of the original gain from taxation.</p>
+    </div>""", unsafe_allow_html=True)
+    b3.markdown("""
+    <div class='benefit-card'>
+        <h3>10-Year Gain Exclusion</h3>
+        <p>The most significant benefit: if an investor holds their investment in a QOF for at least 10 years, they pay zero capital gains tax on any post-acquisition gains from the investment itself.</p>
+    </div>""", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 3: STRATEGY ---
+    st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class='content-section'>
+        <div class='section-num'>SECTION 3</div>
+        <div class='section-title'>Strategic Tract Advocacy</div>
+        <div class='narrative-text'>
+            Advocating for specific census tracts requires a data-driven approach. We prioritize tracts that demonstrate high potential for job creation, 
+            proximity to transit corridors, and alignment with parish-level master plans. By layering economic data with visual storytelling, 
+            we can present a compelling case for investment.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- SECTION 4: BEST PRACTICES ---
+    st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class='content-section'>
+        <div class='section-num'>SECTION 4</div>
+        <div class='section-title'>National Best Practices</div>
+        <div class='narrative-text'>
+            Successful OZ programs nationally have focused on transparency and local engagement. Key strategies include:
+            <ul>
+                <li>Developing public-facing data portals to reduce investor friction.</li>
+                <li>Creating localized "Prospectuses" for individual parishes.</li>
+                <li>Using public-private partnerships to de-risk complex developments.</li>
+            </ul>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # --- SECTION 5: MAPPING SECTION ---
     st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
@@ -343,7 +400,6 @@ if check_password():
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>TRACT DEMOGRAPHICS</p>", unsafe_allow_html=True)
             m1 = st.columns(3)
             m1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
-            
             is_nmtc = "YES" if row['NMTC_Calculated'] in ["Eligible", "Deep Distress"] else "NO"
             m1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{is_nmtc}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
             is_deep = "YES" if row['NMTC_Calculated'] == "Deep Distress" else "NO"
@@ -354,7 +410,6 @@ if check_password():
             m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
             m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
             
-            # --- RESTORED M3 ROW ---
             m3 = st.columns(3)
             m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
             m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
@@ -384,8 +439,16 @@ if check_password():
                     list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
-    # --- REPORT SECTION ---
-    st.markdown("<div id='section-6'></div><div class='content-section'><div class='section-num'>SECTION 6</div><div class='section-title'>Recommendation Report Summary</div><div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div></div>", unsafe_allow_html=True)
+    # --- SECTION 6: REPORT ---
+    st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class='content-section'>
+        <div class='section-num'>SECTION 6</div>
+        <div class='section-title'>Recommendation Report Summary</div>
+        <div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
         st.dataframe(report_df, use_container_width=True)
