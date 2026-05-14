@@ -245,16 +245,12 @@ if check_password():
     def render_map_go(df):
         map_df = df.copy()
         
-        # --- STRICT COLOR LOGIC FIX ---
-        # Get set of geoids already in the report, cleaned and z-filled to 11 chars
         reported_geoids = set(str(rec['Tract']).strip().split('.')[0].zfill(11) for rec in st.session_state.get("session_recs", []))
         
         def get_color_cat(row):
             gid = str(row['geoid_str']).strip().zfill(11)
-            # Orange (Category 2) takes priority
             if gid in reported_geoids:
                 return 2
-            # Then Green (1) for Eligible or Grey (0) for Ineligible
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
             
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
@@ -265,7 +261,6 @@ if check_password():
         
         fig = go.Figure()
         
-        # Color Scale: 0=Grey, 1=Green, 2=Orange
         custom_scale = [
             [0.0, '#cbd5e1'],   # Grey
             [0.33, '#cbd5e1'],
@@ -283,7 +278,8 @@ if check_password():
             colorscale=custom_scale,
             zmin=0, zmax=2,
             showscale=False, 
-            marker=dict(opacity=0.6, line=dict(width=1.0, color='white')),
+            # BOLDNESS INCREASED HERE (line width from 1.0 to 2.5)
+            marker=dict(opacity=0.6, line=dict(width=2.5, color='white')),
             selectedpoints=sel_idx, 
             hoverinfo="location", 
             name="Census Tracts"
@@ -359,7 +355,7 @@ if check_password():
     </div>
     """, unsafe_allow_html=True)
 
-  # --- SECTION 4: NATIONAL BEST PRACTICES ---
+    # --- SECTION 4: NATIONAL BEST PRACTICES ---
     st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
     st.markdown("""
     <div class='content-section'>
@@ -417,7 +413,6 @@ if check_password():
                 st.session_state["active_tract"] = selected_search
                 st.rerun()
 
-    # --- PARISH SNAPSHOT / QUOTA FEATURE ---
     if selected_parish != "All in Region":
         parish_data = master_df[master_df['Parish'] == selected_parish]
         total_parish_tracts = len(parish_data)
@@ -464,7 +459,6 @@ if check_password():
             rec_cat = st.selectbox("Recommendation Category", ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"], key="recommendation_category")
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                # Clean the tract ID before saving
                 clean_tract = str(curr).strip().split('.')[0].zfill(11)
                 new_entry = {"username": st.session_state["username"], "Tract": clean_tract, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification}
                 save_rec_to_cloud(new_entry)
@@ -503,7 +497,5 @@ if check_password():
     if st.session_state.get("session_recs"):
         report_df = pd.DataFrame(st.session_state["session_recs"])
         st.dataframe(report_df, use_container_width=True)
-        csv_data = report_df.to_csv(index=False)
-        st.download_button("Export Recommendation Report (CSV)", data=csv_data, file_name=f"OZ_Recommendations_{st.session_state['username']}.csv", mime="text/csv")
     else:
-        st.info("No tracts added to your recommendation report yet.")
+        st.info("Select a tract on the map and add it to your report to see it here.")
