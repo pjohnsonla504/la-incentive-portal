@@ -244,14 +244,14 @@ if check_password():
 
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
-        # Identify tracts already in the user's recommendations
+        # 1. Identify which GEOIDs are in the recommendation report
         selected_geoids = [str(rec['Tract']) for rec in st.session_state["session_recs"]]
         
+        # 2. Assign category based on eligibility and report status
         def get_color_cat(row):
-            # NEW CHANGE: Highlight orange if tract is in the recommendation report
-            if str(row['geoid_str']) in selected_geoids: 
-                return 2
-            return 1 if row['Eligibility_Status'] == 'Eligible' else 0
+            if str(row['geoid_str']) in selected_geoids:
+                return 2  # Added to Report (Orange)
+            return 1 if row['Eligibility_Status'] == 'Eligible' else 0 # Green if eligible, grey otherwise
             
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
         
@@ -265,11 +265,23 @@ if check_password():
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
         
         fig = go.Figure()
+        
+        # 3. Use explicit discrete colorscale mapping:
+        # Index 0: Grey (#e2e8f0)
+        # Index 1: Green (#4ade80)
+        # Index 2: Orange (#f97316)
         fig.add_trace(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            # Added '#f97316' (Orange) at the end of the scale
-            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2,
+            colorscale=[
+                [0, '#e2e8f0'],   # Category 0
+                [0.33, '#e2e8f0'],
+                [0.33, '#4ade80'], # Category 1
+                [0.66, '#4ade80'],
+                [0.66, '#f97316'], # Category 2
+                [1.0, '#f97316']
+            ],
+            zmin=0, zmax=2, # Strictly map 0, 1, 2
             showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
