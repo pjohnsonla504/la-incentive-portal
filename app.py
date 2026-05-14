@@ -244,26 +244,36 @@ if check_password():
 
     def render_map_go(df):
         map_df = df.copy().reset_index(drop=True)
+        # Identify tracts already in the user's recommendations
         selected_geoids = [str(rec['Tract']) for rec in st.session_state["session_recs"]]
+        
         def get_color_cat(row):
-            if str(row['geoid_str']) in selected_geoids: return 2
+            # NEW CHANGE: Highlight orange if tract is in the recommendation report
+            if str(row['geoid_str']) in selected_geoids: 
+                return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
+            
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
+        
         if st.session_state.get("active_tract") and st.session_state["active_tract"] in map_df['geoid_str'].values:
             focus_geoids = {st.session_state["active_tract"]}
         else:
             focus_geoids = set(map_df['geoid_str'].tolist())
+            
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
+        
         fig = go.Figure()
         fig.add_trace(go.Choroplethmapbox(
             geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
+            # Added '#f97316' (Orange) at the end of the scale
             colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2,
             showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
+        
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
         for i, a_type in enumerate(anchor_types):
@@ -276,6 +286,7 @@ if check_password():
                 marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
                 text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
+            
         fig.update_layout(
             mapbox=dict(style="carto-positron", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, 
@@ -474,7 +485,7 @@ if check_password():
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
         st.dataframe(report_df, use_container_width=True)
-        csv_data = report_df.to_csv(index=False).encode('utf-8')
-        st.download_button("Download Report (.CSV)", csv_data, f"OZ_Recommendations_{st.session_state['username']}.csv", "text/csv", use_container_width=True)
+        csv_data = report_df.to_csv(index=False)
+        st.download_button("Export Recommendation Report (CSV)", data=csv_data, file_name=f"OZ_Recommendations_{st.session_state['username']}.csv", mime="text/csv")
     else:
-        st.info("No recommendations added yet. Select a tract on the map to begin.")
+        st.info("No tracts added to your recommendation report yet.")
