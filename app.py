@@ -116,7 +116,7 @@ def check_password():
                 st.text_input("Username", key="username_input", placeholder="Enter your username")
                 st.text_input("Password", type="password", key="password_input", placeholder="••••••••")
                 st.button("Sign In", on_click=password_entered, use_container_width=True)
-            st.markdown("<p style='text-align:center; color:#475569; font-size:0.8rem; margin-top:20px;'>Louisiana Economic Development | Admin Access Only</p>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align:center; color:#475569; font-size:0.8rem; margin-top:20px;'>Louisiana Opportunity Zones 2.0 | Admin Access Only</p>", unsafe_allow_html=True)
         return False
     return True
 
@@ -243,48 +243,27 @@ if check_password():
         return center, zoom
 
     def render_map_go(df):
-        map_df = df.copy()
-        
-        reported_geoids = set(str(rec['Tract']).strip().split('.')[0].zfill(11) for rec in st.session_state.get("session_recs", []))
-        
+        map_df = df.copy().reset_index(drop=True)
+        selected_geoids = [str(rec['Tract']) for rec in st.session_state["session_recs"]]
         def get_color_cat(row):
-            gid = str(row['geoid_str']).strip().zfill(11)
-            if gid in reported_geoids:
-                return 2
+            if str(row['geoid_str']) in selected_geoids: return 2
             return 1 if row['Eligibility_Status'] == 'Eligible' else 0
-            
         map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
-        
-        focus_geoids = {st.session_state["active_tract"]} if st.session_state.get("active_tract") else set(map_df['geoid_str'].tolist())
+        if st.session_state.get("active_tract") and st.session_state["active_tract"] in map_df['geoid_str'].values:
+            focus_geoids = {st.session_state["active_tract"]}
+        else:
+            focus_geoids = set(map_df['geoid_str'].tolist())
         center, zoom = get_zoom_center(focus_geoids)
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
-        
+        revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
         fig = go.Figure()
-        
-        custom_scale = [
-            [0.0, '#cbd5e1'],   # Grey
-            [0.33, '#cbd5e1'],
-            [0.33, '#22c55e'],  # Green
-            [0.66, '#22c55e'],
-            [0.66, '#f97316'],  # Orange
-            [1.0, '#f97316']
-        ]
-
         fig.add_trace(go.Choroplethmapbox(
-            geojson=gj, 
-            locations=map_df['geoid_str'], 
-            z=map_df['Color_Category'],
+            geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=custom_scale,
-            zmin=0, zmax=2,
-            showscale=False, 
-            # BOLDNESS INCREASED HERE (line width from 1.0 to 2.5)
-            marker=dict(opacity=0.6, line=dict(width=2.5, color='white')),
-            selectedpoints=sel_idx, 
-            hoverinfo="location", 
-            name="Census Tracts"
+            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2,
+            showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
+            selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
-        
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
         for i, a_type in enumerate(anchor_types):
@@ -297,11 +276,10 @@ if check_password():
                 marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
                 text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
-            
         fig.update_layout(
             mapbox=dict(style="carto-positron", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, 
-            clickmode='event+select', uirevision='constant',
+            clickmode='event+select', uirevision=revision_key,
             legend=dict(title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)), yanchor="top", y=0.98, xanchor="left", x=0.02, bgcolor="rgba(255, 255, 255, 0.9)", font=dict(size=11, color="#1e293b"), bordercolor="#cbd5e1", borderwidth=1)
         )
         return fig
@@ -316,7 +294,7 @@ if check_password():
         <div class='narrative-text'>
             The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. 
             Under the new Opportunity Zones 2.0 framework, Louisiana is strategically aligning census tracts with high-growth industries like renewable energy, 
-            biotechnology, and advanced manufacturing.
+            biotechnology, and advanced manufacturing to maximize both social impact and investor returns.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -328,12 +306,12 @@ if check_password():
     b1.markdown("""
     <div class='benefit-card'>
         <h3>Capital Gain Deferral</h3>
-        <p>Investors can defer federal taxes on any prior capital gains until December 31, 2026, or until the date on which the investment is sold or exchanged, provided that the gain is reinvested in a Qualified Opportunity Fund (QOF).</p>
+        <p>Investors can defer federal taxes on any prior capital gains until December 31, 2026, or until the date on which the investment is sold or exchanged, whichever comes first, provided that the gain is reinvested in a Qualified Opportunity Fund (QOF).</p>
     </div>""", unsafe_allow_html=True)
     b2.markdown("""
     <div class='benefit-card'>
         <h3>Basis Step-Up</h3>
-        <p>For capital gains reinvested in a QOF, the basis is increased by 10% if the investment is held for at least 5 years and by an additional 5% if held for at least 7 years.</p>
+        <p>For capital gains reinvested in a QOF, the basis is increased by 10% if the investment is held for at least 5 years and by an additional 5% if held for at least 7 years, excluding up to 15% of the original gain from taxation.</p>
     </div>""", unsafe_allow_html=True)
     b3.markdown("""
     <div class='benefit-card'>
@@ -350,19 +328,21 @@ if check_password():
         <div class='section-title'>Strategic Tract Advocacy</div>
         <div class='narrative-text'>
             Advocating for specific census tracts requires a data-driven approach. We prioritize tracts that demonstrate high potential for job creation, 
-            proximity to transit corridors, and alignment with parish-level master plans.
+            proximity to transit corridors, and alignment with parish-level master plans. By layering economic data with visual storytelling, 
+            we can present a compelling case for investment.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # --- SECTION 4: NATIONAL BEST PRACTICES ---
+  # --- SECTION 4: NATIONAL BEST PRACTICES ---
     st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
     st.markdown("""
     <div class='content-section'>
         <div class='section-num'>SECTION 4</div>
         <div class='section-title'>National Best Practices</div>
         <div class='narrative-text'>
-            Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks.
+            Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks, 
+            ensuring our Opportunity Zone 2.0 strategy meets national standards for impact and transparency.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -389,7 +369,7 @@ if check_password():
         st.markdown("""
         <div class='benefit-card'>
             <h3>America First Policy Institute</h3>
-            <p>Strategic alignment with state-level blueprints for revitalizing American communities through comprehensive policy reform.</p>
+            <p>Strategic alignment with state-level blueprints for revitalizing American communities through comprehensive policy reform and impact tracking.</p>
             <a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a>
         </div>""", unsafe_allow_html=True)
 
@@ -413,6 +393,7 @@ if check_password():
                 st.session_state["active_tract"] = selected_search
                 st.rerun()
 
+    # --- PARISH SNAPSHOT / QUOTA FEATURE ---
     if selected_parish != "All in Region":
         parish_data = master_df[master_df['Parish'] == selected_parish]
         total_parish_tracts = len(parish_data)
@@ -459,12 +440,8 @@ if check_password():
             rec_cat = st.selectbox("Recommendation Category", ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"], key="recommendation_category")
             justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
             if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                clean_tract = str(curr).strip().split('.')[0].zfill(11)
-                new_entry = {"username": st.session_state["username"], "Tract": clean_tract, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification}
-                save_rec_to_cloud(new_entry)
-                st.session_state["session_recs"] = load_user_recs(st.session_state["username"])
-                st.toast(f"Tract {clean_tract} added!")
-                st.rerun()
+                new_entry = {"username": st.session_state["username"], "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification, "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)), "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"}
+                save_rec_to_cloud(new_entry); st.session_state["session_recs"] = load_user_recs(st.session_state["username"]); st.toast(f"Tract {curr} added!"); st.rerun()
 
         with d_col2:
             st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
@@ -494,8 +471,10 @@ if check_password():
     </div>
     """, unsafe_allow_html=True)
     
-    if st.session_state.get("session_recs"):
+    if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
         st.dataframe(report_df, use_container_width=True)
+        csv_data = report_df.to_csv(index=False).encode('utf-8')
+        st.download_button("Download Report (.CSV)", csv_data, f"OZ_Recommendations_{st.session_state['username']}.csv", "text/csv", use_container_width=True)
     else:
-        st.info("Select a tract on the map and add it to your report to see it here.")
+        st.info("No recommendations added yet. Select a tract on the map to begin.")
