@@ -199,7 +199,6 @@ if check_password():
         # --- FIXED LA_ANCHORS INTEGRATION WITH CASE-SENSITIVE NORMALIZATION ---
         anchors = read_csv_with_fallback("la_anchors.csv")
         
-        # Flexible Column Normalizer: Handles variation like 'lat', 'lon', 'Name', 'Type', 'link' seamlessly
         col_mapping = {c: c.strip().lower() for c in anchors.columns}
         name_col = next((orig for orig, norm in col_mapping.items() if 'name' in norm), 'Name')
         lat_col = next((orig for orig, norm in col_mapping.items() if 'lat' in norm), 'Lat')
@@ -217,11 +216,9 @@ if check_password():
         
         anchors = anchors.dropna(subset=['Lat', 'Lon'])  
         
-        # Proactive layer matching helper: shifts existing rows containing "Certified" into the dedicated Certified Site layer
         is_certified_name = anchors['Name'].str.contains('Certified', case=False, na=False)
         anchors.loc[is_certified_name, 'Type'] = "Certified Site"
         
-        # Comprehensive layer taxonomy dictionary
         type_mapping = {
             "Rural Healthcare Facility": "Rural Healthcare Facility",
             "Medical": "Rural Healthcare Facility",
@@ -237,7 +234,7 @@ if check_password():
         }
         
         anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  # Keeps only the core customized layers
+        anchors = anchors.dropna(subset=['Type'])  
         
         centers = {}
         if gj:
@@ -307,7 +304,7 @@ if check_password():
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
         
-        # Custom Layer Styling Layout Configurations
+        # Style layout for standard Mapbox symbol shapes
         style_dict = {
             "Rural Healthcare Facility": {"color": "#4ade80", "symbol": "circle", "size": 11},
             "Certified Site": {"color": "#facc15", "symbol": "diamond", "size": 14},
@@ -322,10 +319,11 @@ if check_password():
             type_data = anchors_df[anchors_df['Type'] == a_type]
             cfg = style_dict.get(a_type, {"color": "#94a3b8", "symbol": "circle", "size": 11})
             
+            # Changed visible="legendonly" to visible=True so layers render on map initialization
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
                 marker=go.scattermapbox.Marker(size=cfg["size"], color=cfg["color"], symbol=cfg["symbol"]),
-                text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
+                text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible=True 
             ))
             
         fig.update_layout(
@@ -500,39 +498,3 @@ if check_password():
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
-                working = anchors_df.copy()
-                if selected_asset_type != "All Assets": working = working[working['Type'] == selected_asset_type]
-                working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-                list_html = ""
-                for _, a in working.sort_values('dist').head(15).iterrows():
-                    link_btn = ""
-                    if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
-                    
-                    # Consistent type tags matching map configurations
-                    card_colors = {
-                        "Rural Healthcare Facility": "#4ade80",
-                        "Certified Site": "#85c229",
-                        "Fast Site": "#06b6d4",
-                        "Land": "#eab308",
-                        "Main Street": "#ec4899",
-                        "Buildings": "#6366f1"
-                    }
-                    type_color = card_colors.get(a['Type'], "#4ade80")
-                    
-                    list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
-                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
-
-    # --- SECTION 6: REPORT ---
-    st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 6</div>
-        <div class='section-title'>Recommendation Report Summary</div>
-        <div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    if st.session_state["session_recs"]:
-        report_df = pd.DataFrame(st.session_state["session_recs"])
-        st.dataframe(report_df, use_container_width=True)
