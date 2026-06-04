@@ -512,7 +512,7 @@ if check_password():
                     # Consistent type tags matching map configurations
                     card_colors = {
                         "Rural Healthcare Facility": "#4ade80",
-                        "Certified Site": "#1a2706",
+                        "Certified Site": "#85c229",
                         "Fast Site": "#06b6d4",
                         "Land": "#eab308",
                         "Main Street": "#ec4899",
