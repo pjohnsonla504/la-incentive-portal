@@ -196,15 +196,32 @@ if check_password():
 
         master['NMTC_Calculated'] = master.apply(get_nmtc_status, axis=1)
         
-        # --- FIXED LA_ANCHORS INTEGRATION WITH SPECIFIC LAYERS ONLY ---
+        # --- FIXED LA_ANCHORS INTEGRATION WITH CASE-SENSITIVE NORMALIZATION ---
         anchors = read_csv_with_fallback("la_anchors.csv")
-        anchors = anchors.dropna(subset=['Lat', 'Lon'])  # Clean missing coordinate entries
         
-        # Proactive helper: automatically group rows containing "Certified" in the name into the Certified layer
+        # Flexible Column Normalizer: Handles variation like 'lat', 'lon', 'Name', 'Type', 'link' seamlessly
+        col_mapping = {c: c.strip().lower() for c in anchors.columns}
+        name_col = next((orig for orig, norm in col_mapping.items() if 'name' in norm), 'Name')
+        lat_col = next((orig for orig, norm in col_mapping.items() if 'lat' in norm), 'Lat')
+        lon_col = next((orig for orig, norm in col_mapping.items() if 'lon' in norm), 'Lon')
+        type_col = next((orig for orig, norm in col_mapping.items() if 'type' in norm), 'Type')
+        link_col = next((orig for orig, norm in col_mapping.items() if 'link' in norm), 'Link')
+        
+        anchors = anchors.rename(columns={
+            name_col: 'Name',
+            lat_col: 'Lat',
+            lon_col: 'Lon',
+            type_col: 'Type',
+            link_col: 'Link'
+        })
+        
+        anchors = anchors.dropna(subset=['Lat', 'Lon'])  
+        
+        # Proactive layer matching helper: shifts existing rows containing "Certified" into the dedicated Certified Site layer
         is_certified_name = anchors['Name'].str.contains('Certified', case=False, na=False)
         anchors.loc[is_certified_name, 'Type'] = "Certified Site"
         
-        # Mapping to align data format into the specific customized visualization layers
+        # Comprehensive layer taxonomy dictionary
         type_mapping = {
             "Rural Healthcare Facility": "Rural Healthcare Facility",
             "Medical": "Rural Healthcare Facility",
@@ -220,7 +237,7 @@ if check_password():
         }
         
         anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  # Keeps only the requested asset layers
+        anchors = anchors.dropna(subset=['Type'])  # Keeps only the core customized layers
         
         centers = {}
         if gj:
@@ -290,7 +307,7 @@ if check_password():
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
         
-        # Explicit aesthetic configuration for custom layer icons, shapes, and sizes
+        # Custom Layer Styling Layout Configurations
         style_dict = {
             "Rural Healthcare Facility": {"color": "#4ade80", "symbol": "circle", "size": 11},
             "Certified Site": {"color": "#facc15", "symbol": "diamond", "size": 14},
@@ -492,7 +509,7 @@ if check_password():
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
                     
-                    # Custom type-based color tags matching the map icons
+                    # Consistent type tags matching map configurations
                     card_colors = {
                         "Rural Healthcare Facility": "#4ade80",
                         "Certified Site": "#facc15",
