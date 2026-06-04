@@ -199,6 +199,7 @@ if check_password():
         # --- FIXED LA_ANCHORS INTEGRATION WITH CASE-SENSITIVE NORMALIZATION ---
         anchors = read_csv_with_fallback("la_anchors.csv")
         
+        # Flexible Column Normalizer: Handles variation like 'lat', 'lon', 'Name', 'Type', 'link' seamlessly
         col_mapping = {c: c.strip().lower() for c in anchors.columns}
         name_col = next((orig for orig, norm in col_mapping.items() if 'name' in norm), 'Name')
         lat_col = next((orig for orig, norm in col_mapping.items() if 'lat' in norm), 'Lat')
@@ -216,9 +217,11 @@ if check_password():
         
         anchors = anchors.dropna(subset=['Lat', 'Lon'])  
         
+        # Proactive layer matching helper: shifts existing rows containing "Certified" into the dedicated Certified Site layer
         is_certified_name = anchors['Name'].str.contains('Certified', case=False, na=False)
         anchors.loc[is_certified_name, 'Type'] = "Certified Site"
         
+        # Comprehensive layer taxonomy dictionary
         type_mapping = {
             "Rural Healthcare Facility": "Rural Healthcare Facility",
             "Medical": "Rural Healthcare Facility",
@@ -228,13 +231,13 @@ if check_password():
             "Main Street": "Main Street",
             "Certified Site": "Certified Site",
             "Certified Sites": "Certified Site",
-            "Fast Site": "Fast Site",
-            "Fastsites": "Fast Site",
-            "Fast Sites": "Fast Site"
+            "FastSite": "FastSite",
+            "Fastsites": "FastSite",
+            "FastSites": "FastSite"
         }
         
         anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  
+        anchors = anchors.dropna(subset=['Type'])  # Keeps only the core customized layers
         
         centers = {}
         if gj:
@@ -304,11 +307,11 @@ if check_password():
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
         
-        # Style layout for standard Mapbox symbol shapes
+        # Custom Layer Styling Layout Configurations
         style_dict = {
             "Rural Healthcare Facility": {"color": "#4ade80", "symbol": "circle", "size": 11},
-            "Certified Site": {"color": "#facc15", "symbol": "diamond", "size": 14},
-            "Fast Site": {"color": "#06b6d4", "symbol": "square", "size": 14},
+            "Certified Site": {"color": "#3b82f6", "symbol": "diamond", "size": 14}, # Updated to Electric Blue
+            "FastSite": {"color": "#06b6d4", "symbol": "square", "size": 14},
             "Land": {"color": "#a16207", "symbol": "circle", "size": 11},
             "Main Street": {"color": "#ec4899", "symbol": "circle", "size": 11},
             "Buildings": {"color": "#6366f1", "symbol": "circle", "size": 11}
@@ -319,11 +322,10 @@ if check_password():
             type_data = anchors_df[anchors_df['Type'] == a_type]
             cfg = style_dict.get(a_type, {"color": "#94a3b8", "symbol": "circle", "size": 11})
             
-            # Changed visible="legendonly" to visible=True so layers render on map initialization
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
                 marker=go.scattermapbox.Marker(size=cfg["size"], color=cfg["color"], symbol=cfg["symbol"]),
-                text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible=True 
+                text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
             
         fig.update_layout(
@@ -498,3 +500,4 @@ if check_password():
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
+                working = anchors_df.copy()
