@@ -196,10 +196,10 @@ if check_password():
 
         master['NMTC_Calculated'] = master.apply(get_nmtc_status, axis=1)
         
-        # --- FIXED LA_ANCHORS INTEGRATION WITH CASE-SENSITIVE NORMALIZATION ---
+        # --- FIXED LA_ANCHORS FILE SYNC WITH AUTOMATIC FALLBACKS ---
         anchors = read_csv_with_fallback("la_anchors.csv")
         
-        # Flexible Column Normalizer: Handles variation like 'lat', 'lon', 'Name', 'Type', 'link' seamlessly
+        # Normalize incoming headers dynamically to bypass lowercase KeyError crashes
         col_mapping = {c: c.strip().lower() for c in anchors.columns}
         name_col = next((orig for orig, norm in col_mapping.items() if 'name' in norm), 'Name')
         lat_col = next((orig for orig, norm in col_mapping.items() if 'lat' in norm), 'Lat')
@@ -217,27 +217,31 @@ if check_password():
         
         anchors = anchors.dropna(subset=['Lat', 'Lon'])  
         
-        # Proactive layer matching helper: shifts existing rows containing "Certified" into the dedicated Certified Site layer
-        is_certified_name = anchors['Name'].str.contains('Certified', case=False, na=False)
-        anchors.loc[is_certified_name, 'Type'] = "Certified Site"
+        # Keyword Scanner: Detects text variations inside column strings to match specific map tracking classes
+        is_certified = anchors['Name'].str.contains('Certified', case=False, na=False)
+        anchors.loc[is_certified, 'Type'] = "Certified Site"
         
-        # Comprehensive layer taxonomy dictionary
+        is_fastsite = anchors['Name'].str.contains('FastSite|Fast Site', case=False, na=False) | anchors['Link'].str.contains('louisianasiteselection', case=False, na=False)
+        anchors.loc[is_fastsite, 'Type'] = "Fast Site"
+        
+        # Unified tracking assignment schema
         type_mapping = {
             "Rural Healthcare Facility": "Rural Healthcare Facility",
             "Medical": "Rural Healthcare Facility",
+            "Educational": "Educational",
+            "Logistics": "Logistics",
+            "Project Announcement": "Project Announcement",
             "Land": "Land",
             "Buildings": "Buildings",
             "Louisiana Main Street": "Main Street",
             "Main Street": "Main Street",
             "Certified Site": "Certified Site",
             "Certified Sites": "Certified Site",
-            "Fast Site": "Fast Site",
-            "Fastsites": "Fast Site",
-            "Fast Sites": "Fast Site"
+            "Fast Site": "Fast Site"
         }
         
         anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  # Keeps only the core customized layers
+        anchors = anchors.dropna(subset=['Type'])  
         
         centers = {}
         if gj:
@@ -307,11 +311,14 @@ if check_password():
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
         
-        # Custom Layer Styling Layout Configurations
+        # Visual Configurations Map Colors (Certified Site set to Light Blue, Fast Site set to Cyan)
         style_dict = {
             "Rural Healthcare Facility": {"color": "#4ade80", "symbol": "circle", "size": 11},
-            "Certified Site": {"color": "#facc15", "symbol": "diamond", "size": 14},
-            "Fast Site": {"color": "#06b6d4", "symbol": "square", "size": 14},
+            "Certified Site": {"color": "#38bdf8", "symbol": "diamond", "size": 14}, # Light Blue Update
+            "Fast Site": {"color": "#06b6d4", "symbol": "square", "size": 14},      # Cyan Display Style
+            "Educational": {"color": "#a855f7", "symbol": "circle", "size": 11},
+            "Logistics": {"color": "#f97316", "symbol": "circle", "size": 11},
+            "Project Announcement": {"color": "#f43f5e", "symbol": "circle", "size": 11},
             "Land": {"color": "#a16207", "symbol": "circle", "size": 11},
             "Main Street": {"color": "#ec4899", "symbol": "circle", "size": 11},
             "Buildings": {"color": "#6366f1", "symbol": "circle", "size": 11}
@@ -509,11 +516,14 @@ if check_password():
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
                     
-                    # Consistent type tags matching map configurations
+                    # Layout color tags synchronized perfectly with mapping outputs
                     card_colors = {
                         "Rural Healthcare Facility": "#4ade80",
-                        "Certified Site": "#1a2706",
+                        "Certified Site": "#38bdf8",
                         "Fast Site": "#06b6d4",
+                        "Educational": "#a855f7",
+                        "Logistics": "#f97316",
+                        "Project Announcement": "#f43f5e",
                         "Land": "#eab308",
                         "Main Street": "#ec4899",
                         "Buildings": "#6366f1"
