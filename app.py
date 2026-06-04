@@ -195,8 +195,26 @@ if check_password():
             return "Ineligible"
 
         master['NMTC_Calculated'] = master.apply(get_nmtc_status, axis=1)
+        
+        # --- FIXED LA_ANCHORS INTEGRATION WITH SPECIFIC LAYERS ONLY ---
         anchors = read_csv_with_fallback("la_anchors.csv")
-        anchors['Type'] = anchors['Type'].fillna('Other')
+        anchors = anchors.dropna(subset=['Lat', 'Lon'])  # Clean missing coordinate entries
+        
+        # Mapping to align data format into the 6 customized visualization layers
+        type_mapping = {
+            "Rural Healthcare Facility": "Rural Healthcare Facility",
+            "Medical": "Rural Healthcare Facility",
+            "Land": "Land",
+            "Buildings": "Buildings",
+            "Louisiana Main Street": "Main Street",
+            "Main Street": "Main Street",
+            "Certified Site": "Certified Site",
+            "Fastsites": "Fastsites"
+        }
+        
+        anchors['Type'] = anchors['Type'].map(type_mapping)
+        anchors = anchors.dropna(subset=['Type'])  # Safely strips off educational, government, etc.
+        
         centers = {}
         if gj:
             for feature in gj['features']:
@@ -264,16 +282,16 @@ if check_password():
             showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
+        
+        # Traces map directly using the newly scoped 6 layers
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
-            marker_color = "#f97316" if a_type == "Project Announcements" else color_palette[i % len(color_palette)]
-            marker_symbol = "star" if a_type == "Project Announcements" else "circle"
-            marker_size = 15 if a_type == "Project Announcements" else 11
+            marker_color = color_palette[i % len(color_palette)]
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
-                marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
+                marker=go.scattermapbox.Marker(size=11, color=marker_color, symbol="circle"),
                 text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
         fig.update_layout(
@@ -334,7 +352,7 @@ if check_password():
     </div>
     """, unsafe_allow_html=True)
 
-  # --- SECTION 4: NATIONAL BEST PRACTICES ---
+    # --- SECTION 4: NATIONAL BEST PRACTICES ---
     st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
     st.markdown("""
     <div class='content-section'>
@@ -453,12 +471,10 @@ if check_password():
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
-                    is_announcement = (a['Type'] == "Project Announcements"); type_color = "#f97316" if is_announcement else "#4ade80"
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
-                        btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>{btn_label}</a>"
-                    list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
+                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
+                    list_html += f"<div class='anchor-card'><div style='color:#4ade80; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- SECTION 6: REPORT ---
@@ -474,7 +490,3 @@ if check_password():
     if st.session_state["session_recs"]:
         report_df = pd.DataFrame(st.session_state["session_recs"])
         st.dataframe(report_df, use_container_width=True)
-        csv_data = report_df.to_csv(index=False).encode('utf-8')
-        st.download_button("Download Report (.CSV)", csv_data, f"OZ_Recommendations_{st.session_state['username']}.csv", "text/csv", use_container_width=True)
-    else:
-        st.info("No recommendations added yet. Select a tract on the map to begin.")
