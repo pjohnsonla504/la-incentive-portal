@@ -196,52 +196,12 @@ if check_password():
 
         master['NMTC_Calculated'] = master.apply(get_nmtc_status, axis=1)
         
-        # --- FIXED LA_ANCHORS FILE SYNC WITH AUTOMATIC FALLBACKS ---
+        # --- FIXED LA_ANCHORS INTEGRATION ---
         anchors = read_csv_with_fallback("la_anchors.csv")
-        
-        # Normalize incoming headers dynamically to bypass lowercase KeyError crashes
-        col_mapping = {c: c.strip().lower() for c in anchors.columns}
-        name_col = next((orig for orig, norm in col_mapping.items() if 'name' in norm), 'Name')
-        lat_col = next((orig for orig, norm in col_mapping.items() if 'lat' in norm), 'Lat')
-        lon_col = next((orig for orig, norm in col_mapping.items() if 'lon' in norm), 'Lon')
-        type_col = next((orig for orig, norm in col_mapping.items() if 'type' in norm), 'Type')
-        link_col = next((orig for orig, norm in col_mapping.items() if 'link' in norm), 'Link')
-        
-        anchors = anchors.rename(columns={
-            name_col: 'Name',
-            lat_col: 'Lat',
-            lon_col: 'Lon',
-            type_col: 'Type',
-            link_col: 'Link'
-        })
-        
-        anchors = anchors.dropna(subset=['Lat', 'Lon'])  
-        
-        # Keyword Scanner: Detects text variations inside column strings to match specific map tracking classes
-        is_certified = anchors['Name'].str.contains('Certified', case=False, na=False)
-        anchors.loc[is_certified, 'Type'] = "Certified Site"
-        
-        is_fastsite = anchors['Name'].str.contains('FastSite|Fast Site', case=False, na=False) | anchors['Link'].str.contains('louisianasiteselection', case=False, na=False)
-        anchors.loc[is_fastsite, 'Type'] = "Fast Site"
-        
-        # Unified tracking assignment schema
-        type_mapping = {
-            "Rural Healthcare Facility": "Rural Healthcare Facility",
-            "Medical": "Rural Healthcare Facility",
-            "Educational": "Educational",
-            "Logistics": "Logistics",
-            "Project Announcement": "Project Announcement",
-            "Land": "Land",
-            "Buildings": "Buildings",
-            "Louisiana Main Street": "Main Street",
-            "Main Street": "Main Street",
-            "Certified Site": "Certified Site",
-            "Certified Sites": "Certified Site",
-            "Fast Site": "Fast Site"
-        }
-        
-        anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  
+        anchors = anchors.dropna(subset=['Lat', 'Lon'])  # Clean step: Drop rows missing geographic coordinates
+        anchors['Type'] = anchors['Type'].fillna('Other')
+        # Map normalization step: Convert singular category value to plural to line up with UI logic
+        anchors['Type'] = anchors['Type'].replace('Project Announcement', 'Project Announcements')
         
         centers = {}
         if gj:
@@ -310,31 +270,18 @@ if check_password():
             showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
-        
-        # Visual Configurations Map Colors (Certified Site set to Light Blue, Fast Site set to Cyan)
-        style_dict = {
-            "Rural Healthcare Facility": {"color": "#4ade80", "symbol": "circle", "size": 11},
-            "Certified Site": {"color": "#38bdf8", "symbol": "diamond", "size": 14}, # Light Blue Update
-            "Fast Site": {"color": "#06b6d4", "symbol": "square", "size": 14},      # Cyan Display Style
-            "Educational": {"color": "#a855f7", "symbol": "circle", "size": 11},
-            "Logistics": {"color": "#f97316", "symbol": "circle", "size": 11},
-            "Project Announcement": {"color": "#f43f5e", "symbol": "circle", "size": 11},
-            "Land": {"color": "#a16207", "symbol": "circle", "size": 11},
-            "Main Street": {"color": "#ec4899", "symbol": "circle", "size": 11},
-            "Buildings": {"color": "#6366f1", "symbol": "circle", "size": 11}
-        }
-        
         anchor_types = sorted(anchors_df['Type'].unique())
-        for a_type in anchor_types:
+        color_palette = px.colors.qualitative.Bold 
+        for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
-            cfg = style_dict.get(a_type, {"color": "#94a3b8", "symbol": "circle", "size": 11})
-            
+            marker_color = "#f97316" if a_type == "Project Announcements" else color_palette[i % len(color_palette)]
+            marker_symbol = "star" if a_type == "Project Announcements" else "circle"
+            marker_size = 15 if a_type == "Project Announcements" else 11
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
-                marker=go.scattermapbox.Marker(size=cfg["size"], color=cfg["color"], symbol=cfg["symbol"]),
+                marker=go.scattermapbox.Marker(size=marker_size, color=marker_color, symbol=marker_symbol),
                 text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
-            
         fig.update_layout(
             mapbox=dict(style="carto-positron", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, 
@@ -503,7 +450,7 @@ if check_password():
                 save_rec_to_cloud(new_entry); st.session_state["session_recs"] = load_user_recs(st.session_state["username"]); st.toast(f"Tract {curr} added!"); st.rerun()
 
         with d_col2:
-            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHOR ASSETS</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
@@ -512,24 +459,11 @@ if check_password():
                 working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
+                    is_announcement = (a['Type'] == "Project Announcements"); type_color = "#f97316" if is_announcement else "#4ade80"
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
-                    
-                    # Layout color tags synchronized perfectly with mapping outputs
-                    card_colors = {
-                        "Rural Healthcare Facility": "#4ade80",
-                        "Certified Site": "#38bdf8",
-                        "Fast Site": "#06b6d4",
-                        "Educational": "#a855f7",
-                        "Logistics": "#f97316",
-                        "Project Announcement": "#f43f5e",
-                        "Land": "#eab308",
-                        "Main Street": "#ec4899",
-                        "Buildings": "#6366f1"
-                    }
-                    type_color = card_colors.get(a['Type'], "#4ade80")
-                    
+                        btn_label = "VISIT SITE ↗" if not is_announcement else "VIEW PROJECT ANNOUNCEMENT ↗"
+                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>{btn_label}</a>"
                     list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
