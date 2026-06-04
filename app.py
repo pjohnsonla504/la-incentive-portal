@@ -200,7 +200,11 @@ if check_password():
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors = anchors.dropna(subset=['Lat', 'Lon'])  # Clean missing coordinate entries
         
-        # Mapping to align data format into the 6 customized visualization layers
+        # Proactive helper: automatically group rows containing "Certified" in the name into the Certified layer
+        is_certified_name = anchors['Name'].str.contains('Certified', case=False, na=False)
+        anchors.loc[is_certified_name, 'Type'] = "Certified Site"
+        
+        # Mapping to align data format into the specific customized visualization layers
         type_mapping = {
             "Rural Healthcare Facility": "Rural Healthcare Facility",
             "Medical": "Rural Healthcare Facility",
@@ -209,11 +213,14 @@ if check_password():
             "Louisiana Main Street": "Main Street",
             "Main Street": "Main Street",
             "Certified Site": "Certified Site",
-            "Fastsites": "Fastsites"
+            "Certified Sites": "Certified Site",
+            "Fast Site": "Fast Site",
+            "Fastsites": "Fast Site",
+            "Fast Sites": "Fast Site"
         }
         
         anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  # Safely strips off educational, government, etc.
+        anchors = anchors.dropna(subset=['Type'])  # Keeps only the requested asset layers
         
         centers = {}
         if gj:
@@ -283,17 +290,27 @@ if check_password():
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
         
-        # Traces map directly using the newly scoped 6 layers
+        # Explicit aesthetic configuration for custom layer icons, shapes, and sizes
+        style_dict = {
+            "Rural Healthcare Facility": {"color": "#4ade80", "symbol": "circle", "size": 11},
+            "Certified Site": {"color": "#facc15", "symbol": "diamond", "size": 14},
+            "Fast Site": {"color": "#06b6d4", "symbol": "square", "size": 14},
+            "Land": {"color": "#a16207", "symbol": "circle", "size": 11},
+            "Main Street": {"color": "#ec4899", "symbol": "circle", "size": 11},
+            "Buildings": {"color": "#6366f1", "symbol": "circle", "size": 11}
+        }
+        
         anchor_types = sorted(anchors_df['Type'].unique())
-        color_palette = px.colors.qualitative.Bold 
-        for i, a_type in enumerate(anchor_types):
+        for a_type in anchor_types:
             type_data = anchors_df[anchors_df['Type'] == a_type]
-            marker_color = color_palette[i % len(color_palette)]
+            cfg = style_dict.get(a_type, {"color": "#94a3b8", "symbol": "circle", "size": 11})
+            
             fig.add_trace(go.Scattermapbox(
                 lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
-                marker=go.scattermapbox.Marker(size=11, color=marker_color, symbol="circle"),
+                marker=go.scattermapbox.Marker(size=cfg["size"], color=cfg["color"], symbol=cfg["symbol"]),
                 text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
+            
         fig.update_layout(
             mapbox=dict(style="carto-positron", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, 
@@ -462,7 +479,7 @@ if check_password():
                 save_rec_to_cloud(new_entry); st.session_state["session_recs"] = load_user_recs(st.session_state["username"]); st.toast(f"Tract {curr} added!"); st.rerun()
 
         with d_col2:
-            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHOR ASSETS</p>", unsafe_allow_html=True)
             selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
             if curr in tract_centers:
                 lon, lat = tract_centers[curr]
@@ -474,7 +491,19 @@ if check_password():
                     link_btn = ""
                     if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
                         link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
-                    list_html += f"<div class='anchor-card'><div style='color:#4ade80; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
+                    
+                    # Custom type-based color tags matching the map icons
+                    card_colors = {
+                        "Rural Healthcare Facility": "#4ade80",
+                        "Certified Site": "#facc15",
+                        "Fast Site": "#06b6d4",
+                        "Land": "#eab308",
+                        "Main Street": "#ec4899",
+                        "Buildings": "#6366f1"
+                    }
+                    type_color = card_colors.get(a['Type'], "#4ade80")
+                    
+                    list_html += f"<div class='anchor-card'><div style='color:{type_color}; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
 
     # --- SECTION 6: REPORT ---
