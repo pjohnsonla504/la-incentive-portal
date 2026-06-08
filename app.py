@@ -200,7 +200,7 @@ if check_password():
         anchors = read_csv_with_fallback("la_anchors.csv")
         anchors = anchors.dropna(subset=['Lat', 'Lon'])  # Clean missing coordinate entries
         
-        # Mapping to align data format into the 6 customized visualization layers
+        # Mapping to align data format into clean custom visualization layers
         type_mapping = {
             "Rural Healthcare Facility": "Rural Healthcare Facility",
             "Medical": "Rural Healthcare Facility",
@@ -209,11 +209,11 @@ if check_password():
             "Louisiana Main Street": "Main Street",
             "Main Street": "Main Street",
             "Certified Site": "Certified Site",
-            "Fastsites": "Fastsites"
+            "Fastsites": "FastSite"
         }
         
         anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  # Safely strips off educational, government, etc.
+        anchors = anchors.dropna(subset=['Type'])  # Safely strips off unmapped types
         
         centers = {}
         if gj:
@@ -283,7 +283,7 @@ if check_password():
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
         
-        # Traces map directly using the newly scoped 6 layers
+        # Traces map directly using the newly scoped layers
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
         for i, a_type in enumerate(anchor_types):
@@ -483,10 +483,5 @@ if check_password():
     <div class='content-section'>
         <div class='section-num'>SECTION 6</div>
         <div class='section-title'>Recommendation Report Summary</div>
-        <div class='narrative-text'>Below is your personalized selection of Opportunity Zone tracts, saved securely to your profile.</div>
     </div>
     """, unsafe_allow_html=True)
-    
-    if st.session_state["session_recs"]:
-        report_df = pd.DataFrame(st.session_state["session_recs"])
-        st.dataframe(report_df, use_container_width=True)
