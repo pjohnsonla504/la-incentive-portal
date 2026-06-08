@@ -1,514 +1,669 @@
 Name,Lat,Lon,Type,Link
-Aveda Arts & Sciences Institute-Baton Rouge,30.42657424,-91.05380005,Educational,
-Aveda Arts & Sciences Institute-Covington,30.49347188,-90.10428045,Educational,
-Aveda Arts & Sciences Institute-Lafayette,30.2053046,-92.04188567,Educational,
-Avery James College,30.20294029,-93.21872389,Educational,
-Ayers Career College,32.41972522,-93.79752705,Educational,
-Baton Rouge General Medical Center School of Nursing & School of Radiologic Technology,30.44821514,-91.15278938,Educational,
-Belbo Beauty Institute,32.48683726,-93.70603246,Educational,
-Blalock's Professional Beauty College,32.4371906,-93.71518658,Educational,
-Blue Cliff College,30.0046265,-90.18201762,Educational,
-Blue Cliff College-Alexandria,31.27519469,-92.47565838,Educational,
-Blue Cliff College-Lafayette,30.18758098,-92.01232043,Educational,
-Blue Cliff College-Metairie,30.00249194,-90.17233476,Educational,
-Bos-Man's Barber College,32.4420815,-93.78190456,Educational,
-Bossier Parish Community College,32.5409558,-93.64851508,Educational,
-Bridges Christian College,29.93550618,-90.10313383,Educational,
-Celebrity Barber School,32.52228874,-92.08439101,Educational,
-Celebrity Stylist Beauty School,32.52276416,-92.08597617,Educational,
-Centenary College of Louisiana,32.48499033,-93.73358497,Educational,
-Central Louisiana Technical Community College,31.31022104,-92.44607929,Educational,
-Chamberlain University-Louisiana,29.96304243,-90.15240167,Educational,
-Cloyd's Barber School 2 Inc,32.48438988,-92.08986246,Educational,
-Cloyd's Beauty School 1 Inc,32.5000928,-92.12654792,Educational,
-Cloyd's Beauty School 3 Inc,32.53296735,-92.08119564,Educational,
-Cosmetology Training Center,30.18079196,-92.07192973,Educational,
-Crescent City Bartending School,29.96669261,-90.08657856,Educational,
-Delgado Community College,29.98389866,-90.10490295,Educational,
-Delta College Inc,30.46746248,-90.08596031,Educational,
-Delta College of Arts & Technology,30.46415865,-91.11371589,Educational,
-Delta College of Arts & Technology-Lafayette Campus,30.15853558,-92.04178886,Educational,
-Delta College-Slidell Campus,30.28793364,-89.78250817,Educational,
-Denham Springs Beauty School,30.48445331,-90.94534857,Educational,
-Diesel Driving Academy-Baton Rouge,30.46512851,-91.10445795,Educational,
-Diesel Driving Academy-Shreveport,32.47659984,-93.79429098,Educational,
-Digital Media Institute,32.4817469,-93.77060625,Educational,
-Dillard University,29.99274576,-90.06764289,Educational,
-Fletcher Technical Community College,29.67991418,-90.81206239,Educational,
-Fortis College-Baton Rouge,30.36599948,-91.0255138,Educational,
-Franciscan Missionaries of Our Lady University,30.40037998,-91.10994503,Educational,
-Grambling State University,32.52152889,-92.71356751,Educational,
-Healthcare Training Institute,30.00152956,-90.24078604,Educational,
-Herzing University-New Orleans,30.01918365,-90.15477333,Educational,
-Infinity College,30.25110595,-91.99973481,Educational,
-ITI Technical College,30.36782736,-91.02771879,Educational,
-John Jay Beauty College,30.00653011,-90.23142263,Educational,
-J's Barber College,29.99377089,-91.82893804,Educational,
-LaSalle Tech,29.57742722,-90.68869917,Educational,
-Louisiana Christian University,31.32566704,-92.42848296,Educational,
-Louisiana Delta Community College,32.49777103,-92.02731251,Educational,
-Louisiana State University Health Sciences Center-New Orleans,29.95769057,-90.08288693,Educational,
-Louisiana State University Health Sciences Center-Shreveport,32.48168461,-93.76082798,Educational,
-Louisiana State University-Shreveport,32.43228656,-93.70182419,Educational,
-Loyola University New Orleans,29.93408863,-90.12212747,Educational,
-McNeese State University,30.17883055,-93.21850276,Educational,
-Medical Training College,30.42701254,-91.06961065,Educational,
-Miller-Motte College-McCann-Monroe,32.52247142,-92.0990847,Educational,
-Moore Career College,30.36567547,-91.02500619,Educational,
-My Le's Beauty College,29.90385678,-90.03001835,Educational,
-NationsUniversity,29.94930473,-90.07003761,Educational,
-New Orleans Baptist Theological Seminary,30.00280307,-90.04567381,Educational,
-New Orleans Culinary and Hospitality Institute,29.94384764,-90.07299766,Educational,
-Northwest Louisiana Technical Community College,32.58524607,-93.2631619,Educational,
-Northwestern State University of Louisiana,31.75387604,-93.09949648,Educational,
-Nunez Community College,29.95342841,-89.95849449,Educational,
-Omega Institute of Cosmetology,29.60345113,-90.75141922,Educational,
-Opelousas School of Cosmetology,30.5314575,-92.07840428,Educational,
-Park Place Premier Barber School,29.99704315,-90.0613544,Educational,
-Paul Mitchell the School-Baton Rouge,30.41144753,-91.04428926,Educational,
-Paul Mitchell the School-New Orleans,30.0049782,-90.16349428,Educational,
-Petra College,30.51752055,-90.48269839,Educational,
-Pineville Beauty School,31.3255067,-92.43124442,Educational,
-Ray J's College of Hair,30.4650395,-91.11127918,Educational,
-Relay Graduate School of Education - Baton Rouge,30.45030742,-91.18817384,Educational,
-Relay Graduate School of Education - New Orleans,29.94913544,-90.07641226,Educational,
-Remington College-Baton Rouge Campus,30.41261351,-91.05168341,Educational,
-Remington College-Lafayette Campus,30.16633047,-92.06018226,Educational,
-Remington College-Shreveport Campus,32.40218451,-93.79328292,Educational,
-South Louisiana Community College,30.21830667,-92.04939369,Educational,
-Southeastern Louisiana University - Albert Cammon Middle School,29.95710247,-90.30851271,Educational,
-Southeastern Louisiana University - Destrahan High School,29.9646883,-90.38403897,Educational,
-Southeastern Louisiana University - EBR Parish School System Prof Dev,30.47373931,-91.05802917,Educational,
-Southeastern Louisiana University - St Amant High School,30.24143433,-90.87015402,Educational,
-Southern University at New Orleans,30.02544995,-90.04378274,Educational,
-Southern University at Shreveport,32.54368248,-93.83364841,Educational,
-Stage One-The Hair School,30.19638664,-93.22189069,Educational,
-Stevensons Academy of Hair Design,29.94847413,-90.05232421,Educational,
-Tulane University of Louisiana,29.93531002,-90.1237734,Educational,
-Unitech Training Academy-Alexandria,31.26793743,-92.45863036,Educational,
-Unitech Training Academy-Baton Rouge,30.41367255,-91.0516836,Educational,
-Unitech Training Academy-Houma,29.63184372,-90.75678775,Educational,
-Unitech Training Academy-Lafayette,30.18350689,-92.0749061,Educational,
-Unitech Training Academy-New Orleans,29.94860013,-90.18259164,Educational,
-Unitech Training Academy-West Monroe,32.50707734,-92.12955133,Educational,
-University of Holy Cross,29.91315,-89.99312322,Educational,
-University of Louisiana at Lafayette,30.21717699,-92.01897999,Educational,
-University of Louisiana at Monroe,32.52831542,-92.07559584,Educational,
-University of New Orleans,30.03060962,-90.06329805,Educational,
-VH Barber & Styling Academy,32.51618816,-93.7162417,Educational,
-Williams Technical College,29.59877655,-90.74532258,Educational,
-Cameron Parish Port,29.79838814,-93.32396795,Logistics,
-Louisiana Offshore Oil Port (LOOP),30.4427449,-90.08674878,Logistics,
-Port Fourchon,29.47043764,-90.31304286,Logistics,
-Port of Greater Baton Rouge,30.4353187,-91.20284446,Logistics,
-Port of Lake Charles,30.21303773,-93.24613918,Logistics,
-Port of New Orleans,29.93703286,-90.06162038,Logistics,
-Port of Plaquemines,29.8590473,-89.9905053,Logistics,
-Port of South Louisiana,30.05596908,-90.56720997,Logistics,
-Port of Grand Isle,29.225601,-90.00750299,Logistics,
-Port of Iberia,29.94544728,-91.836347,Logistics,
-Port of Morgan City,29.69396133,-91.18691898,Logistics,
-Port of Terrebonne,29.57207656,-90.71285957,Logistics,
-Port of Vermilion,29.97410035,-92.13555662,Logistics,
-Port of West St. Mary,29.81054177,-91.5160663,Logistics,
-West Calcasieu Port,30.06559501,-93.3546188,Logistics,
-Greater Ouachita Port,32.48949581,-92.13640509,Logistics,
-Madison Parish Port,32.39595867,-91.1981573,Logistics,
-Natchitoches Parish Port,31.83963204,-93.07465285,Logistics,
-Port of Caddo-Bossier,32.36304924,-93.64289608,Logistics,
-Port of Krotz Springs,30.53887113,-91.75113369,Logistics,
-Port of Lake Providence,32.75803177,-91.17780008,Logistics,
-Tensas Parish Port,31.91469522,-91.23657245,Logistics,
-Cane River Waterway Commission,31.67887321,-93.01441792,Logistics,
-Grant Parish Port,31.51666375,-92.71289492,Logistics,
-Jefferson Parish Economic Development and Port District (JEDCO),29.89343614,-90.17926257,Logistics,
-Lafayette Economic Development Authority (LEDA),30.21991566,-92.04639251,Logistics,
-Louisiana International Deep Water Transfer Terminal Authority (LIGTT),30.41914084,-91.09698852,Logistics,
-St. Tammany Corporation,30.41844795,-90.04236538,Logistics,
-Vernon Parish Development District,31.15470971,-93.26371718,Logistics,
-West Feliciana Parish Port,30.78488016,-91.37971094,Logistics,
-Winn Parish Economic Development District,31.92665397,-92.63881491,Logistics,
-Abbeville Chris Crusta Mem.,29.97408719,-92.13569684,Logistics,
-Alexandria International,31.32377976,-92.53509223,Logistics,
-Esler Airport,31.38808069,-92.29979679,Logistics,
-Morehouse Memorial,32.75676135,-91.88575374,Logistics,
-Baton Rouge Metropolitan,30.53255787,-91.15681893,Logistics,
-Columbia Airport,32.12641244,-92.05683811,Logistics,
-Legros Memorial,30.16605432,-92.48153766,Logistics,
-Beauregard Regional,30.84686991,-93.25911545,Logistics,
-Harry P. Williams Memorial,29.71289558,-91.33906753,Logistics,
-Franklinton Airport,30.820354,-90.11829326,Logistics,
-Hammond Northshore Regional,30.51589633,-90.42347578,Logistics,
-LeMaire Memorial Airport,29.90429667,-91.66367089,Logistics,
-Jonesville Municipal Airport,31.62533929,-91.83077437,Logistics,
-Lafayette Regional Airport,30.21089519,-91.99356,Logistics,
-Lake Charles Regional Airport,30.12870099,-93.21356629,Logistics,
-Chennault Intâl,30.21657334,-93.16452997,Logistics,
-Byerley Airport,32.8199027,-91.18485706,Logistics,
-Leesville Airport,31.16836182,-93.34527804,Logistics,
-Hart Airport,31.54877379,-93.49108607,Logistics,
-Marksville Municipal Airport,31.13708296,-92.05620742,Logistics,
-Minden Airport,32.63914934,-93.30272482,Logistics,
-Monroe Regional Airport,32.50913875,-92.04495417,Logistics,
-Natchitoches Regional Airport,31.73423965,-93.09475047,Logistics,
-Acadiana Regional Airport,30.03914963,-91.87669363,Logistics,
-Allen Parish Airport,30.75087976,-92.69276738,Logistics,
-St. John Parish,30.08651641,-90.57965138,Logistics,
-Ruston Regional Airport,32.50864544,-92.59153536,Logistics,
-Shreveport,32.45660991,-93.82711923,Logistics,
-Shreveport Downtown,32.54249468,-93.75010272,Logistics,
-Slidell Airport,30.34355185,-89.82405164,Logistics,
-Springhill Airport,32.99029851,-93.41211415,Logistics,
-Southland Field,30.13178397,-93.37348123,Logistics,
-Thibodaux Municipal Airport,29.74932141,-90.83252227,Logistics,
-Welsh Airport,30.2424334,-92.82569096,Logistics,
-Garan Building,30.40697,-92.203094,Buildings,https://louisianasiteselection.com/led/Property/Detail/9110
-Industrial Drive Rayne,30.234847,-92.305324,Buildings,https://louisianasiteselection.com/led/Property/Detail/11552
-Crowley-Rayne Hwy,30.230735,-92.31301,Buildings,https://louisianasiteselection.com/led/Property/Detail/11554
-The Boulevard,30.2503,-92.271374,Buildings,https://louisianasiteselection.com/led/Property/Detail/11555
-600 N G Ave,30.216326,-92.372978,Buildings,https://louisianasiteselection.com/led/Property/Detail/11556
-"Warehouse-Office on 19.04 Acres near Donaldsonville, La",30.101724,-91.020397,Buildings,https://louisianasiteselection.com/led/Property/Detail/21017
-New Grocery Anchored Retail in Gonzales,30.243566,-90.919816,Buildings,https://louisianasiteselection.com/led/Property/Detail/22567
-8500 Sq Ft Warehouse/Office in Donaldsonville,30.099858,-91.015063,Buildings,https://louisianasiteselection.com/led/Property/Detail/22854
-Columns on the River - Donaldsonville,30.105635,-90.986337,Buildings,https://louisianasiteselection.com/led/Property/Detail/23004
-"Former Louisiana Binding Services, Inc. Building",30.873394,-93.281085,Buildings,https://louisianasiteselection.com/led/Property/Detail/11717
-Westside Office Park,30.848036,-93.303766,Buildings,https://louisianasiteselection.com/led/Property/Detail/14391
-Former Ampacet Warehouse Building,30.869771,-93.282191,Buildings,https://louisianasiteselection.com/led/Property/Detail/22201
-VIVIAN MARINE,32.861438,-93.985915,Buildings,https://louisianasiteselection.com/led/Property/Detail/10230
-HEXION OILFIELD SERVICES - PORT OF CADDO-BOSSIER,32.367244,-93.640866,Buildings,https://louisianasiteselection.com/led/Property/Detail/14417
-Shreveport Business Park - Building C,32.427032,-93.919492,Buildings,https://louisianasiteselection.com/led/Property/Detail/22011
-Shreveport Business Park - Building A,32.427032,-93.919492,Buildings,https://louisianasiteselection.com/led/Property/Detail/22012
-LTRi - Louisiana Tech Research Institute,32.539517,-93.64382,Buildings,https://louisianasiteselection.com/led/Property/Detail/23111
-6339 Opelousas Street,30.239139,-93.114477,Buildings,https://louisianasiteselection.com/led/Property/Detail/14148
-Industrial Storage Services Building,30.210781,-93.341463,Buildings,https://louisianasiteselection.com/led/Property/Detail/21713
-309 N. Huntington Street,30.240038,-93.37771,Buildings,https://louisianasiteselection.com/led/Property/Detail/22000
-Industrial Property on Joe Ledoux Road,30.093684,-93.281567,Buildings,https://louisianasiteselection.com/led/Property/Detail/22414
-LAKE CHARLES INDUSTRIAL FACILITY,30.218664,-93.215688,Buildings,https://louisianasiteselection.com/led/Property/Detail/22682
-Southern Storage Warehouse,30.234188,-93.175691,Buildings,https://louisianasiteselection.com/led/Property/Detail/23153
-Cameron Fisheries Building,29.797926,-93.330544,Buildings,https://louisianasiteselection.com/led/Property/Detail/22411
-Mainstay SuitesSportsmans Lodge for Sale!,29.994231,-93.356624,Buildings,https://louisianasiteselection.com/led/Property/Detail/22540
-Acadian Centre,30.422253,-91.150314,Buildings,https://louisianasiteselection.com/led/Property/Detail/9501
-CitiPlace Centre I,30.422233,-91.128049,Buildings,https://louisianasiteselection.com/led/Property/Detail/9502
-CitiPlace Centre II,30.423772,-91.124768,Buildings,https://louisianasiteselection.com/led/Property/Detail/9503
-CitiPlace Centre III,30.424006,-91.127026,Buildings,https://louisianasiteselection.com/led/Property/Detail/9504
-Corporate Atrium,30.423903,-91.133308,Buildings,https://louisianasiteselection.com/led/Property/Detail/9506
-Sherwood Oaks Office Park,30.413842,-91.052571,Buildings,https://louisianasiteselection.com/led/Property/Detail/9508
-9489 Interline,30.423547,-91.079536,Buildings,https://louisianasiteselection.com/led/Property/Detail/11984
-"6,000 sf Warehouse For Lease Dock High Baton Rouge",30.473096,-91.051146,Buildings,https://louisianasiteselection.com/led/Property/Detail/21170
-12555 Ronaldson Rd,30.560964,-91.180655,Buildings,https://louisianasiteselection.com/led/Property/Detail/21431
-"LSU Innovation Park , Bldg 3000",30.360244,-91.13984,Buildings,https://louisianasiteselection.com/led/Property/Detail/21662
-"LSU Innovation, Bldg 3100",30.358953,-91.141274,Buildings,https://louisianasiteselection.com/led/Property/Detail/21663
-"LSU Innovation, Bldg 3005",30.35991,-91.139345,Buildings,https://louisianasiteselection.com/led/Property/Detail/21664
-Neighborhood Market For Sale,30.462435,-91.042889,Buildings,https://louisianasiteselection.com/led/Property/Detail/22658
-Air Cargo Building 2,30.529743,-91.156482,Buildings,https://louisianasiteselection.com/led/Property/Detail/22660
-Baton Rouge Flex Space with Interstate Visibility,30.431219,-91.047843,Buildings,https://louisianasiteselection.com/led/Property/Detail/23155
-Lake Providence Building #1,32.866399,-91.225682,Buildings,https://louisianasiteselection.com/led/Property/Detail/21556
-Terral Norris Building,32.795404,-91.177783,Buildings,https://louisianasiteselection.com/led/Property/Detail/22227
-Lake Providence Port Commission-H&W Warehouses,32.866057,-91.225714,Buildings,https://louisianasiteselection.com/led/Property/Detail/22229
-"25,000 sf building Epps, La",32.597933,-91.484253,Buildings,https://louisianasiteselection.com/led/Property/Detail/22797
-Chauncey Pitre Barn,30.694551,-92.335917,Buildings,https://louisianasiteselection.com/led/Property/Detail/17290
-"1524 HOSPITAL AVE FRANKLIN, LA",29.804057,-91.498287,Buildings,https://louisianasiteselection.com/led/Property/Detail/22001
-"44,720 sq Franklin Parish Warehouse (3 Available)",32.201882,-91.728999,Buildings,https://louisianasiteselection.com/led/Property/Detail/22748
-"82,000 SF building (Gilbert, La) (62,000 climate controlled)",32.015918,-91.65088,Buildings,https://louisianasiteselection.com/led/Property/Detail/23089
-Business Opportunity,30.029256,-91.853413,Buildings,https://louisianasiteselection.com/led/Property/Detail/12044
-3508 Curtis Lane,29.967895,-91.846715,Buildings,https://louisianasiteselection.com/led/Property/Detail/16378
-615 North Landry Drive,30.02057,-91.82029,Buildings,https://louisianasiteselection.com/led/Property/Detail/17578
-Jeanerette Industrial Building,29.909004,-91.663218,Buildings,https://louisianasiteselection.com/led/Property/Detail/21515
-"400 Edwards Avenue, New Orleans, LA 70123",29.947102,-90.190711,Buildings,https://louisianasiteselection.com/led/Property/Detail/22517
-Ridgewood Main Campus Building,29.976669,-90.172775,Buildings,https://louisianasiteselection.com/led/Property/Detail/22534
-RIdgewood Gym Building,29.976193,-90.172895,Buildings,https://louisianasiteselection.com/led/Property/Detail/22535
-Prime Veterans Blvd Investment Property for Sale,30.007079,-90.236689,Buildings,https://louisianasiteselection.com/led/Property/Detail/22547
-East Jefferson Office Space,29.955905,-90.187555,Buildings,https://louisianasiteselection.com/led/Property/Detail/23085
-Prime Redevelopment and Investment Opportunity on Airline Drive,29.980016,-90.240258,Buildings,https://louisianasiteselection.com/led/Property/Detail/23200
-10-unit Multi-family Property in Bridge City,29.931575,-90.163013,Buildings,https://louisianasiteselection.com/led/Property/Detail/23209
-3939 Houma Blvd Building 4 Suite 216,30.011819,-90.180026,Buildings,https://louisianasiteselection.com/led/Property/Detail/23249
-The Best Full Service Office Rate in Metairie CBD,30.007966,-90.154013,Buildings,https://louisianasiteselection.com/led/Property/Detail/23250
-405 N Causeway and 122 Sierra in Metairie for Sale or Lease,29.977685,-90.155796,Buildings,https://louisianasiteselection.com/led/Property/Detail/23346
-Medical Arts Plaza,30.237863,-92.661828,Buildings,https://louisianasiteselection.com/led/Property/Detail/14573
-625 Hector Connoly Road,30.321904,-92.018131,Buildings,https://louisianasiteselection.com/led/Property/Detail/9248
-1016 SW Evangeline Thruway,30.220714,-92.009761,Buildings,https://louisianasiteselection.com/led/Property/Detail/11447
-1229 NW Evangeline Thruway,30.239238,-92.015409,Buildings,https://louisianasiteselection.com/led/Property/Detail/16477
-Aviation/Aerospace Manufacturing & Final Assembly facility,30.205383,-91.997773,Buildings,https://louisianasiteselection.com/led/Property/Detail/18088
-State of the Art Office/Flex Building and Expansion Acreage,30.126912,-91.939555,Buildings,https://louisianasiteselection.com/led/Property/Detail/21148
-State of the Art Office/Flex Building with 13.49 acres for Expansion,30.126085,-91.938772,Buildings,https://louisianasiteselection.com/led/Property/Detail/21150
-Commercial Building/Office Space for Sale,30.13769,-91.955004,Buildings,https://louisianasiteselection.com/led/Property/Detail/21343
-Regional Distribution Center,30.273444,-92.044597,Buildings,https://louisianasiteselection.com/led/Property/Detail/21961
-Dock-high warehouse for Sale,30.232891,-92.043418,Buildings,https://louisianasiteselection.com/led/Property/Detail/22150
-Industrial Facility 100 South Bernard Road,30.160174,-91.972585,Buildings,https://louisianasiteselection.com/led/Property/Detail/22507
-2nd floor of former Sears Box,30.172679,-92.075197,Buildings,https://louisianasiteselection.com/led/Property/Detail/22556
-Industrial: Warehouse/Distribution,30.257237,-92.026143,Buildings,https://louisianasiteselection.com/led/Property/Detail/22604
-Valley Ranch Industrial Park - Two Buildings,30.131593,-91.938818,Buildings,https://louisianasiteselection.com/led/Property/Detail/22827
-"15,300 SF Office Building",29.571024,-90.372218,Buildings,https://louisianasiteselection.com/led/Property/Detail/11546
-Industrial Cold Storage,29.378637,-90.264312,Buildings,https://louisianasiteselection.com/led/Property/Detail/15168
-"Valentine Paper Mill (43 Acres, 18 Buildings)",29.595266,-90.464245,Buildings,https://louisianasiteselection.com/led/Property/Detail/15170
-South Lafourche Nursing & Rehab Center,29.550159,-90.341473,Buildings,https://louisianasiteselection.com/led/Property/Detail/21801
-Galliano Housing Units,29.408493,-90.29479,Buildings,https://louisianasiteselection.com/led/Property/Detail/21826
-Industrial Complex - Warehouse and Office Space,29.476873,-90.322308,Buildings,https://louisianasiteselection.com/led/Property/Detail/22596
-Ruston Steam Plant,32.528991,-92.612574,Buildings,https://louisianasiteselection.com/led/Property/Detail/11668
-Ruston Industrial Building,32.510063,-92.629219,Buildings,https://louisianasiteselection.com/led/Property/Detail/14289
-Range Ave Retail For Lease  ste D,30.478939,-90.956388,Buildings,https://louisianasiteselection.com/led/Property/Detail/22342
-609 Centerville St. Single Tenant NNN Industrial Investment,30.487419,-90.946059,Buildings,https://louisianasiteselection.com/led/Property/Detail/22526
-28145 Walker South Rd,30.475097,-90.864671,Buildings,https://louisianasiteselection.com/led/Property/Detail/22721
-Retail Suite For Lease,30.450817,-90.959629,Buildings,https://louisianasiteselection.com/led/Property/Detail/22768
-Multi-Family Trailer Park For Sale,30.491517,-90.92612,Buildings,https://louisianasiteselection.com/led/Property/Detail/22786
-Denham Springs Retail for Lease 1F,30.475797,-90.955008,Buildings,https://louisianasiteselection.com/led/Property/Detail/23137
-Denham Springs Retail for Lease 2F,30.475797,-90.955008,Buildings,https://louisianasiteselection.com/led/Property/Detail/23139
-Bastrop Warehouse and Office Space,32.753042,-91.886307,Buildings,https://louisianasiteselection.com/led/Property/Detail/14721
-"13,888 sqft Building & 4 acres Land for Sale in Bastrop, La.",32.731467,-91.923059,Buildings,https://louisianasiteselection.com/led/Property/Detail/22594
-"Propel Park | Premier Class A Industrial Space | Up to 800,000 SF",30.017249,-89.922054,Buildings,https://louisianasiteselection.com/led/Property/Detail/19672
-MIXED-USE PROPERTY ON MAGAZINESTREET,29.921629,-90.120525,Buildings,https://louisianasiteselection.com/led/Property/Detail/23208
-OFFICE/WAREHOUSE IN MIDCITY NEW ORLEANS,29.977092,-90.109391,Buildings,https://louisianasiteselection.com/led/Property/Detail/23342
-New Construction Retail/Office in New Orleans,29.968506,-90.104462,Buildings,https://louisianasiteselection.com/led/Property/Detail/23343
-Modern Historic Office Building Bywater New Orleans,29.962076,-90.04243,Buildings,https://louisianasiteselection.com/led/Property/Detail/23345
-MID-CITY OFFICE/RETAIL BLDG. FOR SALE,29.966964,-90.086684,Buildings,https://louisianasiteselection.com/led/Property/Detail/23347
-TWO CANAL STREET BUILDINGS FOR SALE,29.970296,-90.095154,Buildings,https://louisianasiteselection.com/led/Property/Detail/23349
-Mid-city Commercial/Residential for Sale,29.97018,-90.095451,Buildings,https://louisianasiteselection.com/led/Property/Detail/23350
-ULM Facilities Corp (Prof Pharm),32.525688,-92.072639,Buildings,https://louisianasiteselection.com/led/Property/Detail/13506
-ULM Pharmacy Building,32.532604,-92.097896,Buildings,https://louisianasiteselection.com/led/Property/Detail/13508
-Plug and Play Call Center,32.523711,-92.103198,Buildings,https://louisianasiteselection.com/led/Property/Detail/14555
-"Former Data, Storage & Distribution Center",32.523711,-92.103198,Buildings,https://louisianasiteselection.com/led/Property/Detail/14595
-"43,348 SF Ready Call Center",32.523711,-92.103198,Buildings,https://louisianasiteselection.com/led/Property/Detail/14741
-"250,000sq Warehouse Monroe, LA (Jackson St.)",32.480645,-92.108345,Buildings,https://louisianasiteselection.com/led/Property/Detail/17525
-Clarke Williams Innovation Campus,32.590541,-92.067104,Buildings,https://louisianasiteselection.com/led/Property/Detail/21737
-"17,000 SF Warehouse and Office Space - Sterlington, LA",32.689108,-92.066927,Buildings,https://louisianasiteselection.com/led/Property/Detail/22344
-"Versatile 37,000 SF Facility in Prime North Monroe Location  Ideal for Commercial or Industrial Use",32.536904,-92.103296,Buildings,https://louisianasiteselection.com/led/Property/Detail/22751
-"12,000 sq Building Monroe, La",32.430534,-92.090673,Buildings,https://louisianasiteselection.com/led/Property/Detail/23086
-"West Monroe, La Warehouse (20,000 sq) available",32.503009,-92.173228,Buildings,https://louisianasiteselection.com/led/Property/Detail/23120
-"46,000 SF Warehouse (Monroe, La)",32.512166,-92.050589,Buildings,https://louisianasiteselection.com/led/Property/Detail/23453
-"Industrial Complex in Belle Chasse, LA",29.834774,-90.000934,Buildings,https://louisianasiteselection.com/led/Property/Detail/22187
-Building 1500 England Airpark,31.327387,-92.529045,Buildings,https://louisianasiteselection.com/led/Property/Detail/10384
-Building 806 England Airpark,31.327269,-92.536728,Buildings,https://louisianasiteselection.com/led/Property/Detail/10386
-Building 1213 England Airpark,31.32864,-92.53428,Buildings,https://louisianasiteselection.com/led/Property/Detail/10747
-Building 2107,31.321087,-92.534736,Buildings,https://louisianasiteselection.com/led/Property/Detail/10808
-Building 2533,31.322904,-92.531761,Buildings,https://louisianasiteselection.com/led/Property/Detail/10810
-Building 3505,31.323638,-92.525952,Buildings,https://louisianasiteselection.com/led/Property/Detail/10811
-Building 2102,31.321042,-92.536992,Buildings,https://louisianasiteselection.com/led/Property/Detail/10875
-Building #2327 England Airpark,31.330225,-92.529522,Buildings,https://louisianasiteselection.com/led/Property/Detail/11850
-Building #1718 England Airpark,31.331852,-92.533995,Buildings,https://louisianasiteselection.com/led/Property/Detail/11851
-England Airpark Hospital Building,31.321187,-92.527464,Buildings,https://louisianasiteselection.com/led/Property/Detail/14682
-Alexandria Bonded Warehouse Service Inc. - Warehouse,31.258784,-92.437436,Buildings,https://louisianasiteselection.com/led/Property/Detail/21837
-"Class A Office Space in Alexandria, LA",31.310409,-92.44295,Buildings,https://louisianasiteselection.com/led/Property/Detail/22666
-2510 & 2426 Broadway,31.289454,-92.440181,Buildings,https://louisianasiteselection.com/led/Property/Detail/22708
-1501 Wimbledon Blvd,31.276723,-92.476211,Buildings,https://louisianasiteselection.com/led/Property/Detail/22809
-1421 Wimbledon Blvd,31.276832,-92.474516,Buildings,https://louisianasiteselection.com/led/Property/Detail/22855
-"Delhi, La Light Industrial Warehouse (64,572 sf)",32.459114,-91.500011,Buildings,https://louisianasiteselection.com/led/Property/Detail/22724
-"Rayville North Warehouse (56,100 SF)",32.489066,-91.757325,Buildings,https://louisianasiteselection.com/led/Property/Detail/22725
-Chalmette Updated Office/ Warehouse for Lease,29.952199,-89.980414,Buildings,https://louisianasiteselection.com/led/Property/Detail/22549
-New Modern Office Building for Sale,29.952267,-89.980564,Buildings,https://louisianasiteselection.com/led/Property/Detail/22550
-RETAIL CENTER ANDQSR SITE FOR LEASE,29.956456,-89.988629,Buildings,https://louisianasiteselection.com/led/Property/Detail/23351
-James Business Park Five James Park,29.98006,-90.285506,Buildings,https://louisianasiteselection.com/led/Property/Detail/9026
-James Business Park Five James Park,29.980136,-90.285468,Buildings,https://louisianasiteselection.com/led/Property/Detail/9026
-James Business Park St. Charles I,29.984405,-90.285555,Buildings,https://louisianasiteselection.com/led/Property/Detail/9033
-James Business Park St. Charles II,29.981886,-90.281009,Buildings,https://louisianasiteselection.com/led/Property/Detail/9034
-Boutte Warehouse,29.901263,-90.390263,Buildings,https://louisianasiteselection.com/led/Property/Detail/9046
-Plantation Business Campus (Suite 102),29.945121,-90.35996,Buildings,https://louisianasiteselection.com/led/Property/Detail/9049
-Destrehan Flex Space,29.94537,-90.359298,Buildings,https://louisianasiteselection.com/led/Property/Detail/9051
-Village Shopping Center,29.903543,-90.381999,Buildings,https://louisianasiteselection.com/led/Property/Detail/9072
-Winnwood Shopping Center,29.919225,-90.374593,Buildings,https://louisianasiteselection.com/led/Property/Detail/9075
-One American Place,29.94088,-90.383218,Buildings,https://louisianasiteselection.com/led/Property/Detail/9411
-James Business Park Westside I,29.980115,-90.285508,Buildings,https://louisianasiteselection.com/led/Property/Detail/9486
-James Business Park Service Center 23,29.982251,-90.28271,Buildings,https://louisianasiteselection.com/led/Property/Detail/9487
-James Business Park Westside II,29.980781,-90.285258,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
-James Business Park Westside II,29.981227,-90.285519,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
-"150 Teal Street, Suite 180",29.982828,-90.282969,Buildings,https://louisianasiteselection.com/led/Property/Detail/9600
-James Business Park Sealy Business Center I,29.986756,-90.283886,Buildings,https://louisianasiteselection.com/led/Property/Detail/9779
-Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings,https://louisianasiteselection.com/led/Property/Detail/9783
-Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings,https://louisianasiteselection.com/led/Property/Detail/9783
-River Road Norco,29.996771,-90.41276,Buildings,https://louisianasiteselection.com/led/Property/Detail/9788
-Paul Maillard Doctors Office,29.929495,-90.367654,Buildings,https://louisianasiteselection.com/led/Property/Detail/9852
-Ormond Square,29.969572,-90.376759,Buildings,https://louisianasiteselection.com/led/Property/Detail/9943
-River Road Medical Clinic,29.940646,-90.352564,Buildings,https://louisianasiteselection.com/led/Property/Detail/9980
-River Road Hahnville,29.977202,-90.407378,Buildings,https://louisianasiteselection.com/led/Property/Detail/10365
-James Business Park Westside II,29.98131,-90.285483,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
-James Business Park Service Center 21,29.98226,-90.284154,Buildings,https://louisianasiteselection.com/led/Property/Detail/10644
-Village Square Shopping Center,29.928091,-90.368384,Buildings,https://louisianasiteselection.com/led/Property/Detail/10733
-Red Church Center,29.951177,-90.378855,Buildings,https://louisianasiteselection.com/led/Property/Detail/11348
-Ormond Plantation Plaza,29.968984,-90.374185,Buildings,https://louisianasiteselection.com/led/Property/Detail/11349
-River Road Hahnville,29.964584,-90.405482,Buildings,https://louisianasiteselection.com/led/Property/Detail/10365
-James Business Park Sealy Business Center III,29.987577,-90.282631,Buildings,https://louisianasiteselection.com/led/Property/Detail/11401
-Luling Bridge Warehouse,29.941263,-90.385932,Buildings,https://louisianasiteselection.com/led/Property/Detail/11505
-James Business Park,29.982866,-90.284555,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
-James Business Park,29.978904,-90.283884,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
-James Business Park,29.978899,-90.283927,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
-River Road St. Rose,29.97435,-90.280794,Buildings,https://louisianasiteselection.com/led/Property/Detail/11774
-James Business Park Business Center II,29.987642,-90.284201,Buildings,https://louisianasiteselection.com/led/Property/Detail/11775
-James Business Park,29.982617,-90.281077,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
-James Business Park Two James Park,29.981355,-90.283636,Buildings,https://louisianasiteselection.com/led/Property/Detail/11786
-James Business Park Two James Park,29.981335,-90.283636,Buildings,https://louisianasiteselection.com/led/Property/Detail/11786
-James Business Park Two James Park,29.981351,-90.283626,Buildings,https://louisianasiteselection.com/led/Property/Detail/11786
-James Business Park Westside II,29.981278,-90.285479,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
-Longview Drive,29.951125,-90.377984,Buildings,https://louisianasiteselection.com/led/Property/Detail/12045
-Airline Commerce Center,29.978114,-90.28112,Buildings,https://louisianasiteselection.com/led/Property/Detail/14446
-James Business Park,29.984077,-90.284596,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
-Warehouse,29.987458,-90.418403,Buildings,https://louisianasiteselection.com/led/Property/Detail/17401
-"150 Teal Street, Suite 100",29.982828,-90.282969,Buildings,https://louisianasiteselection.com/led/Property/Detail/17560
-Luling Business Park and Enterprise Center,29.935313,-90.388391,Buildings,https://louisianasiteselection.com/led/Property/Detail/19257
-11130 River Road,29.95377,-90.310395,Buildings,https://louisianasiteselection.com/led/Property/Detail/19608
-150 James Dr. East Suite 110,29.981958,-90.281364,Buildings,https://louisianasiteselection.com/led/Property/Detail/19617
-Airline Commerce Center-53K SF,29.977507,-90.282311,Buildings,https://louisianasiteselection.com/led/Property/Detail/19619
-James Business Park Flex Space,29.982319,-90.283107,Buildings,https://louisianasiteselection.com/led/Property/Detail/19622
-James Business Park Flex Space,29.982318,-90.283724,Buildings,https://louisianasiteselection.com/led/Property/Detail/19622
-Hahnville Office Building,29.962049,-90.405582,Buildings,https://louisianasiteselection.com/led/Property/Detail/19638
-Destrehan River Road Storefront,29.940679,-90.352549,Buildings,https://louisianasiteselection.com/led/Property/Detail/19642
-12361 Hwy 90 (former Mimosa Veterinary Hospital),29.91127,-90.352093,Buildings,https://louisianasiteselection.com/led/Property/Detail/19944
-162 Riverbend Business Park-27K SF,29.969583,-90.295846,Buildings,https://louisianasiteselection.com/led/Property/Detail/20958
-One James Business Park,29.980279,-90.283691,Buildings,https://louisianasiteselection.com/led/Property/Detail/21269
-115 Canvasback-James Business Park Flex Space,29.986707,-90.283313,Buildings,https://louisianasiteselection.com/led/Property/Detail/21270
-One American Place Office Luling,29.940703,-90.383664,Buildings,https://louisianasiteselection.com/led/Property/Detail/21319
-Luling Warehouse,29.940041,-90.383974,Buildings,https://louisianasiteselection.com/led/Property/Detail/21325
-Boutte Office/Retail Strip Center,29.903752,-90.378704,Buildings,https://louisianasiteselection.com/led/Property/Detail/21807
-Norco Office,30.005987,-90.410614,Buildings,https://louisianasiteselection.com/led/Property/Detail/22114
-111 Riverbend,29.968183,-90.297408,Buildings,https://louisianasiteselection.com/led/Property/Detail/22584
-Former Pepsi Bottling Plant,30.065522,-90.565861,Buildings,https://louisianasiteselection.com/led/Property/Detail/10794
-"3735 W. Airline Highway | Reserve, Louisiana 70084",30.076146,-90.56034,Buildings,https://louisianasiteselection.com/led/Property/Detail/17532
-Belle Terre Plaza,30.075624,-90.500163,Buildings,https://louisianasiteselection.com/led/Property/Detail/17783
-669 Belle Terre Blvd Office Space,30.092784,-90.505281,Buildings,https://louisianasiteselection.com/led/Property/Detail/22924
-1905 W Airline Hwy. Mixed Use Building,30.073412,-90.503778,Buildings,https://louisianasiteselection.com/led/Property/Detail/22927
-LaPlace Value-Add Shopping Center,30.083835,-90.503196,Buildings,https://louisianasiteselection.com/led/Property/Detail/23013
-Two Building Industrial Property,30.0787,-90.523752,Buildings,https://louisianasiteselection.com/led/Property/Detail/23014
-456 West 5th Street LaPlace,30.069656,-90.496253,Buildings,https://louisianasiteselection.com/led/Property/Detail/23015
-Martco OSB LeMoyen Mill,30.784655,-92.03527,Buildings,https://louisianasiteselection.com/led/Property/Detail/9901
-118 N Main St,30.534431,-92.081099,Buildings,https://louisianasiteselection.com/led/Property/Detail/11344
-ACG Building,30.534672,-92.091162,Buildings,https://louisianasiteselection.com/led/Property/Detail/11722
-Dixie Storage - 4-A,30.540914,-92.02261,Buildings,https://louisianasiteselection.com/led/Property/Detail/17277
-Dixie Storage - 4-B,30.540914,-92.02261,Buildings,https://louisianasiteselection.com/led/Property/Detail/17278
-1703 Rees St,30.287084,-91.909432,Buildings,https://louisianasiteselection.com/led/Property/Detail/10858
-1012 Guidry Rd,30.307225,-91.838334,Buildings,https://louisianasiteselection.com/led/Property/Detail/10859
-Martin Mills/Champion Resources,30.155228,-91.818686,Buildings,https://louisianasiteselection.com/led/Property/Detail/11059
-St. Martinville Retail Box,30.14557,-91.821811,Buildings,https://louisianasiteselection.com/led/Property/Detail/11666
-1320 Petroleum Pkwy,30.075311,-91.934682,Buildings,https://louisianasiteselection.com/led/Property/Detail/11761
-1471 Old Spanish Trail Hwy,30.093015,-91.907859,Buildings,https://louisianasiteselection.com/led/Property/Detail/16375
-1062 Aillet Rd Broussard,30.077324,-91.945967,Buildings,https://louisianasiteselection.com/led/Property/Detail/17579
-1063 Petroleum Parkway,30.081091,-91.925755,Buildings,https://louisianasiteselection.com/led/Property/Detail/19393
-1186 Petroleum Pkwy,30.082745,-91.932274,Buildings,https://louisianasiteselection.com/led/Property/Detail/21051
-St. Mary Plaza,29.681933,-91.271685,Buildings,https://louisianasiteselection.com/led/Property/Detail/11667
-Port of West St. Mary's Baldwin Campus - Building 1,29.826364,-91.539898,Buildings,https://louisianasiteselection.com/led/Property/Detail/17182
-Port of West St. Mary's Baldwin Campus - Building 2,29.826364,-91.539898,Buildings,https://louisianasiteselection.com/led/Property/Detail/17184
-Port of West St. Marys Baldwin Campus - Building 3,29.826364,-91.539898,Buildings,https://louisianasiteselection.com/led/Property/Detail/17185
-"9,600 sq ft Industrial site",30.503144,-90.195496,Buildings,https://louisianasiteselection.com/led/Property/Detail/11694
-"HWY 25 COVINGTON, LA",null,null,Buildings,https://louisianasiteselection.com/led/Property/Detail/21575
-"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.285018,-89.738139,Buildings,https://louisianasiteselection.com/led/Property/Detail/22144
-400 Garrett Road,30.251212,-89.763429,Buildings,https://louisianasiteselection.com/led/Property/Detail/22214
-"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.284995,-89.738165,Buildings,https://louisianasiteselection.com/led/Property/Detail/22144
-"2nd Floor, Suite 200",30.432984,-90.087077,Buildings,https://louisianasiteselection.com/led/Property/Detail/22611
-"3rd Floor, Suite 300",30.432984,-90.087077,Buildings,https://louisianasiteselection.com/led/Property/Detail/22624
-Retail Suite For Lease 1600 W Causeway Suites 4 & 5,30.391901,-90.101886,Buildings,https://louisianasiteselection.com/led/Property/Detail/22638
-Krentel Road Corporate Office and Warehouse,30.35553,-89.92004,Buildings,https://louisianasiteselection.com/led/Property/Detail/23028
-Prime Hwy 1085 Industrial,30.466395,-90.193825,Buildings,https://louisianasiteselection.com/led/Property/Detail/23029
-Colony Square,30.481521,-90.465374,Buildings,https://louisianasiteselection.com/led/Property/Detail/9884
-I-12 Event Center,30.480674,-90.443558,Buildings,https://louisianasiteselection.com/led/Property/Detail/21891
-I-12 Event Center Parcel B,30.480386,-90.443098,Buildings,https://louisianasiteselection.com/led/Property/Detail/22047
-I-12 Event Center Parcel C,30.480548,-90.441092,Buildings,https://louisianasiteselection.com/led/Property/Detail/22049
-"210 Hewitt Rd. Hammond, LA",30.490368,-90.459121,Buildings,https://louisianasiteselection.com/led/Property/Detail/22108
-1517 W Thomas St.,30.500432,-90.477506,Buildings,https://louisianasiteselection.com/led/Property/Detail/22124
-Spacious Showroom & Warehouse,30.510214,-90.431257,Buildings,https://louisianasiteselection.com/led/Property/Detail/22394
-Alack Building For Sale or Lease,30.507536,-90.436009,Buildings,https://louisianasiteselection.com/led/Property/Detail/22471
-"Warehouse with cold storage, loading docks, office space: Old Covington Hwy, Hammond, LA",30.493292,-90.424087,Buildings,https://louisianasiteselection.com/led/Property/Detail/22561
-Downtown Hammond Commercial Building 408 W  Thomas St.,30.503336,-90.465237,Buildings,https://louisianasiteselection.com/led/Property/Detail/23172
-"10,000 SF Building Tensas Parish",32.069817,-91.254476,Buildings,https://louisianasiteselection.com/led/Property/Detail/23003
-"5,487 SF Office Building off Hwy 311 in Houma",29.595592,-90.754969,Buildings,https://louisianasiteselection.com/led/Property/Detail/22033
-Bright Speed Admin building,32.899344,-92.244138,Buildings,https://louisianasiteselection.com/led/Property/Detail/23288
-Tiffany Plaza,29.975346,-92.103909,Buildings,https://louisianasiteselection.com/led/Property/Detail/11669
-Spec Building #3 (Trane) off Hwy 371,32.954839,-93.458389,Buildings,https://louisianasiteselection.com/led/Property/Detail/9528
-Former GP Mill - T&P Property,32.968362,-93.459447,Buildings,https://louisianasiteselection.com/led/Property/Detail/9775
-Lot #17 - North Webster Parish Ind. Park Subd.,32.956113,-93.46098,Buildings,https://louisianasiteselection.com/led/Property/Detail/14611
-Patrick Property,32.909988,-91.363606,Buildings,https://louisianasiteselection.com/led/Property/Detail/11525
-Epps Industrial Park,32.597887,-91.482674,Buildings,https://louisianasiteselection.com/led/Property/Detail/21548
-"150,000 SF building Oak Grove (40,000 concrete slab on back)",32.86441,-91.391607,Buildings,https://louisianasiteselection.com/led/Property/Detail/22795
-"40,000 sq building Oak Grove, La",32.832762,-91.395753,Buildings,https://louisianasiteselection.com/led/Property/Detail/22796
-Prosperity St Building,30.771594,-91.382424,Buildings,https://louisianasiteselection.com/led/Property/Detail/10065
-Crowley Parish Seat,30.2111,-92.3744,Government,
-Oberlin Parish Seat,30.6206,-92.855,Government,
-Donaldsonville Parish Seat,30.1106,-90.9936,Government,
-Napoleonville Parish Seat,29.9377,-91.0232,Government,
-Marksville Parish Seat,31.1275,-92.0669,Government,
-DeRidder Parish Seat,30.8464,-93.2891,Government,
-Arcadia Parish Seat,32.5519,-92.9222,Government,
-Benton Parish Seat,32.6934,-93.678,Government,
-Shreveport Parish Seat,32.5149,-93.7479,Government,
-Lake Charles Parish Seat,30.2241,-93.2174,Government,
-Columbia Parish Seat,32.1036,-92.0781,Government,
-Cameron Parish Seat,29.7971,-93.3255,Government,
-Harrisonburg Parish Seat,31.7709,-91.8153,Government,
-Homer Parish Seat,32.7913,-93.0556,Government,
-Vidalia Parish Seat,31.567,-91.4297,Government,
-Mansfield Parish Seat,32.0375,-93.7028,Government,
-Baton Rouge Parish Seat,30.4507,-91.1882,Government,
-Lake Providence Parish Seat,32.8055,-91.1736,Government,
-Clinton Parish Seat,30.8664,-91.0169,Government,
-Ville Platte Parish Seat,30.6891,-92.2781,Government,
-Winnsboro Parish Seat,32.1634,-91.7206,Government,
-Colfax Parish Seat,31.517,-92.7111,Government,
-New Iberia Parish Seat,30.0035,-91.8187,Government,
-Plaquemine Parish Seat,30.2891,-91.2344,Government,
-Jonesboro Parish Seat,32.2386,-92.7153,Government,
-Gretna Parish Seat,29.9147,-90.0554,Government,
-Jennings Parish Seat,30.2226,-92.6562,Government,
-Lafayette Parish Seat,30.2241,-92.0198,Government,
-Thibodaux Parish Seat,29.7958,-90.8231,Government,
-Jena Parish Seat,31.6883,-92.1286,Government,
-Ruston Parish Seat,32.5232,-92.6379,Government,
-Livingston Parish Seat,30.5019,-90.7483,Government,
-Tallulah Parish Seat,32.4089,-91.1869,Government,
-Bastrop Parish Seat,32.7761,-91.8825,Government,
-Natchitoches Parish Seat,31.7607,-93.0863,Government,
-New Orleans Parish Seat,29.9511,-90.0715,Government,
-Monroe Parish Seat,32.5093,-92.1193,Government,
-Pointe a la Hache Parish Seat,29.5804,-89.7915,Government,
-New Roads Parish Seat,30.6953,-91.4411,Government,
-Alexandria Parish Seat,31.3113,-92.4451,Government,
-Coushatta Parish Seat,32.0107,-93.3389,Government,
-Rayville Parish Seat,32.4764,-91.7583,Government,
-Many Parish Seat,31.5071,-93.4841,Government,
-Chalmette Parish Seat,29.9427,-89.9634,Government,
-Hahnville Parish Seat,29.9669,-90.4109,Government,
-Greensburg Parish Seat,30.8291,-90.6732,Government,
-Convent Parish Seat,30.0161,-90.8267,Government,
-Edgard Parish Seat,30.0436,-90.5539,Government,
-Opelousas Parish Seat,30.5344,-92.0811,Government,
-St. Martinville Parish Seat,30.1241,-91.7303,Government,
-Franklin Parish Seat,29.7911,-91.5032,Government,
-Covington Parish Seat,30.4755,-90.1009,Government,
-Amite Parish Seat,30.7277,-90.5126,Government,
-St. Joseph Parish Seat,31.9161,-91.2336,Government,
-Houma Parish Seat,29.5958,-90.7195,Government,
-Farmerville Parish Seat,32.7741,-92.4036,Government,
-Abbeville Parish Seat,29.9744,-92.1342,Government,
-Leesville Parish Seat,31.1435,-93.2618,Government,
-Franklinton Parish Seat,30.8475,-90.1481,Government,
-Minden Parish Seat,32.6154,-93.2857,Government,
-Port Allen Parish Seat,30.4531,-91.2098,Government,
-Oak Grove Parish Seat,32.8614,-91.3897,Government,
-St. Francisville Parish Seat,30.7335,-91.3855,Government,
-Winnfield Parish Seat,31.9255,-92.6417,Government,
-Sheriff??s HQ - East Baton Rouge,30.4141,-91.1342,Government,
-Shreveport City Hall,32.5121,-93.7542,Government,
-Lafayette City Hall,30.2281,-92.0142,Government,
-Monroe City Hall,32.5021,-92.1142,Government,
-Lake Charles City Hall,30.2121,-93.2242,Government,
-Alexandria City Hall,31.3121,-92.4442,Government,
-Bossier City Municipal Complex,32.5121,-93.7142,Government,
-Houma Municipal Center,29.5921,-90.7242,Government,
-New Iberia City Hall,30.0021,-91.8142,Government,
-Slidell City Council,30.2721,-89.7842,Government,
-Ruston Municipal Building,32.5241,-92.6342,Government,
-Sulphur City Hall,30.2321,-93.3442,Government,
-Hammond City Council,30.5041,-90.4642,Government,
-Opelousas City Hall,30.5341,-92.0842,Government,
-Morgan City Municipal Auditorium,29.7021,-91.2042,Government,
-West Monroe City Hall,32.5121,-92.1742,Government,
-Bastrop City Hall,32.7721,-91.9042,Government,
-Thibodaux City Hall,29.7921,-90.8242,Government,
-Minden City Hall,32.6121,-93.2842,Government,
-Jennings City Hall,30.2221,-92.6542,Government,
-DeRidder City Hall,30.8421,-93.2842,Government,
-Abbeville City Hall,29.9721,-92.1342,Government,
-Natchitoches City Hall,31.7621,-93.0842,Government,
-Covington City Hall,30.4721,-90.1042,Government,
-Mandeville City Hall,30.3621,-90.0642,Government,
-Bogalusa City Hall,30.7721,-89.8542,Government,
-Eunice City Hall,30.4921,-92.4142,Government,
-Crowley City Hall,30.2121,-92.3742,Government,
+Abbeville General Hospital,29.97212957,-92.10692112,Rural Healthcare Facility,
+Abbeville General Hospital Clinic,29.97479014,-92.10899854,Rural Healthcare Facility,
+Acadia St. Landry Hospital,30.39486917,-92.21162542,Rural Healthcare Facility,
+Acadian Medical Center,30.49517688,-92.38590193,Rural Healthcare Facility,
+Acadian Physician Specialties,30.49519073,-92.3854586,Rural Healthcare Facility,
+Acadiana Family Practice Associates LLP,29.80593295,-91.50007888,Rural Healthcare Facility,
+Acadiana Pediatrics & Family Medicine,30.24276662,-92.25503852,Rural Healthcare Facility,
+Acadiana Practitioners Gastro Clinic,30.53150783,-92.08192986,Rural Healthcare Facility,
+Acadiana Practitioners LLC,30.55441198,-91.95828012,Rural Healthcare Facility,
+Acadiana Practitioners Opelousas,30.54374591,-92.07682554,Rural Healthcare Facility,
+Acadiana Practitioners Specialty Clinic,30.54341401,-92.07497109,Rural Healthcare Facility,
+Acadiana Practitioners Sunset,30.41184144,-92.05760126,Rural Healthcare Facility,
+Acadiana Rehabilitation Hospital,,,Rural Healthcare Facility,
+ACCESS HEALTH LOUISIANA,30.96620217,-92.58535099,Rural Healthcare Facility,
+Accord Rehabilitation Hospital,30.26254483,-91.24566384,Rural Healthcare Facility,
+Alexandria Emergency Hospital,,,Rural Healthcare Facility,
+Allegiance Medical Clinic of Dequincy,30.45174386,-93.44317707,Rural Healthcare Facility,
+Allegiance Medical Clinic of Ruston,32.51558673,-92.63307363,Rural Healthcare Facility,
+Allen Parish Community Healthcare Reeves Rural Hea,,,Rural Healthcare Facility,
+Allen Parish Hospital,30.49157653,-92.85171691,Rural Healthcare Facility,
+Allen Parish Hospital Rural Health Clinic,30.49157653,-92.85171691,Rural Healthcare Facility,
+Amite Rural Health Clinic,30.73104397,-90.50908166,Rural Healthcare Facility,
+"Apollo Behavioral Health Hospital, LLC",30.42835827,-91.07850433,Rural Healthcare Facility,
+Arnaudville Family Clinic,30.39729559,-91.93172511,Rural Healthcare Facility,
+Assumption Community Hospital,29.95769887,-91.0346081,Rural Healthcare Facility,
+Assumption Primary Care,29.95769887,-91.0346081,Rural Healthcare Facility,
+Avala,30.40706214,-90.08312658,Rural Healthcare Facility,
+Avoyelles Hospital,31.14301883,-92.06435172,Rural Healthcare Facility,
+Avoyelles Hospital Rural Health Clinic,31.14269547,-92.06427792,Rural Healthcare Facility,
+Avoyelles Pediatrics,31.11925216,-92.0690446,Rural Healthcare Facility,
+AVOYELLES PUBLIC CHARTER SBHC,31.07932762,-92.05290006,Rural Healthcare Facility,
+BALL ELEMENTARY SCHOOL BASED CLINIC,31.41708015,-92.40522998,Rural Healthcare Facility,
+Barousse Family Clinic LLC,30.40267769,-92.21858606,Rural Healthcare Facility,
+Basile Family Healthcare,,,Rural Healthcare Facility,
+Basile Rural Health Clinic,30.48667199,-92.59441051,Rural Healthcare Facility,
+Bastrop Outpatient Rural Health Clinic,32.77589335,-91.91907159,Rural Healthcare Facility,
+Baton Rouge General Medical Center,30.39572714,-91.10299573,Rural Healthcare Facility,
+Baton Rouge Rehab Hospital,30.41028836,-91.09601835,Rural Healthcare Facility,
+Baton Rouge Specialty Hospital,30.39700503,-91.10208133,Rural Healthcare Facility,
+Bayou Bend Health System,29.80124632,-91.52614389,Rural Healthcare Facility,
+Beacon Behavioral Hospital,30.04663413,-90.69967213,Rural Healthcare Facility,
+Beacon Behavioral Hospital- Central,,,Rural Healthcare Facility,
+Beacon Behavioral Hospital- New Orleans,30.0723059,-89.94798429,Rural Healthcare Facility,
+"Beacon Behavioral Hospital- Northshore, Inc.",30.35719914,-89.91716769,Rural Healthcare Facility,
+Beauregard Family Medical Center,30.84285287,-93.28916909,Rural Healthcare Facility,
+Beauregard Internal Medicine Center,30.83955311,-93.29157988,Rural Healthcare Facility,
+Beauregard Medical and Surgical Center,30.84460501,-93.28653933,Rural Healthcare Facility,
+Beauregard Memorial Hospital,30.84188421,-93.28901275,Rural Healthcare Facility,
+Beauregard Women''''''''s Health Center,30.84286298,-93.28779988,Rural Healthcare Facility,
+Benton Medical,,,Rural Healthcare Facility,
+Bethesda Rehabilitation Hospital,30.51387971,-91.11677175,Rural Healthcare Facility,
+Bienville Family Clinic,32.55403659,-92.91404934,Rural Healthcare Facility,
+Bienville Medical Center,32.55403659,-92.91404934,Rural Healthcare Facility,
+Blanchard Medical,32.60478644,-93.84918314,Rural Healthcare Facility,
+Bogalusa Family Medicine & Behavioral Health,30.78045259,-89.86826425,Rural Healthcare Facility,
+Bogalusa Pediatric Clinic,30.78007043,-89.87016434,Rural Healthcare Facility,
+Bogalusa Rehabilitation Hospital,30.77138354,-89.85326962,Rural Healthcare Facility,
+Brentwood Hospital,32.50260106,-93.73907882,Rural Healthcare Facility,
+BridgePoint Continuing Care Hospital,,,Rural Healthcare Facility,
+BUCKEYE ELEMENTARY SCHOOL BASED CLINIC,31.36759604,-92.19201029,Rural Healthcare Facility,
+Bunkie General Hospital,30.95367907,-92.17808978,Rural Healthcare Facility,
+Bunkie General Hospital Family Care Clinic,30.95600396,-92.17732222,Rural Healthcare Facility,
+Bunkie General Hospital Rural Health Clinic,30.9543899,-92.18638516,Rural Healthcare Facility,
+Butler Abshire Medical Clinic,32.95123276,-93.12420006,Rural Healthcare Facility,
+Byrd Medical Clinic,31.14037143,-93.26496401,Rural Healthcare Facility,
+Byrd Regional Hospital,31.13741474,-93.26888429,Rural Healthcare Facility,
+Byrd Walk In Clinic,30.85212464,-93.28912273,Rural Healthcare Facility,
+Caldwell Memorial Hospital,32.10371216,-92.07647586,Rural Healthcare Facility,
+Carlock Clinic,31.14298212,-93.2759879,Rural Healthcare Facility,
+Carlock Family Medical Clinic,31.20288056,-92.73432168,Rural Healthcare Facility,
+CAROLINE DORMAN JR HIGH SBC,,,Rural Healthcare Facility,
+CARTER C. RAYMOND ELEMENTARY SCHOOL BASED CLINIC,31.08918239,-92.40391366,Rural Healthcare Facility,
+CASSE COMMUNITY HEALTH INSTITUTE,32.03766584,-93.70594677,Rural Healthcare Facility,
+Central Louisiana State Hospital,,,Rural Healthcare Facility,
+Chadha Medical Clinic,30.45188786,-93.43732209,Rural Healthcare Facility,
+Chatham Medical Clinic,32.3068052,-92.4530691,Rural Healthcare Facility,
+Chatham Rural Health Clinic,32.30730354,-92.44927855,Rural Healthcare Facility,
+Chaudhry Clinic,,,Rural Healthcare Facility,
+Chenevert Family Care Clinic,,,Rural Healthcare Facility,
+Children''s International Medical Group,,,Rural Healthcare Facility,
+Childrens International Medical Group,30.50097544,-90.48111699,Rural Healthcare Facility,
+Childrens International Medical Group,30.71856738,-90.51050488,Rural Healthcare Facility,
+Childrens International Medical Group,30.79058622,-89.86966021,Rural Healthcare Facility,
+Christus Central Louisiana Surgical Hospital,31.30569303,-92.45543215,Rural Healthcare Facility,
+CHRISTUS Community Health Clinic,31.27398481,-92.72659013,Rural Healthcare Facility,
+Christus Coushatta Health Care Center,32.02192251,-93.3434955,Rural Healthcare Facility,
+CHRISTUS Coushatta Ringgold Rural Health Clinic,32.32680029,-93.27506615,Rural Healthcare Facility,
+CHRISTUS Coushatta Rural Health Clinic,32.02196327,-93.34346651,Rural Healthcare Facility,
+Christus Ochsner Lake Area Hospital,30.18152634,-93.24938242,Rural Healthcare Facility,
+Christus Ochsner St. Patrick Hospital,30.21563484,-93.22748431,Rural Healthcare Facility,
+Christus Shreveport-Bossier Health System,32.42630858,-93.71853278,Rural Healthcare Facility,
+Christus St. Frances Cabrini Hospital,31.28206473,-92.46121445,Rural Healthcare Facility,
+Church Point Medical Clinic by AMC,30.39707202,-92.20988211,Rural Healthcare Facility,
+Citizens Medical Center,32.07956949,-92.09444079,Rural Healthcare Facility,
+Citizens Rural Clinic,,,Rural Healthcare Facility,
+Claiborne Family Medical Clinic,32.8043979,-93.05550252,Rural Healthcare Facility,
+Claiborne Memorial Medical Center,32.79508299,-93.06240235,Rural Healthcare Facility,
+Claude Meeks Medical Group LLC,29.97365699,-92.10658406,Rural Healthcare Facility,
+CLINTON LOWER HEALTH CENTER,30.85815223,-91.02239765,Rural Healthcare Facility,
+CLINTON MIDDLE HEALTH CENTER,30.82948164,-90.99431624,Rural Healthcare Facility,
+COMMUNIHEALTH SERVICES,32.78054551,-91.91320845,Rural Healthcare Facility,
+COMMUNIHEALTH SERVICES DOWNSVILLE CLINIC,32.6265471,-92.4134379,Rural Healthcare Facility,
+"Community Behavioral Healthcare, LLC",30.44836581,-91.14792305,Rural Healthcare Facility,
+Community Care Hospital,29.92565894,-90.09601091,Rural Healthcare Facility,
+Community Family Medical Clinic,30.95396047,-92.18391918,Rural Healthcare Facility,
+Community Medical Clinic,,,Rural Healthcare Facility,
+Compass Behavioral Center of Alexandria,31.23986217,-92.48962658,Rural Healthcare Facility,
+"Compass Behavioral Center of Houma, Inc",29.6657446,-90.77220757,Rural Healthcare Facility,
+Compass Behavioral Center of Lafayette,30.15523626,-91.99110271,Rural Healthcare Facility,
+Compass Senior Care,30.24026745,-92.66142802,Rural Healthcare Facility,
+Compass Senior Care Hospital,30.24026745,-92.66142802,Rural Healthcare Facility,
+Cornerstone Childrens Clinic,30.50912284,-90.41512287,Rural Healthcare Facility,
+Cornerstone Post Acute Care of Bossier,32.46344471,-93.66647278,Rural Healthcare Facility,
+Cornerstone Specialty Hospitals Southwest Louisiana,,,Rural Healthcare Facility,
+Cornerstone Specialty Hospitals West Monroe,32.51375902,-92.2039466,Rural Healthcare Facility,
+Cottonport Family Clinic,30.98387473,-92.05195609,Rural Healthcare Facility,
+COUSHATTA TRIBE OF LOUISIANA,30.52392929,-92.72895688,Rural Healthcare Facility,
+Covington - AMG Physical Rehabilitation Hospital,,,Rural Healthcare Facility,
+Covington - AMG Specialty Hospital,30.45761032,-90.1358646,Rural Healthcare Facility,
+Covington Behavioral Health,30.45665931,-90.1375652,Rural Healthcare Facility,
+Covington Trace ER & Hospital,,,Rural Healthcare Facility,
+Crescent City Surgical Centre,,,Rural Healthcare Facility,
+Crowley Cares Family Clinic,30.21551858,-92.37277765,Rural Healthcare Facility,
+Crowley Child & Adolescent Clinic,30.2308674,-92.34547562,Rural Healthcare Facility,
+Crowley Primary Care,30.22556696,-92.36464649,Rural Healthcare Facility,
+Crowville Health Center,32.22887273,-91.6024161,Rural Healthcare Facility,
+Cypress Pointe Surgical Hospital,30.47529059,-90.41417899,Rural Healthcare Facility,
+"D Gregory Bell, MD and Willis-Knighton Medical Center",32.02196327,-93.34346651,Rural Healthcare Facility,
+Darbonne Health Care Clinic,,,Rural Healthcare Facility,
+DCS Family Health Clinic,30.4757736,-90.41234782,Rural Healthcare Facility,
+Delcambre Family Clinic,29.95221096,-91.99175322,Rural Healthcare Facility,
+DELHI COMMUNITY SBHC- MANGHAM,32.313198,-91.78559186,Rural Healthcare Facility,
+Delhi Rural Health Clinic,32.45314862,-91.49297402,Rural Healthcare Facility,
+Delta Med Clinic,31.62953908,-91.82444241,Rural Healthcare Facility,
+DeQuincy Memorial Hospital,30.451885,-93.43692802,Rural Healthcare Facility,
+DeSoto Regional Family Medicine - Logansport,,,Rural Healthcare Facility,
+DeSoto Regional Family Medicine - Mansfield,32.03624072,-93.70917456,Rural Healthcare Facility,
+DeSoto Regional Health System,32.03548705,-93.70902631,Rural Healthcare Facility,
+DESTREHAN HS SBHC,29.9646883,-90.38403897,Rural Healthcare Facility,
+Dr. K's Family Medicine,30.73986824,-89.84879059,Rural Healthcare Facility,
+Dry Prong Family Clinic,,,Rural Healthcare Facility,
+Dupre Medical Clinic,30.69250028,-92.28476439,Rural Healthcare Facility,
+Duson Family Healthcare,30.2358333,-92.18434449,Rural Healthcare Facility,
+East Carroll Medical Clinic,32.8172781,-91.17356449,Rural Healthcare Facility,
+East Carroll Parish Hospital,32.81739964,-91.17359609,Rural Healthcare Facility,
+EAST GRANT COMMUNITY HEALTH CENTER,31.46975081,-92.40642127,Rural Healthcare Facility,
+East Jefferson General Hospital,30.01440225,-90.18157834,Rural Healthcare Facility,
+Eastern Louisiana Mental Health System,30.83332699,-91.20941477,Rural Healthcare Facility,
+Edwards Family Medicine,30.23384246,-92.66334248,Rural Healthcare Facility,
+Elizabeth Family Clinic,,,Rural Healthcare Facility,
+Elizabeth Family Health Clinic,,,Rural Healthcare Facility,
+Elton Rural Health Clinic,,,Rural Healthcare Facility,
+Encompass Health Rehabilitation Hospital of Alexandria,31.31720343,-92.45198981,Rural Healthcare Facility,
+Encompass Health Rehabilitation Hospital of Shreveport,32.42537112,-93.71033847,Rural Healthcare Facility,
+Erath Delcambre Community Care Clinic,,,Rural Healthcare Facility,
+Evangeline Family Healthcare,30.6808702,-92.26517947,Rural Healthcare Facility,
+Family Care Clinic,32.31110514,-91.7844561,Rural Healthcare Facility,
+Family Health Care and Wellness Center,30.51121999,-90.42555993,Rural Healthcare Facility,
+FAMILY HEALTH CARE CLINIC INC,30.77929512,-89.86722006,Rural Healthcare Facility,
+Family Healthcare of Bedico,30.43806647,-90.26297043,Rural Healthcare Facility,
+"Family Healthcare of Loranger, LLC",,,Rural Healthcare Facility,
+FAMILY MEDICAL CLINIC,32.8177035,-91.1736751,Rural Healthcare Facility,
+FAMILY MEDICAL CLINIC-BEHAVIORAL HEALTH,32.80256399,-91.17184882,Rural Healthcare Facility,
+Family Medicine Associates of Oakdale,30.81706762,-92.64477118,Rural Healthcare Facility,
+Family Medicine Clinic,31.09287072,-92.05845948,Rural Healthcare Facility,
+Fast Pace Heatlh,30.27957237,-91.90001618,Rural Healthcare Facility,
+Feliciana Forensic Facility,30.83332699,-91.20941477,Rural Healthcare Facility,
+FERRIDAY FAMILY HEALTH CENTER,,,Rural Healthcare Facility,
+FERRIDAY HEALTH WEST,31.65177879,-91.55953468,Rural Healthcare Facility,
+Fleur-De-Lis Family Healthcare of Cankton,30.34202905,-92.10901409,Rural Healthcare Facility,
+Fleur-De-Lis Rural Health Clinic,30.39676805,-92.21340523,Rural Healthcare Facility,
+FMOL Health,,,Rural Healthcare Facility,
+Fontenot Internal Medicine Clinic,30.68205626,-92.26535391,Rural Healthcare Facility,
+FOREST HILL JR HIGH SCHOOL BASED CLINIC,31.03777519,-92.53266574,Rural Healthcare Facility,
+Franklin Medical Center,32.1596573,-91.70534875,Rural Healthcare Facility,
+Franklin Medical Center RHC - St. Joseph,31.92045931,-91.23119129,Rural Healthcare Facility,
+Franklin Medical Center RHC Winnsboro,32.15966298,-91.70534921,Rural Healthcare Facility,
+Franklin Medical Center RHC-Tensas,32.07408433,-91.23592512,Rural Healthcare Facility,
+Freedom Behavioral Hospital of Ferriday,31.64586284,-91.55432664,Rural Healthcare Facility,
+Freedom Behavioral Hospital of Leesville,31.13748638,-93.27039627,Rural Healthcare Facility,
+Freedom Behavioral Hospital of Monroe,32.57834175,-92.06860506,Rural Healthcare Facility,
+Gardiner Center Health Clinic,30.02752493,-92.50928691,Rural Healthcare Facility,
+GBC Behavioral Health,32.51470313,-92.11448556,Rural Healthcare Facility,
+Genesis Behavioral Hospital,30.29447348,-91.90605342,Rural Healthcare Facility,
+Gilbert Health Center,32.04674555,-91.65685986,Rural Healthcare Facility,
+Glenwood Regional Medical center,32.51335998,-92.15537225,Rural Healthcare Facility,
+GRANT JR & HIGH SBHC,31.55951994,-92.52396384,Rural Healthcare Facility,
+Greene Family Clinic at Krotz Springs,30.53752458,-91.75178028,Rural Healthcare Facility,
+Greensburg Walk-In Clinic,30.83404574,-90.67832721,Rural Healthcare Facility,
+Hackberry Rural Health Clinic,29.9891979,-93.36744174,Rural Healthcare Facility,
+HAHNVILLE HIGH SBHC,29.89066626,-90.40801697,Rural Healthcare Facility,
+Hardtner Family Clinic,,,Rural Healthcare Facility,
+Hardtner Medical Center,31.85881515,-92.2752112,Rural Healthcare Facility,
+Hardtner Medical Clinic,31.85940158,-92.27585116,Rural Healthcare Facility,
+Harmon Medical Clinic,30.5195684,-92.07687497,Rural Healthcare Facility,
+HARRY S. TRUMAN SCHOOL SBHC,29.86142425,-90.10604741,Rural Healthcare Facility,
+HAYDEN R LAWRENCE UPPER ESBC,31.36749767,-92.1917599,Rural Healthcare Facility,
+Health Care First Medical Clinic LLC,30.41119826,-91.43475373,Rural Healthcare Facility,
+Healthy Steps Pediatric,31.32239747,-92.38040784,Rural Healthcare Facility,
+Heinen Medical Eunice,30.49540886,-92.39175181,Rural Healthcare Facility,
+Heinen Medical Kinder,30.48614943,-92.85022373,Rural Healthcare Facility,
+Heinen Medical Ville Platte,30.69329097,-92.28153194,Rural Healthcare Facility,
+Hessmer Family Care Center,31.05086293,-92.12362845,Rural Healthcare Facility,
+Homer Medical Clinic,32.81337004,-93.05560632,Rural Healthcare Facility,
+Hood Memorial Hospital,30.73347246,-90.51998226,Rural Healthcare Facility,
+Hood Memorial Hospital,30.73347246,-90.51998226,Rural Healthcare Facility,
+"Hope''s Children and Family Care Clinic, LLC",31.1199357,-92.06772439,Rural Healthcare Facility,
+Houma-AMG Specialty Hospital,29.59322229,-90.71221281,Rural Healthcare Facility,
+"Husam Sukerek, M.D.",31.5613507,-93.47160748,Rural Healthcare Facility,
+IBERIA COMPREHENSIVE COMMUNITY HEALTH CENTER,29.97268574,-92.12660778,Rural Healthcare Facility,
+"IBERIA COMPREHENSIVE COMMUNITY HEALTH CENTER, INC",29.98796583,-91.80997466,Rural Healthcare Facility,
+IBERIA COMPREHENSIVE VISON CENTER,30.00811555,-91.79639114,Rural Healthcare Facility,
+Iberia Medical Center,29.98860079,-91.78466109,Rural Healthcare Facility,
+Iberia Rehabilitation Hospital,29.99086141,-91.80600725,Rural Healthcare Facility,
+Independence Family Clinic,30.63663586,-90.50084855,Rural Healthcare Facility,
+Intensive Specialty Hospital,32.4935369,-93.74456521,Rural Healthcare Facility,
+Iota Family Healthcare,30.32926681,-92.49168428,Rural Healthcare Facility,
+Iowa Health Center of Lake Charles Memorial Hospital,30.24602091,-93.01226779,Rural Healthcare Facility,
+JACKSON COMPLEX HEALTH CENTER,,,Rural Healthcare Facility,
+Jackson Parish Hospital,32.25246949,-92.7155907,Rural Healthcare Facility,
+Jackson Parish Hospital Family Care Clinic,32.25390213,-92.72094039,Rural Healthcare Facility,
+Jeanerette Rural Health Clinic,29.91512275,-91.66588172,Rural Healthcare Facility,
+JENA HIGH SBHC,31.69179529,-92.12930976,Rural Healthcare Facility,
+JENA JR HIGH SBHC,31.69446469,-92.12975468,Rural Healthcare Facility,
+Jennings Family Healthcare,30.23897463,-92.661289,Rural Healthcare Facility,
+Johnson Bayou Rural Health Clinic,29.76217398,-93.67780148,Rural Healthcare Facility,
+Jonesboro Family Care Clinic,32.25405748,-92.72094131,Rural Healthcare Facility,
+Jonesville Family Healthcare,31.6210686,-91.84405793,Rural Healthcare Facility,
+"Kentwood Family Clinic, LLC",,,Rural Healthcare Facility,
+Kidcare Jonesville,31.62714927,-91.8420675,Rural Healthcare Facility,
+Kids Clinic of Crowley,30.2308674,-92.34547562,Rural Healthcare Facility,
+La Bonne Vie Family Healthcare,30.68715773,-92.27144761,Rural Healthcare Facility,
+Lady of the Sea General Hospital,29.45695249,-90.31008139,Rural Healthcare Facility,
+Lady of the Sea Medical Clinic - Cut Off,29.45741079,-90.30882936,Rural Healthcare Facility,
+Lady of the Sea Medical Clinic-LaRose,,,Rural Healthcare Facility,
+Lafayette -AMG Specialty Hospital,30.14854531,-92.03770765,Rural Healthcare Facility,
+Lafayette Surgical Specialty Hospital,30.17711165,-92.02751541,Rural Healthcare Facility,
+Lafayette-AMG Physical Rehabilitation Hospital,30.17354484,-92.02348856,Rural Healthcare Facility,
+Lake Charles Memorial Hospital,30.20343102,-93.19729006,Rural Healthcare Facility,
+Lake Providence Medical Clinic,,,Rural Healthcare Facility,
+LAKEVIEW HIGH SBHC,31.9260734,-93.08602545,Rural Healthcare Facility,
+Lallie Kemp Medical Center,30.62096278,-90.49670014,Rural Healthcare Facility,
+Lallie Kemp Medical Center,30.62096278,-90.49670014,Rural Healthcare Facility,
+Lane Regional Medical Center,,,Rural Healthcare Facility,
+LaSalle Family Medicine Clinic,31.69513594,-92.15822303,Rural Healthcare Facility,
+LaSalle General Hospital,31.69471754,-92.15813047,Rural Healthcare Facility,
+Lecompte Family Care Center,31.08649165,-92.40289477,Rural Healthcare Facility,
+"Leesville Rehabilitation Hospital, L.L.C.",31.13618407,-93.26577571,Rural Healthcare Facility,
+Leonard J. Chabert Medical Center,29.57264325,-90.69863708,Rural Healthcare Facility,
+"Leonard P Neumann, Jr. MD APMCA-Rural Health Clinic",32.40458934,-91.18584418,Rural Healthcare Facility,
+Lily Pad Pediatrics LLC,,,Rural Healthcare Facility,
+LIVONIA COMMUNITY HEALTH CENTER,30.55709425,-91.55824298,Rural Healthcare Facility,
+Longleaf Hospital,31.2916177,-92.50394653,Rural Healthcare Facility,
+Louisiana Behavioral Health,32.40329346,-93.76336695,Rural Healthcare Facility,
+Louisiana Extended Care Hospital of Lafayette,30.19850442,-92.07531285,Rural Healthcare Facility,
+Louisiana Extended Care Hospital of Natchitoches,31.75346297,-93.07916424,Rural Healthcare Facility,
+Louisiana Family Practice,30.48684828,-92.43357674,Rural Healthcare Facility,
+"Louisiana Quick Care, LLC",31.3895194,-92.2320289,Rural Healthcare Facility,
+Lubbos Medical Plaza,31.13748193,-93.26264717,Rural Healthcare Facility,
+LULING ELEMENTARY SCHOOL SBHC,29.92299419,-90.36638991,Rural Healthcare Facility,
+Madison Parish Hospital,32.40368043,-91.18539414,Rural Healthcare Facility,
+Madison Parish Hospital Rural Health Clinic,32.40368043,-91.18539414,Rural Healthcare Facility,
+Magnolia Therapeutics,30.6945652,-92.29217867,Rural Healthcare Facility,
+Mamou Family Care,30.64100422,-92.41831853,Rural Healthcare Facility,
+Mamou OB GYN & Family Health Center,30.64335344,-92.41735362,Rural Healthcare Facility,
+Manning Family Childrens,29.91769495,-90.12703002,Rural Healthcare Facility,
+Mansura Family Clinic,31.05715048,-92.05182589,Rural Healthcare Facility,
+Many Express Care,31.56688064,-93.48435292,Rural Healthcare Facility,
+Marksville Family Clinic,31.12698469,-92.07357478,Rural Healthcare Facility,
+MARTHAVILLE ELEMENTARY SBHC,31.739721,-93.401652,Rural Healthcare Facility,
+Maurice Community Care Clinic,30.10261688,-92.1233375,Rural Healthcare Facility,
+Mer Rouge Outpatient Rural Health Clinic,32.77620337,-91.79385191,Rural Healthcare Facility,
+Mercy Behavioral Hospital,,,Rural Healthcare Facility,
+MERCY MEDICAL HEALTH CENTER OF ARCADIA,32.5594134,-92.9136623,Rural Healthcare Facility,
+Mercy Regional Family Healthcare,30.68165086,-92.2653455,Rural Healthcare Facility,
+Mercy Regional Medical Center,30.68487796,-92.26596486,Rural Healthcare Facility,
+Mercy Rural Health Clinic,30.68618342,-92.26375981,Rural Healthcare Facility,
+Michael Brooks Family Clinic,32.52309218,-92.63101988,Rural Healthcare Facility,
+Minden Family Care Center,32.62163906,-93.26156732,Rural Healthcare Facility,
+Minden Medical Center,32.61726298,-93.28560373,Rural Healthcare Facility,
+Minden Medical Clinic of Haughton,,,Rural Healthcare Facility,
+Minden Primary Care,32.62414485,-93.25472396,Rural Healthcare Facility,
+Monroe Surgical Hospital,32.53673818,-92.10225667,Rural Healthcare Facility,
+Montgomery Family Clinic,,,Rural Healthcare Facility,
+Moreauville Family Care Center,31.04590347,-91.9837866,Rural Healthcare Facility,
+MOREHOUSE COMMUNITY MEDICAL CENTERS INC,32.77336262,-91.91784826,Rural Healthcare Facility,
+Morehouse Family Medicine Rural Health Clinic,32.77503971,-91.91569143,Rural Healthcare Facility,
+Morehouse General Hospital,32.77522776,-91.91708908,Rural Healthcare Facility,
+Morehouse General Hospital Rural Health Clinic,32.77478436,-91.91818497,Rural Healthcare Facility,
+NATCHITOCHES CENTRAL HIGH SBHC,31.74441531,-93.11035997,Rural Healthcare Facility,
+Natchitoches Regional Medical Center,31.75346297,-93.07916424,Rural Healthcare Facility,
+NCMC Medical and Surgical Clinic,32.8639134,-93.98798285,Rural Healthcare Facility,
+NCMC Plain Dealing Medical Center,32.90704026,-93.70169445,Rural Healthcare Facility,
+New Orleans East Hospital,30.03111321,-89.97196039,Rural Healthcare Facility,
+Newman Family Clinic,,,Rural Healthcare Facility,
+North Caddo Medical Center,32.8639134,-93.98798285,Rural Healthcare Facility,
+NORTH IBERVILLE SCHOOL BASED HEALTH CENTER,30.45503414,-91.46666263,Rural Healthcare Facility,
+North Natchitoches Medical Clinic,31.89149524,-93.11166924,Rural Healthcare Facility,
+"North Oaks Medical Center, LLC",,,Rural Healthcare Facility,
+North Oaks OB/GYN Rural Health Clinic,30.46465399,-90.45844399,Rural Healthcare Facility,
+"North Oaks Rehabilitation Hospital, LLC",30.48404679,-90.48277509,Rural Healthcare Facility,
+North Shore Rehabilitation Hospital,30.35724612,-89.91713726,Rural Healthcare Facility,
+North Webster Medical Clinic,32.95554426,-93.45627889,Rural Healthcare Facility,
+Northeast Louisiana Health Center,32.4619763,-91.74791122,Rural Healthcare Facility,
+Northern Louisiana Medical Center,32.51556703,-92.63314604,Rural Healthcare Facility,
+Northlake Behavioral Health System,30.34849518,-90.01705585,Rural Healthcare Facility,
+Oak Grove Medical Clinic,32.8610752,-91.38076121,Rural Healthcare Facility,
+OAK HILL HIGH SCHOOL BASED CLINIC,31.14671862,-92.7369304,Rural Healthcare Facility,
+Oakdale Childrens Clinic,30.81848469,-92.65123982,Rural Healthcare Facility,
+Oakdale Community Hospital,30.8168042,-92.64451472,Rural Healthcare Facility,
+Oakdale Express Care,30.84371997,-92.6501241,Rural Healthcare Facility,
+Oasis Point Rehabilitation Hospital,,,Rural Healthcare Facility,
+Oberlin Express Care,30.62031324,-92.76541493,Rural Healthcare Facility,
+Oberlin Family Care,30.62056122,-92.77112175,Rural Healthcare Facility,
+Oceans Behavioral Hospital of Alexandria,,,Rural Healthcare Facility,
+Oceans Behavioral Hospital of Baton Rouge,30.51883905,-91.15572762,Rural Healthcare Facility,
+Oceans Behavioral Hospital of DeRidder,30.8418806,-93.31047399,Rural Healthcare Facility,
+Oceans Behavioral Hospital of Greater New Orleans,,,Rural Healthcare Facility,
+Oceans Behavioral Hospital of Hammond,30.47390529,-90.45958757,Rural Healthcare Facility,
+Oceans Behavioral Hospital of Lake Charles,30.17622394,-93.22269684,Rural Healthcare Facility,
+Oceans Behavioral Hospital of Opelousas,30.50859624,-92.07311757,Rural Healthcare Facility,
+Oceans Hospital of Broussard,30.13845773,-91.98144786,Rural Healthcare Facility,
+Ochsner Abrom Kaplan Memorial Hospital,30.00742968,-92.29654685,Rural Healthcare Facility,
+Ochsner Acadia General Hospital,30.22767952,-92.36252874,Rural Healthcare Facility,
+Ochsner American Legion Hospital,,,Rural Healthcare Facility,
+Ochsner Extended Care Hospital,29.96278651,-90.15352768,Rural Healthcare Facility,
+Ochsner Health Center-Eunice,,,Rural Healthcare Facility,
+Ochsner Health Center-Jennings,30.23384246,-92.66334248,Rural Healthcare Facility,
+Ochsner Health Center-Lake Arthur,30.07983909,-92.67761054,Rural Healthcare Facility,
+Ochsner Health Center-N. State St.,30.22741663,-92.65688232,Rural Healthcare Facility,
+Ochsner Lafayette General Medical Center,30.20267912,-92.01842918,Rural Healthcare Facility,
+Ochsner LSU Health Monroe,32.45188239,-92.10572856,Rural Healthcare Facility,
+Ochsner LSU Health Shreveport,32.48166796,-93.76164481,Rural Healthcare Facility,
+Ochsner LSU Health Shreveport -St. Mary Medical Center,32.49595932,-93.74731648,Rural Healthcare Facility,
+Ochsner Medical Center,29.96258472,-90.14451353,Rural Healthcare Facility,
+Ochsner Medical Center- Baton Rouge,30.44274768,-91.00083879,Rural Healthcare Facility,
+Ochsner Medical Center- Kenner LLC,30.02362488,-90.278141,Rural Healthcare Facility,
+Ochsner Rehabilitation Hospital,29.96278651,-90.15352768,Rural Healthcare Facility,
+Ochsner St. Anne General Hospital,29.70322435,-90.56394861,Rural Healthcare Facility,
+Ochsner St. Martin Hospital,30.28206626,-91.89011769,Rural Healthcare Facility,
+Ochsner St. Martin Hospital Community Health Clinic,30.28165924,-91.8905638,Rural Healthcare Facility,
+Ochsner St. Mary,29.70656652,-91.20140862,Rural Healthcare Facility,
+Ochsner University Hospital and Clinics,30.21905094,-92.04096163,Rural Healthcare Facility,
+Omega Hospital LLC,29.99849195,-90.15952456,Rural Healthcare Facility,
+Opelousas General Health System,30.54350008,-92.07553392,Rural Healthcare Facility,
+OPEN HEALTH CARE CLINIC,30.49051525,-92.42327237,Rural Healthcare Facility,
+Ortego Family Medicine Allergy & Asthma,30.49986881,-92.08773029,Rural Healthcare Facility,
+"Our Lady of Lourdes Regional Medical Center, Inc.",30.15012635,-92.04049738,Rural Healthcare Facility,
+Our Lady of the Angels Hospital,30.77868844,-89.86842633,Rural Healthcare Facility,
+Our Lady of the Lake Assumption Hospital,29.95769887,-91.0346081,Rural Healthcare Facility,
+Our Lady of the Lake Physician Group New Roads,30.68500788,-91.4623404,Rural Healthcare Facility,
+Our Lady of the Lake Physician Group-Riverside,30.255051,-90.7682945,Rural Healthcare Facility,
+Our Lady of the Lake Surgical Hospital,30.27402412,-89.75457101,Rural Healthcare Facility,
+OUTPATIENT BEHAVIORAL SERVICES,31.64829713,-91.55349347,Rural Healthcare Facility,
+Oxbow Family Practice,30.69391729,-91.43049586,Rural Healthcare Facility,
+Palmetto Family Clinic,30.71748256,-91.90520457,Rural Healthcare Facility,
+PAM Health Specialty Hospital of New Orleans,29.97427816,-90.09611979,Rural Healthcare Facility,
+PAM Health Specialty Hospital of Shreveport,32.48166796,-93.76164481,Rural Healthcare Facility,
+PAM Specialty Hospital of Covington,30.45017393,-90.06809387,Rural Healthcare Facility,
+PAM Specialty Hospital of Hammond,30.47377449,-90.45711352,Rural Healthcare Facility,
+PAM Specialty Hospital of Lafayette,30.17995785,-92.0105721,Rural Healthcare Facility,
+PARADISE ELEMENTARY SBC,31.38994895,-92.40815148,Rural Healthcare Facility,
+Park Place Surgical Hospital,30.14854531,-92.03770765,Rural Healthcare Facility,
+Pathway Rehabilitation Hospital of Bossier,32.46344471,-93.66647278,Rural Healthcare Facility,
+Patterson Total Care Clinic,29.69312806,-91.30218225,Rural Healthcare Facility,
+Pediatric & Adolescent Clinic,31.57251197,-91.44945363,Rural Healthcare Facility,
+Pediatric Group of Acadiana & Church Point Clinic,30.40906554,-92.20583783,Rural Healthcare Facility,
+Pediatric Group of Acadiana & Family Clinic,,,Rural Healthcare Facility,
+Pediatrics Primary Care Clinic,31.04224478,-92.53182852,Rural Healthcare Facility,
+"Pelican Pediatrics, LLC",32.79922687,-93.05549552,Rural Healthcare Facility,
+Perimeter Behavioral Hospital of New Orleans,30.02827503,-90.26919561,Rural Healthcare Facility,
+Physicians Behavioral Hospital,32.47270609,-93.77075588,Rural Healthcare Facility,
+Physicians Medical Center,29.60017864,-90.75038705,Rural Healthcare Facility,
+Pine Prairie Community Clinic LLC,30.78281055,-92.42437602,Rural Healthcare Facility,
+Pine Prairie Family Healthcare,,,Rural Healthcare Facility,
+PLAINVIEW HIGH SCHOOL BASED CLINIC,30.94056302,-92.76554125,Rural Healthcare Facility,
+Pointe Coupee General Hospital,30.68333942,-91.45998062,Rural Healthcare Facility,
+POLLOCK ELEMENTARY SBHC,31.52454513,-92.41299007,Rural Healthcare Facility,
+Premier Pediatrics of Avoyelles,31.13231103,-92.08082678,Rural Healthcare Facility,
+Prevost Memorial Hospital,30.08940057,-91.00343546,Rural Healthcare Facility,
+PROVENCAL ELEMENTARY SBHC,,,Rural Healthcare Facility,
+Quickcare of Ruston,32.5470389,-92.61426243,Rural Healthcare Facility,
+Rapides Regional Medical Center,31.31486492,-92.4501485,Rural Healthcare Facility,
+"Raymond F. Schneider Memorial Clinic, LLC",30.05817179,-91.71674324,Rural Healthcare Facility,
+Rayne Family Healthcare,30.24423316,-92.26965285,Rural Healthcare Facility,
+Rayville Family Clinic,32.46204701,-91.75969764,Rural Healthcare Facility,
+ReCenter,30.39224506,-91.03725718,Rural Healthcare Facility,
+"Red River Behavioral Center, LLC",32.54687105,-93.70904112,Rural Healthcare Facility,
+Reddy Family Medical Clinic - Pierre Part,29.95829792,-91.21282195,Rural Healthcare Facility,
+Reddy Family Medical Clinic - Plaquemine,30.27179798,-91.24008379,Rural Healthcare Facility,
+Reddy Family Medical Clinic- Donaldsonville,30.10496603,-90.98785266,Rural Healthcare Facility,
+Reddy Family Medical Clinic- White Castle,30.1612988,-91.14976393,Rural Healthcare Facility,
+Reddy Family Medical of Napoleonville,29.94142065,-91.02729853,Rural Healthcare Facility,
+Reeves Memorial Medical Center,32.82433561,-92.65728251,Rural Healthcare Facility,
+Reeves Memorial Medical Center - RHC,,,Rural Healthcare Facility,
+Regions Behavioral Hospital,30.44499322,-91.09711315,Rural Healthcare Facility,
+Rehabilitation Hospital of Jennings,30.24026745,-92.66142802,Rural Healthcare Facility,
+Richardson Medical Center,32.46199325,-91.74791122,Rural Healthcare Facility,
+Richland Parish Hospital-Delhi,32.45369711,-91.49399376,Rural Healthcare Facility,
+"Rise Community Hospital, LLC",30.31755827,-90.9786923,Rural Healthcare Facility,
+River Oaks Hospital,29.96230811,-90.20339988,Rural Healthcare Facility,
+River Place Behavioral Health,,,Rural Healthcare Facility,
+Riverbridge Specialty Hospital,31.56244254,-91.42372071,Rural Healthcare Facility,
+Riverside Family Care Clinic,30.83314047,-90.15345873,Rural Healthcare Facility,
+"Riverside Hospital of Louisiana, Inc.",31.30070099,-92.48836882,Rural Healthcare Facility,
+Riverside Medical Center,30.83571473,-90.15225299,Rural Healthcare Facility,
+RKM PRIMARY CARE,30.86453661,-91.02143738,Rural Healthcare Facility,
+RKM PRIMARY CARE LORANGER,,,Rural Healthcare Facility,
+Rural Health Clinic of Loreauville,30.05117295,-91.73758387,Rural Healthcare Facility,
+Sabine Medical Center,31.56091827,-93.47132776,Rural Healthcare Facility,
+Sabine Urgent Care of Many,31.55868976,-93.47261094,Rural Healthcare Facility,
+Sage Rehabilitation Hospital,30.40054019,-91.10330694,Rural Healthcare Facility,
+Sage Specialty and Rehabilitation Center of Lafayette,30.17995785,-92.0105721,Rural Healthcare Facility,
+Sage Specialty Hospital,,,Rural Healthcare Facility,
+Savoy Family Care,30.4948346,-92.41631024,Rural Healthcare Facility,
+Savoy Medical Center,30.64111881,-92.41836213,Rural Healthcare Facility,
+Seaside Health System,30.44946381,-91.14484011,Rural Healthcare Facility,
+Serenity Springs Specialty Hospital,32.57604247,-92.60380256,Rural Healthcare Facility,
+Shreveport Rehabilitation Hospital,32.44522811,-93.7259534,Rural Healthcare Facility,
+Simmesport Family Clinic,30.98691143,-91.81362704,Rural Healthcare Facility,
+SLAUGHTER HEALTH CENTER,30.71830925,-91.14801699,Rural Healthcare Facility,
+Slidell Memorial Hospital,30.28468521,-89.7709906,Rural Healthcare Facility,
+SMC Doctors Clinic,,,Rural Healthcare Facility,
+South Bossier Medical,32.45424835,-93.65763226,Rural Healthcare Facility,
+SOUTH GRANT COMMUNITY HEALTH CENTER,31.43826621,-92.48563048,Rural Healthcare Facility,
+South Ouachita Clinic,32.45815036,-92.11561494,Rural Healthcare Facility,
+"SouthCare Medical, LLC",29.98584987,-92.13070442,Rural Healthcare Facility,
+SOUTHEAST COMMUNITY HEALTH SYSTEMS,30.87124119,-90.46660892,Rural Healthcare Facility,
+SOUTHEAST COMMUNITY HEALTH SYSTEMS - CHESBROUGH EL,30.84851207,-90.45585639,Rural Healthcare Facility,
+SOUTHEAST COMMUNITY HEALTH SYSTEMS - JEWEL SUMNER,30.87015878,-90.47219307,Rural Healthcare Facility,
+SOUTHEAST COMMUNITY HEALTH SYSTEMS- KENTWOOD HIGH,,,Rural Healthcare Facility,
+SOUTHEAST COMMUNITY HEALTH SYSTEMS- OW DILLON,30.92620866,-90.52496801,Rural Healthcare Facility,
+Southeast Regional Medical Center,30.93682342,-90.51711336,Rural Healthcare Facility,
+Southern Family Medicine,30.52047839,-92.16818546,Rural Healthcare Facility,
+Southside Family Clinic,29.97369731,-92.10691722,Rural Healthcare Facility,
+Specialists Hospital Shreveport,32.49808949,-93.74611601,Rural Healthcare Facility,
+Specialty Hospital,32.49920191,-92.11447488,Rural Healthcare Facility,
+"Specialty Hospital of Winnfield, Inc.",31.93206956,-92.6321105,Rural Healthcare Facility,
+Specialty Rehabilitation Hospital,32.02927273,-93.3395909,Rural Healthcare Facility,
+Springhill Medical Center,33.01051478,-93.44275066,Rural Healthcare Facility,
+ST GABRIEL HEALTH CLINIC INC,30.25871014,-91.10213761,Rural Healthcare Facility,
+ST JAMES ALTERNATIVE SCHOOL SBHC,30.00175616,-90.75407381,Rural Healthcare Facility,
+ST MARTIN PARISH COMMUNITY HEALTH CENTER,30.11561656,-91.83580561,Rural Healthcare Facility,
+St. Bernard Parish Hospital,29.95575229,-89.98535141,Rural Healthcare Facility,
+St. Charles Parish Hospital,29.92428495,-90.37181245,Rural Healthcare Facility,
+St. Charles Surgical Hospital,29.93740119,-90.07690954,Rural Healthcare Facility,
+St. Francis Cypress Rural Health Clinic,30.78071243,-91.36820465,Rural Healthcare Facility,
+St. Helena Parish Hospital,,,Rural Healthcare Facility,
+St. Helena Parish Hospital,,,Rural Healthcare Facility,
+St. Helena Parish Hospital Rural Health Clinic,,,Rural Healthcare Facility,
+"St. James Behavioral Health Hospital, LLC",,,Rural Healthcare Facility,
+St. James Parish Hospital,30.05236945,-90.70251962,Rural Healthcare Facility,
+St. James Primary Care,30.06025108,-90.70039324,Rural Healthcare Facility,
+St. James Primary Care,30.07272674,-90.51563871,Rural Healthcare Facility,
+St. James West Bank Clinic,29.97280333,-90.71712625,Rural Healthcare Facility,
+St. Joseph Medical Clinic - A Medical Corporation,29.96877453,-90.71560738,Rural Healthcare Facility,
+St. Josephs Medical Clinic of Pointe Coupee,30.68429172,-91.46287667,Rural Healthcare Facility,
+"St. Landry Family Healthcare, LLC",,,Rural Healthcare Facility,
+St. Martinville Maternal-Child and Adult Clinic,30.11392215,-91.83316128,Rural Healthcare Facility,
+St. Tammany Parish Hospital,30.46802924,-90.11454997,Rural Healthcare Facility,
+"Start Community Clinic, LLC",32.48650843,-91.86225889,Rural Healthcare Facility,
+Sterling Surgical Hospital,30.2909106,-89.76927385,Rural Healthcare Facility,
+Sterlington Outpatient Rural Health Clinic,,,Rural Healthcare Facility,
+Sterlington Rehabilitation Hospital,,,Rural Healthcare Facility,
+Stewart Family Medicine & After Hours,30.49181184,-90.74831043,Rural Healthcare Facility,
+Stonebridge Behavioral Hospital,30.20353209,-93.22315574,Rural Healthcare Facility,
+Sunshine Pediatric and Family Clinic LLC,30.28834316,-91.91114903,Rural Healthcare Facility,
+Surgical Specialty Center of Baton Rouge,30.37708466,-91.09922691,Rural Healthcare Facility,
+SWLA CENTER FOR H S - CROWLEY,30.22059091,-92.3624627,Rural Healthcare Facility,
+TECHE ACTION BOARD INC,29.9624451,-90.71274373,Rural Healthcare Facility,
+TECHE ACTION CLINIC,29.7039679,-91.20359365,Rural Healthcare Facility,
+TECHE ACTION CLINIC,29.79841815,-91.50530116,Rural Healthcare Facility,
+TECHE ACTION CLINIC / WEST ST. JOHN ELEMENTARY SCH,30.04621155,-90.56785289,Rural Healthcare Facility,
+TECHE ACTION CLINIC @ EDGARD,30.04448746,-90.55987095,Rural Healthcare Facility,
+TECHE ACTION CLINIC @ GRAMERCY,30.06025108,-90.70039324,Rural Healthcare Facility,
+TECHE ACTION CLINIC @ PIERRE PART,29.95318226,-91.21294971,Rural Healthcare Facility,
+"TENSAS COMMUNITY HEALTH CENTER, INC",,,Rural Healthcare Facility,
+Terrebonne General Medical Center,29.59754865,-90.72070846,Rural Healthcare Facility,
+TEST Hospital,,,Rural Healthcare Facility,
+The Medical Office of Mangham,,,Rural Healthcare Facility,
+"The NeuroMedical Center Rehabilitation Hospital, LLC",30.37900554,-91.09279048,Rural Healthcare Facility,
+The Pediatric Center and Sabine Urgent Care of Leesville,31.13491935,-93.26943363,Rural Healthcare Facility,
+The Pediatric Center of Many,31.55868976,-93.47261094,Rural Healthcare Facility,
+The Spine Hospital of Louisiana,30.38065666,-91.09518333,Rural Healthcare Facility,
+The Women''s Clinic,32.6215877,-93.27253977,Rural Healthcare Facility,
+Thibodaux Medical Clinic,,,Rural Healthcare Facility,
+Thibodaux Regional Medical Center,29.78122344,-90.80745182,Rural Healthcare Facility,
+Thomas Community Health Center,30.96806803,-90.02803084,Rural Healthcare Facility,
+TIOGA HIGH SBHC,31.3829888,-92.42497341,Rural Healthcare Facility,
+Titan Rehabilitation Hospital of Rosepine,30.94135784,-93.28577293,Rural Healthcare Facility,
+Toledo Bend Express Care,31.49443037,-93.65711541,Rural Healthcare Facility,
+Total Family Medical LLC,30.50668135,-90.35176003,Rural Healthcare Facility,
+Touro Infirmary,29.92492307,-90.09260759,Rural Healthcare Facility,
+Trinity Medical,,,Rural Healthcare Facility,
+Trinity Medical Ferriday Clinic,31.65177879,-91.55953468,Rural Healthcare Facility,
+TRINITY MEDICAL VIDALIA CLINIC,31.57129716,-91.44168032,Rural Healthcare Facility,
+Tulane Medical Center,29.9553481,-90.07611422,Rural Healthcare Facility,
+Union General Hospital,32.78645563,-92.39204172,Rural Healthcare Facility,
+Union General Rural Health Clinic,32.78657105,-92.3916232,Rural Healthcare Facility,
+United Medical Healthwest-New Orleans,,,Rural Healthcare Facility,
+University Health Conway,32.45188239,-92.10572856,Rural Healthcare Facility,
+University Hospital & Clinics,30.21905094,-92.04096163,Rural Healthcare Facility,
+University Medical Center New Orleans,29.96081607,-90.08066001,Rural Healthcare Facility,
+Vermilion Behavioral Health Systems,30.27072026,-92.04660663,Rural Healthcare Facility,
+Vidrine Rural Health Clinic,30.69274521,-92.39375652,Rural Healthcare Facility,
+Villa Feliciana Medical Complex,30.83564384,-91.13742806,Rural Healthcare Facility,
+Ville Platte Family Care,30.6991536,-92.28107395,Rural Healthcare Facility,
+"Ville Platte Pediatrics, PA",30.68001619,-92.26517764,Rural Healthcare Facility,
+Vinton Medical Clinic,30.19263863,-93.58333577,Rural Healthcare Facility,
+Waterway Pediatrics,,,Rural Healthcare Facility,
+Wellsmart Health of Opelousas-RHC,30.54341401,-92.07497109,Rural Healthcare Facility,
+West Calcasieu Cameron Hospital,30.23105892,-93.36866872,Rural Healthcare Facility,
+West Carroll Medical Clinic,32.86789046,-91.38314303,Rural Healthcare Facility,
+West Carroll Memorial Hospital,32.86814473,-91.38313597,Rural Healthcare Facility,
+West Feliciana Parish Hospital,30.78071243,-91.36820465,Rural Healthcare Facility,
+West Jefferson Medical Center,,,Rural Healthcare Facility,
+West LA Obstetrics & Gynecology,31.14070974,-93.27114267,Rural Healthcare Facility,
+West Louisiana Family Practice-Deridder,30.85118562,-93.28899384,Rural Healthcare Facility,
+West Louisiana Family Practice-Rosepine,,,Rural Healthcare Facility,
+West Oak Family Clinic,30.72653307,-90.52173483,Rural Healthcare Facility,
+"West Ouachita Family Medicine, L L C",32.51251507,-92.3611838,Rural Healthcare Facility,
+WEST ST. MARY SCHOOL BASED HEALTH CENTER,29.85923019,-91.56800205,Rural Healthcare Facility,
+Willis-Knighton Medical Center,32.48400687,-93.77876177,Rural Healthcare Facility,
+WINN COMMUNITY HEALTH CENTER,31.92490068,-92.64274744,Rural Healthcare Facility,
+WINN COMMUNITY HEALTH CENTER INC,,,Rural Healthcare Facility,
+WINN COMMUNITY HEALTH CENTER INC,31.44707106,-92.527284,Rural Healthcare Facility,
+WINN COMMUNITY HEALTH CENTER INC,31.92403264,-92.6417794,Rural Healthcare Facility,
+Winn Parish Medical Center,31.92491045,-92.64501429,Rural Healthcare Facility,
+Winn Rural Health,31.92465432,-92.64684662,Rural Healthcare Facility,
+Winn Wellness Clinic,31.92491045,-92.64501429,Rural Healthcare Facility,
+Winters Clinic,32.10369105,-92.07649368,Rural Healthcare Facility,
+Wisner Rural Health Clinic,31.98630401,-91.65741982,Rural Healthcare Facility,
+Woman's Hospital,30.38488654,-91.03776762,Rural Healthcare Facility,
+"Women''''s Clinic of Oakdale, LLC",30.81646045,-92.64462597,Rural Healthcare Facility,
+Womens Center for Better Health APMC,30.54487863,-92.07723414,Rural Healthcare Facility,
+You Thrive Family Healthcare Clinic of Ponchatoula,30.42576377,-90.43708026,Rural Healthcare Facility,
+"Zachary Internal Medicine Clinic, LLC",30.72628359,-91.14126976,Rural Healthcare Facility,
+Zachary-AMG Specialty Hospital,30.64664393,-91.13917507,Rural Healthcare Facility,
+Zwolle Express Care,31.65000185,-93.64641235,Rural Healthcare Facility,
+Zwolle Rural Clinic,31.63452078,-93.64330791,Rural Healthcare Facility,
+Freeland Site,30.221473,-92.428995,Certified Site,https://louisianasiteselection.com/led/Property/Detail/5036
+Bratton Family Farms,30.239613,-92.372168,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14279
+Foster Site,30.224329,-92.357853,Certified Site,https://louisianasiteselection.com/led/Property/Detail/17995
+Gateway II Site,30.232427,-91.026885,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4418
+Britco Site,30.21438,-90.886724,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4952
+152 Acres Vacant Land - Geismar,30.171914,-90.993496,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4994
+Foti Highway 3120 N,30.09774,-90.942256,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14040
+Foti Highway 70,30.09203,-90.936329,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14044
+Foti Highway 18,30.102008,-90.946793,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14609
+Rivermark 185 Industrial and Logistics Park,30.220051,-90.993752,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21500
+Magnolia Ridge Logistics Park,30.218358,-90.977833,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22916
+Bunkie Industrial Park - Powered by CLECO,30.946391,-92.198047,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3752
+Avoyelles Parish Port - 195 AC Site,30.955384,-91.813734,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4201
+Beauregard Airport Industrial Site,30.82041,-93.360942,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3837
+Shreveport Airport Aeropark Site,32.447406,-93.817694,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3302
+Shreveport Airport Warehouse District Site,32.447433,-93.839764,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3311
+Ward II Industrial Park,32.838449,-93.959769,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3371
+North Whittington Property,32.383735,-93.652752,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3490
+LA Hwy 1/Leonard Road,32.382592,-93.680447,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4930
+Chennault Site # 8,30.213092,-93.157654,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2666
+Chennault Site #5,30.214274,-93.140913,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2671
+DeQuincy Industrial Park,30.436117,-93.466018,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2706
+Industrial Park East - PLC Tract 175,30.217521,-93.133381,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2915
+Chennault Site 2-2A,30.201128,-93.149099,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3889
+Lake Charles Regional Airport Site #1,30.131054,-93.218275,Certified Site,https://louisianasiteselection.com/led/Property/Detail/5371
+Port of Vinton Lot 11,30.157937,-93.557809,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14356
+West Cal Port,30.064428,-93.352958,Certified Site,https://louisianasiteselection.com/led/Property/Detail/16229
+Calcasieu I-10 Site,30.18882,-93.521273,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22698
+Port of Columbia,32.185943,-92.103926,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2886
+"Whitehall Industrial Site (1,238 Acres / 520 Acres Certified)",31.549822,-91.480108,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21812
+LSU Innovation Park,30.360056,-91.146023,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2739
+Record Industrial Park,30.853803,-91.046354,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4180
+Evangeline Ward One Industrial Park Expansion,30.718266,-92.268723,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3958
+Winnsboro Industrial Park,32.2032,-91.723674,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2885
+Montgomery Industrial Site,31.681275,-92.894583,Certified Site,https://louisianasiteselection.com/led/Property/Detail/16288
+Acadiana Regional Airport Site P-1,30.039133,-91.879696,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4456
+Acadiana Regional Airport Site P-5,30.019047,-91.88395,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4458
+Progress Point,30.005624,-91.878219,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14445
+Iberville Industrial & Technology Park,30.310673,-91.276065,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2736
+Grace Farms East,30.409718,-91.497851,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4385
+Grace Farms West,30.412866,-91.512299,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4396
+Claiborne Site,30.192304,-91.073729,Certified Site,https://louisianasiteselection.com/led/Property/Detail/5230
+Churchill Technology & Business Park (480 total acres/25 Acres Certified),29.885723,-90.182145,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3602
+Bridgeview Park,29.932236,-90.150896,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4270
+T.O. Allen Industrial Park North,30.234561,-92.974279,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4893
+T.O. Allen Industrial Park South,30.225051,-92.960149,Certified Site,https://louisianasiteselection.com/led/Property/Detail/5288
+Benoit LA-26,30.089311,-92.673281,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19473
+Hwy. 395 Site,30.24219,-92.735934,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21727
+Northpark Certified Site,30.269101,-92.039388,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4550
+Girouard Site,30.149218,-91.945881,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14941
+Hero's Point,30.256168,-92.040184,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14942
+Martial Farms,30.123899,-91.936412,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19432
+AC Commercial Site,30.124281,-91.954011,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19441
+South Morgan Site,30.133892,-91.967592,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19900
+Loul's Landing,30.127222,-91.946278,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21084
+Maxie and Vida Girouard Site,30.152158,-91.950839,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21613
+Chemin 1,30.085921,-91.97216,Certified Site,https://louisianasiteselection.com/led/Property/Detail/23644
+Chemin 2,30.085886,-91.968619,Certified Site,https://louisianasiteselection.com/led/Property/Detail/23645
+South Lafourche Airport North,29.440233,-90.271759,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22419
+South Lafourche Airport South,29.428212,-90.271773,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22425
+Olla Industrial Park,31.89267,-92.258607,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3364
+City of Ruston Industrial Park,32.530443,-92.59492,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4741
+I-20 Business & Technology Park Site,32.538084,-92.609999,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4976
+Colyell,30.459772,-90.758259,Certified Site,https://louisianasiteselection.com/led/Property/Detail/5388
+Hornsby,30.506846,-90.825158,Certified Site,https://louisianasiteselection.com/led/Property/Detail/14456
+Natchitoches Parish Port,31.846794,-93.069462,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3363
+Natchitoches Business Park I,31.73057,-93.079163,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4392
+Natchitoches Business Park II,31.728224,-93.0821,Certified Site,https://louisianasiteselection.com/led/Property/Detail/17312
+Highway 478 Development Tract,31.658902,-93.107041,Certified Site,https://louisianasiteselection.com/led/Property/Detail/17842
+NSU North Business Park,31.75362,-93.101286,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21072
+Almonaster Avenue CSX Property,30.004351,-90.001728,Certified Site,https://louisianasiteselection.com/led/Property/Detail/17527
+Charleston Industrial Park,32.424538,-92.08583,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2676
+Millhaven North,32.504717,-91.982373,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3505
+Petty Company North,32.520796,-91.98663,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3701
+Calhoun Technology Park South Site,32.510671,-92.345551,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4437
+Calhoun Technology Park North Site,32.516874,-92.345126,Certified Site,https://louisianasiteselection.com/led/Property/Detail/16397
+Highland Park Mixed-Use Development Site,32.525419,-92.146704,Certified Site,https://louisianasiteselection.com/led/Property/Detail/16806
+Pecanland 144 acre site,32.514771,-91.958608,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22994
+Port of Pointe Coupee Industrial Park,31.000651,-91.717468,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3512
+Kent Site,30.822179,-91.656139,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3764
+Pointe Coupee Power Park,30.664762,-91.34604,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4087
+New Roads Industrial Park,30.700577,-91.469656,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4089
+Angel Ranch Site,30.732995,-91.41561,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4090
+Woodley Site,30.542588,-91.559923,Certified Site,https://louisianasiteselection.com/led/Property/Detail/5227
+England Airpark E1 Heavy Industrial Site,31.342281,-92.528997,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4173
+England Airpark Heavy Industrial Site W1,31.328415,-92.559957,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4293
+England Heavy Industrial E2,31.333126,-92.530268,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4859
+Red River Parish Port Site,31.958514,-93.340533,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21369
+Bee Bayou Site,32.467755,-91.687744,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4184
+Holly Ridge East Site,32.461317,-91.620807,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4532
+Holly Ridge West Site,32.462765,-91.635977,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4533
+Terre Haute Development,30.08214,-90.589328,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19248
+Port Barre Industrial Park - Central Site,30.544259,-91.951384,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4659
+Blue Andrus Property,30.4305,-92.060779,Certified Site,https://louisianasiteselection.com/led/Property/Detail/13274
+Port Barre Industrial Park - East Site,30.54535,-91.943909,Certified Site,https://louisianasiteselection.com/led/Property/Detail/16227
+Daly Farms Site,30.42366,-92.099529,Certified Site,https://louisianasiteselection.com/led/Property/Detail/17716
+Breaux Bridge I-10 Site,30.291586,-91.923334,Certified Site,https://louisianasiteselection.com/led/Property/Detail/21418
+North Schaefer Site,30.078588,-91.925388,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22056
+South Schaefer Site,30.07403,-91.927664,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22060
+Mouton Site,30.098932,-91.936585,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22590
+Williams Memorial Airport Business Park,29.706051,-91.336355,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2839
+The Lakes at Madison Park,30.457102,-90.185954,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3892
+Nor du Lac West,30.455861,-90.152556,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3995
+Fremaux Park - Up to 87 Acres,30.268302,-89.764871,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4007
+Johnny F. Smith Memorial Business Park - Phase II,30.321707,-89.773986,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4101
+TJ Smith Industrial Site,30.338367,-89.807017,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19837
+Lacombe Business Park,30.349477,-89.92934,Certified Site,https://louisianasiteselection.com/led/Property/Detail/22281
+Airport Plaza on Pride Drive - LED Certified Site  20.03 Acres,30.523515,-90.430396,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3708
+Conrad Anderson - LED Certified Site - 40 Acres,30.539364,-90.421199,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3884
+Tower Drive,30.51137,-90.440456,Certified Site,https://louisianasiteselection.com/led/Property/Detail/4051
+I-12 Industrial Site---258 Acre LED Certified Site--Development Ready,30.50114,-90.254228,Certified Site,https://louisianasiteselection.com/led/Property/Detail/16708
+Cross Point North Commercial Park  (13.17 Acres),30.484892,-90.544692,Certified Site,https://louisianasiteselection.com/led/Property/Detail/17003
+Jamestown Business Park,30.507474,-90.404481,Certified Site,https://louisianasiteselection.com/led/Property/Detail/17827
+Cross Point South Commercial Park (18.8 Acres),30.482122,-90.544633,Certified Site,https://louisianasiteselection.com/led/Property/Detail/18094
+Rebecca North Development Park,29.690215,-90.821615,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2815
+Port of Terrebonne - 44 acres,29.564154,-90.697644,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2816
+Rebecca South Development Park,29.678902,-90.825154,Certified Site,https://louisianasiteselection.com/led/Property/Detail/16614
+Bernice Industrial Park,32.839559,-92.653331,Certified Site,https://louisianasiteselection.com/led/Property/Detail/2753
+Deere Park,30.034138,-92.120239,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3931
+Neame Industrial Site,30.977429,-93.282893,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3925
+Franklinton Industrial Park,30.841899,-90.123961,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3362
+NWPID -  Site #1 - 60acres - Certified Site,32.961097,-93.451065,Certified Site,https://louisianasiteselection.com/led/Property/Detail/3355
+Industrial Drive Minden Webster Site,32.589889,-93.276483,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19871
+Kitchco Ryans Way,32.587928,-93.256325,Certified Site,https://louisianasiteselection.com/led/Property/Detail/19885
+South Webster Parish Industrial District,32.559955,-93.294473,Certified Site,https://louisianasiteselection.com/led/Property/Detail/23026
 Harmon South,30.231147,-92.436782,Land,https://louisianasiteselection.com/led/Property/Detail/4319
 Duson Northeast Interchange,30.253855,-92.190605,Land,https://louisianasiteselection.com/led/Property/Detail/4320
 Hwy 13 Frontage,30.299365,-92.394675,Land,https://louisianasiteselection.com/led/Property/Detail/4874
@@ -1238,246 +1393,312 @@ South Webster Parish Industrial District,32.559955,-93.294473,Land,https://louis
 Sun Plus Development,30.426958,-91.230635,Land,https://louisianasiteselection.com/led/Property/Detail/20968
 "320 Acre Site (Epps, La)",32.561664,-91.591734,Land,https://louisianasiteselection.com/led/Property/Detail/23326
 Oliveaux,30.761238,-91.304165,Land,https://louisianasiteselection.com/led/Property/Detail/3838
-Abbeville Main Street,29.974439,-92.135629,Louisiana Main Street,
-Columbia Main Street,32.1065156,-92.0743259,Louisiana Main Street,
-Crowley Main Street,30.2129461,-92.3726504,Louisiana Main Street,
-Denham Springs Main Street,30.485367,-90.9563959,Louisiana Main Street,
-DeRidder Main Street,30.845489,-93.285812,Louisiana Main Street,
-Donaldsonville Downtown Development District,30.1014348,-90.9903616,Louisiana Main Street,
-Eunice Main Street,30.492539,-92.416236,Louisiana Main Street,
-Franklin Main Street,29.7876655,-91.4986851,Louisiana Main Street,
-Hammond Downtown Development District,30.5041867,-90.4613064,Louisiana Main Street,
-Main Street Homer,32.7923416,-93.05459,Louisiana Main Street,
-Houma Main Street,29.598472,-90.716561,Louisiana Main Street,
-Kenner Rivertown Main Street,29.9744867,-90.2472908,Louisiana Main Street,
-Leesville Main Street,31.142449,-93.263843,Louisiana Main Street,
-Lower Ninth Ward Main Street,29.9697958,-90.0228972,Louisiana Main Street,
-Minden Main Street,32.6141612,-93.2872863,Louisiana Main Street,
-Monroe Main Street,32.5055468,-92.1177538,Louisiana Main Street,
-Morgan City Main Street,29.6966689,-91.2110052,Louisiana Main Street,
-Natchitoches Main Street,31.7627594,-93.0859825,Louisiana Main Street,
-New Iberia Main Street,30.002854,-91.8136656,Louisiana Main Street,
-New Roads Main Street,30.693269,-91.4347947,Louisiana Main Street,
-North Rampart Main Street,29.9600612,-90.069026,Louisiana Main Street,
-OC Haley Boulevard Main Street,29.9393475,-90.0803435,Louisiana Main Street,
-Old Algiers Main Street Corporation,29.9492064,-90.0512686,Louisiana Main Street,
-Opelousas Main Street,30.5341436,-92.0816494,Louisiana Main Street,
-Plaquemine Main Street,30.2883186,-91.235093,Louisiana Main Street,
-Ponchatoula Main Street,30.4399302,-90.4422622,Louisiana Main Street,
-Ruston Main Street,32.5320399,-92.6396524,Louisiana Main Street,
-Slidell Main Street,30.2757522,-89.781676,Louisiana Main Street,
-Springhill Main Street,33.0054982,-93.4599386,Louisiana Main Street,
-St. Francisville Main Street,30.7794696,-91.3767496,Louisiana Main Street,
-St. Martinville Main Street,30.1232045,-91.8273135,Louisiana Main Street,
-Thibodaux Main Street,29.7974782,-90.8206375,Louisiana Main Street,
-West Monroe Main Street,32.520653,-92.147747,Louisiana Main Street,
-Winn Main Street,31.9266254,-92.638283,Louisiana Main Street,
-Winnsboro Main Street,32.1633197,-91.7199962,Louisiana Main Street,
-Our Lady of the Lake Regional Medical Center,30.4024,-91.107,Medical,
-Ochsner Medical Center - New Orleans,29.9634,-90.1328,Medical,
-Willis-Knighton Medical Center,32.4862,-93.7845,Medical,
-LSU Health Shreveport,32.4925,-93.7544,Medical,
-Baton Rouge General Medical Center,30.3957,-91.0823,Medical,
-Lafayette General Medical Center,30.2111,-92.025,Medical,
-Rapides Regional Medical Center,31.309,-92.4461,Medical,
-St. Tammany Health System,30.4792,-90.1118,Medical,
-Lake Charles Memorial Hospital,30.1989,-93.212,Medical,
-University Medical Center New Orleans,29.9575,-90.0792,Medical,
-Pennington Biomedical Research,30.3951,-91.1121,Medical,
-Mary Bird Perkins Cancer Center,30.3995,-91.1015,Medical,
-Children's Hospital New Orleans,29.9168,-90.1311,Medical,
-Shriners Children's Shreveport,32.4891,-93.7552,Medical,
-St. Jude Affiliate Clinic (Shreveport),32.492,-93.754,Medical,
-LSU Health New Orleans,29.9548,-90.0795,Medical,
-Tulane Medical Center,29.9565,-90.0754,Medical,
-Our Lady of Lourdes Regional Medical,30.1585,-92.0232,Medical,
-Women's & Children's Hospital,30.1545,-92.0321,Medical,
-Lakeview Regional Medical Center,30.4154,-90.1112,Medical,
-East Jefferson General Hospital,30.0105,-90.1542,Medical,
-West Jefferson Medical Center,29.9048,-90.1065,Medical,
-Slidell Memorial Hospital,30.2764,-89.7712,Medical,
-North Oaks Medical Center,30.5231,-90.4632,Medical,
-Lane Regional Medical Center,30.6675,-91.1542,Medical,
-Terrebonne General Health System,29.5934,-90.7241,Medical,
-Thibodaux Regional Health System,29.7921,-90.8252,Medical,
-CHRISTUS Shreveport-Bossier,32.4385,-93.705,Medical,
-CHRISTUS St. Frances Cabrini,31.3021,-92.4712,Medical,
-Glenwood Regional Medical Center,32.5085,-92.1645,Medical,
-St. Francis Medical Center (Monroe),32.5011,-92.1182,Medical,
-Northern Louisiana Medical Center,32.5392,-92.6285,Medical,
-Pointe Coupee General Hospital,30.6385,-91.4421,Medical,
-Riverland Medical Center,31.5711,-91.5032,Medical,
-Minden Medical Center,32.6181,-93.2845,Medical,
-Jennings American Legion Hospital,30.2185,-92.6582,Medical,
-Abbeville General Hospital,29.9711,-92.1315,Medical,
-Iberia Medical Center,30.0055,-91.8152,Medical,
-Franklin Foundation Hospital,29.7911,-91.5032,Medical,
-Teche Regional Medical Center,29.6991,-91.1985,Medical,
-Leonard J. Chabert Medical Center,29.5632,-90.7103,Medical,
-Lady of the Sea General Hospital,29.3582,-90.2841,Medical,
-South Cameron Memorial Hospital,29.7951,-93.1342,Medical,
-Beauregard Health System,30.8411,-93.2842,Medical,
-Byrd Regional Hospital,31.1421,-93.2632,Medical,
-Sabine Medical Center,31.5742,-93.4851,Medical,
-DeSoto Regional Health System,32.1481,-93.7142,Medical,
-Springhill Medical Center,32.9911,-93.4582,Medical,
-Coushatta Health Care Center,32.0211,-93.3421,Medical,
-Winn Parish Medical Center,31.9211,-92.6321,Medical,
-Jackson Parish Hospital,32.2411,-92.7142,Medical,
-Hardtner Medical Center,31.8411,-92.2842,Medical,
-LaSalle General Hospital,31.6711,-92.1242,Medical,
-Caldwell Memorial Hospital,32.1051,-92.0321,Medical,
-Franklin Medical Center (Winnsboro),32.1642,-91.7142,Medical,
-Richardson Medical Center,32.4211,-91.7642,Medical,
-Madison Parish Hospital,32.3781,-91.1852,Medical,
-East Carroll Parish Hospital,32.8841,-91.1921,Medical,
-West Carroll Health Systems,32.8851,-91.6432,Medical,
-Morehouse General Hospital,32.7781,-91.9051,Medical,
-Union General Hospital,32.8051,-92.4042,Medical,
-Bunkie General Hospital,30.9542,-92.1852,Medical,
-Avoyelles Hospital,31.1211,-92.0632,Medical,
-Savoy Medical Center,30.6321,-92.4042,Medical,
-Opelousas General Health System,30.5342,-92.0811,Medical,
-Mercy Regional Medical Center,30.6881,-92.2742,Medical,
-Acadia General Hospital,30.2142,-92.3782,Medical,
-Our Lady of Angels (Bogalusa),30.7742,-89.8512,Medical,
-Riverside Medical Center (Franklinton),30.8411,-90.1482,Medical,
-Hood Memorial Hospital,30.7081,-90.5052,Medical,
-St. Helena Parish Hospital,30.8242,-90.6742,Medical,
-Innis Community Health Center,30.7321,-91.7042,Medical,
-St. Martin Hospital,30.1242,-91.7342,Medical,
-Overton Brooks VA Medical Center,32.4841,-93.7342,Medical,
-Lallie Kemp Regional Medical Center,30.5942,-90.5042,Medical,
-Ochsner St. Anne Hospital,29.8042,-90.8342,Medical,
-Baton Rouge General - Bluebonnet,30.3851,-91.0942,Medical,
-Hardtner Medical Center (Urania),31.8641,-92.2942,Medical,
-Natchitoches Regional Medical Center,31.7441,-93.0842,Medical,
-West Carroll Memorial Hospital,32.8641,-91.3942,Medical,
-Acadia St Landry Hospital,30.3842,-92.1868,Rural Healthcare Facility,
-Allen Parish Hospital,30.63,-92.8465,Rural Healthcare Facility,
-Oakdale Community Hospital,30.8228,-92.6582,Rural Healthcare Facility,
-Prevost Memorial Hospital,30.1009,-90.9926,Rural Healthcare Facility,
-Assumption Community Hospital,29.9515,-91.0264,Rural Healthcare Facility,
-Avoyelles Hospital,31.119,-92.0537,Rural Healthcare Facility,
-Bunkie General Hospital,30.9575,-92.1856,Rural Healthcare Facility,
-Beauregard Memorial Hospital,30.8436,-93.2882,Rural Healthcare Facility,
-Bienville Medical Center,32.5487,-92.9189,Rural Healthcare Facility,
-North Caddo Memorial Hospital,32.9845,-93.9856,Rural Healthcare Facility,
-DeQuincy Memorial Hospital,30.4485,-93.4382,Rural Healthcare Facility,
-Caldwell Memorial Hospital,32.1065,-92.0734,Rural Healthcare Facility,
-Citizens Medical Center,32.0754,-92.0838,Rural Healthcare Facility,
-Claiborne Memorial Medical Ctr.,32.7937,-93.0519,Rural Healthcare Facility,
-Trinity Medical Center,31.6312,-91.5173,Rural Healthcare Facility,
-DeSoto Regional Health System,32.036,-93.7058,Rural Healthcare Facility,
-East Carroll Parish Hospital,32.8631,-91.1927,Rural Healthcare Facility,
-Mercy Regional Medical Center,30.6865,-92.2687,Rural Healthcare Facility,
-Savoy Medical Center,30.6334,-92.4172,Rural Healthcare Facility,
-Franklin Medical Center,32.1557,-91.7377,Rural Healthcare Facility,
-Jackson Parish Hospital,32.2415,-92.7042,Rural Healthcare Facility,
-Ochsner American Legion Hospital,30.2312,-92.6622,Rural Healthcare Facility,
-Lady of the Sea General Hospital,29.3402,-90.3015,Rural Healthcare Facility,
-Ochsner St. Anne General Hospital,29.6548,-90.6033,Rural Healthcare Facility,
-Hardtner Medical Center,31.9056,-92.2536,Rural Healthcare Facility,
-Lasalle General Hospital,31.6917,-92.1311,Rural Healthcare Facility,
-Northern Louisiana Medical Center,32.5312,-92.6277,Rural Healthcare Facility,
-Madison Parish Hospital,32.3686,-91.1969,Rural Healthcare Facility,
-Morehouse General Hospital,32.7766,-91.9213,Rural Healthcare Facility,
-Natchitoches Regional Medical Center,31.7396,-93.0847,Rural Healthcare Facility,
-Pointe Coupee General Hospital,30.6725,-91.439,Rural Healthcare Facility,
-Christus Coushatta Health Care Center,32.0152,-93.3402,Rural Healthcare Facility,
-Richardson Medical Center,32.4136,-91.7582,Rural Healthcare Facility,
-Richland Parish Hospital,32.4542,-91.4925,Rural Healthcare Facility,
-Sabine Medical Center,31.5034,-93.4727,Rural Healthcare Facility,
-St Bernard Parish Hospital,29.936,-89.9282,Rural Healthcare Facility,
-St Charles Hospital - Luling,29.9234,-90.3623,Rural Healthcare Facility,
-St Helena Parish Hospital,30.8251,-90.6698,Rural Healthcare Facility,
-St James Parish Hospital,30.0456,-90.7027,Rural Healthcare Facility,
-Acadian Medical Center,30.4905,-92.3857,Rural Healthcare Facility,
-Ochsner St Martin Hospital,30.2778,-91.9037,Rural Healthcare Facility,
-Bayou Bend,29.8037,-91.5161,Rural Healthcare Facility,
-Ochsner St Mary,29.7041,-91.2014,Rural Healthcare Facility,
-Hood Memorial Hospital,30.7288,-90.4906,Rural Healthcare Facility,
-Reeves Memorial Medical Center,32.8229,-92.656,Rural Healthcare Facility,
-Union General Hospital,32.777,-92.4042,Rural Healthcare Facility,
-Abbeville General Hospital,29.976,-92.1352,Rural Healthcare Facility,
-Ochsner Abrom Kaplan Memorial Hospital,30.0055,-92.2892,Rural Healthcare Facility,
-Byrd Regional Hospital,31.1441,-93.2687,Rural Healthcare Facility,
-Our Lady of the Angels Hospital,30.785,-89.8596,Rural Healthcare Facility,
-Riverside Medical Center - Franklinton,30.8354,-90.1557,Rural Healthcare Facility,
-Minden Medical Center,32.5936,-93.2847,Rural Healthcare Facility,
-Springhill Medical Center,33.0034,-93.4568,Rural Healthcare Facility,
-West Carroll Memorial Hospital,32.8617,-91.3916,Rural Healthcare Facility,
-West Feliciana Parish Hospital,30.7354,-91.3323,Rural Healthcare Facility,
-Winn Parish Medical Center,31.922,-92.6508,Rural Healthcare Facility,
-Aclara,30.21657334,-93.16452997,Project Announcement,https://www.opportunitylouisiana.gov/news/aclara-invests-277-million-to-build-nations-first-heavy-rare-earth-separation-facility-in-southwest-louisiana
-Ascentek Inc,32.42139923,-93.90004804,Project Announcement,https://www.opportunitylouisiana.gov/news/ascentek-announces-50-million-investment-to-expand-and-enhance-manufacturing-and-distribution-facility-in-shreveport
-Boudreaux's Jewelers,30.40863174,-90.13477924,Project Announcement,https://www.opportunitylouisiana.gov/news/boudreauxs-jewelers-expands-and-modernizes-mandeville-flagship-facility
-CF Industries,30.09421,-90.98222,Project Announcement,https://www.opportunitylouisiana.gov/news/another-louisiana-win-cf-industries-jera-and-mitsui-announce-4-billion-final-investment-decision-to-construct-worlds-largest-ammonia-facility-in-ascension-parish
-Chennault International Airport Authority,30.21657334,-93.16452997,Project Announcement,https://gov.louisiana.gov/news/5002
-ChillCo,30.34981014,-89.9148749,Project Announcement,https://www.opportunitylouisiana.gov/news/chillco-expands-st-tammany-parish-headquarters-adding-jobs-and-increasing-service-capacity
-"DMR Technologies, Inc",30.21430978,-92.00729386,Project Announcement,https://www.opportunitylouisiana.gov/news/dmr-technologies-to-launch-full-scale-u-s-drone-manufacturing-facility-in-lafayette
-Drone Institute,30.21430978,-92.00729386,Project Announcement,https://www.opportunitylouisiana.gov/news/drone-institute-expands-lafayette-headquarters-to-advance-innovation-and-data-technology-creating-nearly-1400-new-job-opportunities/
-ElementUSA,30.07314185,-90.49973687,Project Announcement,https://www.opportunitylouisiana.gov/news/louisiana-secures-elementusas-850-million-investment-decision-advancing-u-s-critical-minerals-supply-chain
-"Epic Piping, LLC",30.4601116,-90.7485198,Project Announcement,https://www.opportunitylouisiana.gov/news/epic-piping-expands-louisiana-operations-to-support-the-states-growing-data-center-and-energy-sectors
-EquipmentShare,30.27666476,-91.10749012,Project Announcement,https://www.opportunitylouisiana.gov/news/icymi-equipmentshare-celebrates-grand-opening-of-new-branch-in-louisiana-part-of-a-statewide-expansion-exceeding-187-million
-ExxonMobil,30.48579761,-91.16929807,Project Announcement,https://www.opportunitylouisiana.gov/news/louisiana-to-play-pivotal-role-in-tech-supply-chain-with-exxonmobil-facility-upgrade
-Global Vessel and Tank,29.9884,-91.8483,Project Announcement,https://www.opportunitylouisiana.gov/news/global-vessel-tank-expands-new-iberia-operations-to-support-louisianas-energy-sector
-Green Fuels Operating,30.21280691,-92.3728684,Project Announcement,https://www.opportunitylouisiana.gov/news/green-fuels-operating-announces-110-million-investment-to-transform-historic-evangeline-processing-facility
-"Haptech, Inc",29.94302115,-90.07136906,Project Announcement,https://www.opportunitylouisiana.gov/news/louisiana-innovative-company-of-the-year-haptech-expands-in-new-orleans
-Hood Container of Louisiana,30.71072561,-91.31388599,Project Announcement,https://www.opportunitylouisiana.gov/news/hood-container-announces-118-9-million-modernization-project-at-historic-paper-mill-in-st-francisville
-Hut8,30.77325751,-91.32857446,Project Announcement,https://www.opportunitylouisiana.gov/news/hut-8-selects-southeast-louisiana-as-site-of-10-billion-artificial-intelligence-data-center
-Hyundai Motor Group,30.22562666,-90.91591147,Project Announcement,https://www.opportunitylouisiana.gov/news/louisiana-wins-again-governor-jeff-landry-led-secure-5-8-billion-hyundai-steel-plant
-John H. Carter Co.,30.238529,-90.920097,Project Announcement,https://www.opportunitylouisiana.gov/news/john-h-carter-co-announces-69-million-center-for-industrial-excellence-in-gonzales
-"Katoen Natie Louisiana, LLC",30.55233853,-91.1962719,Project Announcement,https://www.opportunitylouisiana.gov/news/katoen-natie-baton-rouge-breaks-ground-on-25-million-expansion-project
-Linde,30.44566965,-91.18764284,Project Announcement,https://www.opportunitylouisiana.gov/news/linde-announces-new-investment-to-support-blue-ammonia-plant-at-riverplex-megapark
-LIV Golf,29.9514606,-90.07854326,Project Announcement,https://www.opportunitylouisiana.gov/news/liv-golf-announces-commitment-to-new-orleans-city-park-with-2026-debut
-MindMaze AI,29.59754865,-90.72070846,Project Announcement,https://www.opportunitylouisiana.gov/news/neuro-io-announces-100-million-innovation-campus-in-houma-positioning-louisianas-bayou-region-at-the-forefront-of-ai-development-and-application
-"MMR Constructors, Inc.",30.2210994,-92.02416147,Project Announcement,https://www.opportunitylouisiana.gov/news/mmr-group-expands-louisiana-footprint-with-55-2-million-investment-in-lafayette-to-serve-growing-tech-markets
-Noble Plastics Inc,29.9884,-91.8483,Project Announcement,https://www.opportunitylouisiana.gov/news/noble-plastics-announces-8-5-million-expansion-in-acadiana-to-build-local-supply-chain-for-first-solar
-Orion Engineers and Constructors,30.44566965,-91.18764284,Project Announcement,https://www.opportunitylouisiana.gov/news/orion-engineers-constructors-announces-corporate-headquarters-relocation-to-louisiana
-PALA Group Inc,30.48522701,-90.95636365,Project Announcement,https://www.opportunitylouisiana.gov/news/pala-interstate-announces-1-9-million-investment-in-new-fabrication-equipment-paint-and-blasting-shop-in-livingston-parish
-Pipe & Steel Industrial Fabricators,30.48770833,-90.86520637,Project Announcement,https://www.opportunitylouisiana.gov/news/pipe-and-steel-industrial-fabricators-announces-second-expansion-in-two-years-to-further-strengthen-louisianas-industrial-manufacturing-base
-Plan A Games,29.95243924,-90.07657214,Project Announcement,https://www.opportunitylouisiana.gov/news/plan-a-games-levels-up-in-louisiana-with-new-studio
-"Plastipak Packaging, Inc.",31.32419753,-92.45873776,Project Announcement,https://www.opportunitylouisiana.gov/news/plastipak-packaging-announces-53-8-million-expansion-at-central-louisiana-manufacturing-facility
-Radiance Technologies,32.53153631,-92.6391761,Project Announcement,https://www.opportunitylouisiana.gov/news/radiance-technologies-announces-370-million-microchip-facility-in-north-louisiana-to-bolster-and-secure-national-supply-chains
-Saronic Technologies,29.78945208,-91.49951078,Project Announcement,https://www.opportunitylouisiana.gov/news/saronic-technologies-investing-300-million-to-expand-franklin-shipyard-creating-3200-jobs-in-louisianas-bayou-region
-"SkyWest, Inc",32.45660991,-93.82711923,Project Announcement,https://www.opportunitylouisiana.gov/news/taking-louisiana-to-new-heights-nations-largest-regional-airline-carrier-establishes-maintenance-base-at-shreveport-regional-airport
-SLB,32.51358555,-93.75057504,Project Announcement,https://www.opportunitylouisiana.gov/news/slb-doubles-shreveport-footprint-to-support-global-digital-infrastructure-and-data-center-growth
-South Louisiana Rain Facility,30.22217261,-92.65804799,Project Announcement,https://www.opportunitylouisiana.gov/news/south-louisiana-rail-facility-expands-to-create-new-opportunities-for-louisiana-rice-farmers
-SNT Energy,30.4352,-91.2631,Project Announcement,https://www.opportunitylouisiana.gov/news/snt-selects-louisiana-for-first-u-s-consolidated-manufacturing-facility
-VRC Metal Systems,32.5351,-93.6698,Project Announcement,https://www.opportunitylouisiana.gov/news/vrc-metal-systems-announces-1-56-million-investment-in-cutting-edge-air-force-maintenance-facility
-Woodside Energy,30.22771624,-93.21699684,Project Announcement,https://www.opportunitylouisiana.gov/news/historic-investment-woodside-energy-announces-17-5-billion-final-investment-decision-for-lng-facility-in-southwest-louisiana-becomes-largest-foreign-direct-investment-in-state-history
-Boise Cascade,30.8112145,-92.66240199,Project Announcement,https://www.opportunitylouisiana.gov/news/boise-cascade-announces-75-million-expansion-and-modernization-of-oakdale-wood-products-facility
-Lincoln Foodservice Equip,32.51358555,-93.75057504,Project Announcement,https://www.opportunitylouisiana.gov/news/lincoln-foodservice-equipment-sets-up-national-operations-base-in-shreveport-creating-nearly-100-direct-new-jobs
-Life for Tyres,30.07314185,-90.49973687,Project Announcement,https://www.opportunitylouisiana.gov/news/european-tire-recycling-and-sustainable-commodity-manufacturing-company-announces-46-million-plan-to-build-first-u-s-facility-in-louisiana
-Lake Charles Methanol,30.21303773,-93.24613918,Project Announcement,https://www.opportunitylouisiana.gov/news/lake-charles-methanol-announces-plan-for-new-3-2-billion-manufacturing-plant-in-southwest-louisiana
-UBE C1 Chemicals UCCA,29.91611426,-90.0675498,Project Announcement,https://www.opportunitylouisiana.gov/news/japanese-chemical-company-ube-announces-500-million-investment-to-build-louisiana-facility-to-serve-growing-ev-battery-market
-Agile Food Storage,30.41833342,-90.04236956,Project Announcement,https://www.opportunitylouisiana.gov/news/georgia-based-cold-storage-company-to-build-45-9-million-facility-in-st-tammany-parish-create-100-new-jobs
-Horsburgh & Scott,30.41833342,-90.04236956,Project Announcement,https://www.opportunitylouisiana.gov/news/manufacturer-and-defense-contractor-horsburgh-scott-launches-industrial-gearbox-facility-in-st-tammany-parish
-BPP,30.44566965,-91.18764284,Project Announcement,https://www.opportunitylouisiana.gov/news/baton-rouge-automation-manufacturer-to-expand-headquarters-create-75-direct-new-jobs
-Global Seamless Tubes & Pipes,32.03781058,-93.69547661,Project Announcement,https://www.opportunitylouisiana.gov/news/india-based-pipe-and-tube-manufacturer-selects-northwest-louisiana-for-first-u-s-facility-to-create-135-new-jobs
-RoyOMartin,30.8112145,-92.66240199,Project Announcement,https://www.opportunitylouisiana.gov/news/royomartin-announces-30-million-modernization-of-timber-manufacturing-facility-in-southwest-louisiana
-GOEX Industries,32.52370885,-93.71664819,Project Announcement,https://www.opportunitylouisiana.gov/news/estes-energetics-establishes-new-manufacturing-facility-at-camp-minden-to-supply-components-to-u-s-defense-department
-Benteler,32.51358555,-93.75057504,Project Announcement,https://www.opportunitylouisiana.gov/news/benteler-announces-21-million-expansion-in-northwest-louisiana-to-create-49-direct-new-jobs
-Fibrebond Corporation,32.61415111,-93.28733735,Project Announcement,https://www.opportunitylouisiana.gov/news/louisiana-captures-50-million-investment-in-growing-data-center-sector-as-fibrebond-expands-webster-parish-facility
-S&W Foods,30.50558,-90.45870004,Project Announcement,https://www.opportunitylouisiana.gov/news/sw-foods-announces-21-million-investment-to-expand-hammond-headquarters-retain-more-than-100-tangipahoa-parish-jobs
-"RNGD, LLC",29.91747749,-90.0653023,Project Announcement,https://www.opportunitylouisiana.gov/news/construction-manufacturing-and-fabrication-innovator-rngd-invests-25-million-to-expand-southeast-louisiana-operations-create-130-direct-new-jobs
-"Industrial Fabrics, Inc.",30.702,-91.436,Project Announcement,https://www.opportunitylouisiana.gov/news/industrial-fabrics-invests-8-million-to-build-new-erosion-control-production-facility-in-pointe-coupee-parish
-Birdon America,29.89343614,-90.17926257,Project Announcement,https://www.opportunitylouisiana.gov/news/birdon-america-to-expand-jefferson-parish-marine-engineering-office-create-25-high-paying-new-jobs
-Heirloom Carbon Technologies,32.36304924,-93.64289608,Project Announcement,https://www.opportunitylouisiana.gov/news/heirloom-carbon-technologies-announces-475-million-investment-to-establish-north-americas-second-direct-air-capture-facility-in-louisiana
-Process Service Specialists,30.22771624,-93.21699684,Project Announcement,https://www.opportunitylouisiana.gov/news/process-service-specialists-expands-into-southwest-louisiana-with-new-3-5-million-manufacturing-facility-at-the-port-of-lake-charles
-Premier Concrete Products,30.48522701,-90.95636365,Project Announcement,https://www.opportunitylouisiana.gov/news/livingston-parish-concrete-manufacturer-announces-expansion-to-support-national-infrastructure-projects
-Total Quality Logistics,30.44566965,-91.18764284,Project Announcement,https://www.opportunitylouisiana.gov/news/global-freight-and-logistics-firm-tql-opens-second-louisiana-office-creates-nearly-100-new-jobs
-Southland Industrial Coatings,30.5312,-92.0819,Project Announcement,https://www.opportunitylouisiana.gov/news/new-southland-industrial-coatings-manufacturing-facility-in-acadiana-to-create-nearly-300-new-jobs
-"Ice Industries, Inc",30.22217261,-92.65804799,Project Announcement,https://www.opportunitylouisiana.gov/news/ice-industries-first-manufacturing-facility-in-louisiana-to-supply-american-made-products-to-first-solar-inc-create-70-new-jobs
-MidSouth Extrusion,32.48216375,-92.10920947,Project Announcement,https://www.opportunitylouisiana.gov/news/mid-south-extrusion-announces-17-million-investment-for-continued-growth-at-monroe-facility
-TCI Tank Logistics,29.93703286,-90.06162038,Project Announcement,https://www.opportunitylouisiana.gov/news/tci-tank-logistics-will-add-new-rail-line-to-port-of-new-orleans-create-40-new-jobs
-Woodland Biofuels Inc.,30.07314185,-90.49973687,Project Announcement,https://www.opportunitylouisiana.gov/news/proposed-1-35-billion-investment-in-southeast-louisiana-would-establish-large-scale-renewable-natural-gas-plant-and-green-hydrogen-facility
-Proctor & Gamble,31.32419753,-92.45873776,Project Announcement,https://www.opportunitylouisiana.gov/news/pg-announces-96-million-expansion-of-central-louisiana-fabric-care-product-manufacturing-facility
-Fabricated Steel Products,30.44566965,-91.18764284,Project Announcement,https://www.opportunitylouisiana.gov/news/fabricated-steel-products-acquires-state-of-the-art-technology-for-baton-rouge-facility-expansion
-Southland Steel Fabricators,30.8303,-90.7515,Project Announcement,https://www.opportunitylouisiana.gov/news/southland-steel-fabricators-invests-25-million-for-advanced-technology-and-expansion-at-st-helena-parish-facility
-Laborde Products,30.41833342,-90.04236956,Project Announcement,https://www.opportunitylouisiana.gov/news/laborde-products-invests-5-8-million-to-establish-new-operations-center-at-its-headquarters-in-covington
-Graham Packaging,30.50558,-90.45870004,Project Announcement,https://www.opportunitylouisiana.gov/news/global-packaging-manufacturer-invests-35-million-to-enhance-operations-and-upskill-workforce-at-hammond-facility
-Climeworks,30.6773,-93.3672,Project Announcement,https://www.opportunitylouisiana.gov/news/climeworks-proposes-50-million-investment-to-expand-louisianas-direct-air-capture-hub-into-southwest-louisiana
-Meta,32.5292,-92.291,Project Announcement,https://www.opportunitylouisiana.gov/news/louisiana-earns-deal-of-the-year-award-for-historic-10-billion-meta-ai-data-center-project-in-northeast-louisiana
-Copado,29.95243924,-90.07657214,Project Announcement,https://www.opportunitylouisiana.gov/news/international-ai-focused-tech-company-establishes-innovation-office-in-new-orleans
+Abbeville Main Street,29.974439,-92.135629,Main Street,https://www.louisianamainstreet.org/abbeville-main-street
+Columbia Main Street,32.1065156,-92.0743259,Main Street,https://www.louisianamainstreet.org/columbia-main-street
+Crowley Main Street,30.2129461,-92.3726504,Main Street,https://www.louisianamainstreet.org/crowley-main-street
+Denham Springs Main Street,30.485367,-90.9563959,Main Street,https://www.louisianamainstreet.org/denham-springs-main-street
+DeRidder Main Street,30.845489,-93.285812,Main Street,https://www.louisianamainstreet.org/deridder-main-street
+Donaldsonville Downtown Development District,30.1014348,-90.9903616,Main Street,https://www.louisianamainstreet.org/donaldsonville-downtown-development-district
+Eunice Main Street,30.492539,-92.416236,Main Street,https://www.louisianamainstreet.org/eunice-main-street
+Franklin Main Street,29.7876655,-91.4986851,Main Street,https://www.louisianamainstreet.org/franklin-main-street
+Hammond Downtown Development District,30.5041867,-90.4613064,Main Street,https://www.louisianamainstreet.org/hammond-downtown-development-district
+Main Street Homer,32.7923416,-93.05459,Main Street,https://www.louisianamainstreet.org/main-street-homer
+Houma Main Street,29.598472,-90.716561,Main Street,https://www.louisianamainstreet.org/houma-downtown-development-corporation
+Kenner Rivertown Main Street,29.9744867,-90.2472908,Main Street,https://www.louisianamainstreet.org/kenner-rivertown-main-street
+Leesville Main Street,31.142449,-93.263843,Main Street,https://www.louisianamainstreet.org/leesville-main-street
+Lower Ninth Ward Main Street,29.9697958,-90.0228972,Main Street,https://www.louisianamainstreet.org/lower-ninth-ward-main-street
+Minden Main Street,32.6141612,-93.2872863,Main Street,https://www.louisianamainstreet.org/minden-main-street
+Monroe Main Street,32.5055468,-92.1177538,Main Street,https://www.louisianamainstreet.org/monroe-main-street
+Morgan City Main Street,29.6966689,-91.2110052,Main Street,https://www.louisianamainstreet.org/morgan-city-main-street
+Natchitoches Main Street,31.7627594,-93.0859825,Main Street,https://www.louisianamainstreet.org/natchitoches-main-street
+New Iberia Main Street,30.002854,-91.8136656,Main Street,https://www.louisianamainstreet.org/new-iberia-main-street
+New Roads Main Street,30.693269,-91.4347947,Main Street,https://www.louisianamainstreet.org/new-roads-main-street
+North Rampart Main Street,29.9600612,-90.069026,Main Street,https://www.louisianamainstreet.org/north-rampart-main-street-inc
+OC Haley Boulevard Main Street,29.9393475,-90.0803435,Main Street,https://www.louisianamainstreet.org/
+Old Algiers Main Street Corporation,29.9492064,-90.0512686,Main Street,https://www.louisianamainstreet.org/old-algiers-main-street-corporation
+Opelousas Main Street,30.5341436,-92.0816494,Main Street,https://www.louisianamainstreet.org/opelousas-main-street
+Plaquemine Main Street,30.2883186,-91.235093,Main Street,https://www.plaquemine.org/184/Main-Street-Program
+Ponchatoula Main Street,30.4399302,-90.4422622,Main Street,https://www.louisianamainstreet.org/ponchatoula-main-street
+Ruston Main Street,32.5320399,-92.6396524,Main Street,https://www.louisianamainstreet.org/ruston-main-street
+Slidell Main Street,30.2757522,-89.781676,Main Street,https://www.louisianamainstreet.org/olde-towne-slidell-main-street
+Springhill Main Street,33.0054982,-93.4599386,Main Street,https://springhilllouisiana.gov/springhill-main-street
+St. Francisville Main Street,30.7794696,-91.3767496,Main Street,https://www.louisianamainstreet.org/st-francisville-main-street
+St. Martinville Main Street,30.1232045,-91.8273135,Main Street,https://www.louisianamainstreet.org/st-martinville-main-street
+Thibodaux Main Street,29.7974782,-90.8206375,Main Street,https://www.louisianamainstreet.org/thibodaux-main-street-inc
+West Monroe Main Street,32.520653,-92.147747,Main Street,https://www.louisianamainstreet.org/west-monroe-main-street
+Winn Main Street,31.9266254,-92.638283,Main Street,https://www.louisianamainstreet.org/winn-main-street
+Winnsboro Main Street,32.1633197,-91.7199962,Main Street,https://www.louisianamainstreet.org/winnsboro-main-street
+Garan Building,30.40697,-92.203094,Buildings,https://louisianasiteselection.com/led/Property/Detail/9110
+Industrial Drive Rayne,30.234847,-92.305324,Buildings,https://louisianasiteselection.com/led/Property/Detail/11552
+Crowley-Rayne Hwy,30.230735,-92.31301,Buildings,https://louisianasiteselection.com/led/Property/Detail/11554
+The Boulevard,30.2503,-92.271374,Buildings,https://louisianasiteselection.com/led/Property/Detail/11555
+600 N G Ave,30.216326,-92.372978,Buildings,https://louisianasiteselection.com/led/Property/Detail/11556
+"Warehouse-Office on 19.04 Acres near Donaldsonville, La",30.101724,-91.020397,Buildings,https://louisianasiteselection.com/led/Property/Detail/21017
+New Grocery Anchored Retail in Gonzales,30.243566,-90.919816,Buildings,https://louisianasiteselection.com/led/Property/Detail/22567
+8500 Sq Ft Warehouse/Office in Donaldsonville,30.099858,-91.015063,Buildings,https://louisianasiteselection.com/led/Property/Detail/22854
+Columns on the River - Donaldsonville,30.105635,-90.986337,Buildings,https://louisianasiteselection.com/led/Property/Detail/23004
+"Former Louisiana Binding Services, Inc. Building",30.873394,-93.281085,Buildings,https://louisianasiteselection.com/led/Property/Detail/11717
+Westside Office Park,30.848036,-93.303766,Buildings,https://louisianasiteselection.com/led/Property/Detail/14391
+Former Ampacet Warehouse Building,30.869771,-93.282191,Buildings,https://louisianasiteselection.com/led/Property/Detail/22201
+VIVIAN MARINE,32.861438,-93.985915,Buildings,https://louisianasiteselection.com/led/Property/Detail/10230
+HEXION OILFIELD SERVICES - PORT OF CADDO-BOSSIER,32.367244,-93.640866,Buildings,https://louisianasiteselection.com/led/Property/Detail/14417
+Shreveport Business Park - Building C,32.427032,-93.919492,Buildings,https://louisianasiteselection.com/led/Property/Detail/22011
+Shreveport Business Park - Building A,32.427032,-93.919492,Buildings,https://louisianasiteselection.com/led/Property/Detail/22012
+LTRi - Louisiana Tech Research Institute,32.539517,-93.64382,Buildings,https://louisianasiteselection.com/led/Property/Detail/23111
+6339 Opelousas Street,30.239139,-93.114477,Buildings,https://louisianasiteselection.com/led/Property/Detail/14148
+Industrial Storage Services Building,30.210781,-93.341463,Buildings,https://louisianasiteselection.com/led/Property/Detail/21713
+309 N. Huntington Street,30.240038,-93.37771,Buildings,https://louisianasiteselection.com/led/Property/Detail/22000
+Industrial Property on Joe Ledoux Road,30.093684,-93.281567,Buildings,https://louisianasiteselection.com/led/Property/Detail/22414
+LAKE CHARLES INDUSTRIAL FACILITY,30.218664,-93.215688,Buildings,https://louisianasiteselection.com/led/Property/Detail/22682
+Southern Storage Warehouse,30.234188,-93.175691,Buildings,https://louisianasiteselection.com/led/Property/Detail/23153
+Cameron Fisheries Building,29.797926,-93.330544,Buildings,https://louisianasiteselection.com/led/Property/Detail/22411
+Mainstay SuitesSportsmans Lodge for Sale!,29.994231,-93.356624,Buildings,https://louisianasiteselection.com/led/Property/Detail/22540
+Acadian Centre,30.422253,-91.150314,Buildings,https://louisianasiteselection.com/led/Property/Detail/9501
+CitiPlace Centre I,30.422233,-91.128049,Buildings,https://louisianasiteselection.com/led/Property/Detail/9502
+CitiPlace Centre II,30.423772,-91.124768,Buildings,https://louisianasiteselection.com/led/Property/Detail/9503
+CitiPlace Centre III,30.424006,-91.127026,Buildings,https://louisianasiteselection.com/led/Property/Detail/9504
+Corporate Atrium,30.423903,-91.133308,Buildings,https://louisianasiteselection.com/led/Property/Detail/9506
+Sherwood Oaks Office Park,30.413842,-91.052571,Buildings,https://louisianasiteselection.com/led/Property/Detail/9508
+9489 Interline,30.423547,-91.079536,Buildings,https://louisianasiteselection.com/led/Property/Detail/11984
+"6,000 sf Warehouse For Lease Dock High Baton Rouge",30.473096,-91.051146,Buildings,https://louisianasiteselection.com/led/Property/Detail/21170
+12555 Ronaldson Rd,30.560964,-91.180655,Buildings,https://louisianasiteselection.com/led/Property/Detail/21431
+"LSU Innovation Park , Bldg 3000",30.360244,-91.13984,Buildings,https://louisianasiteselection.com/led/Property/Detail/21662
+"LSU Innovation, Bldg 3100",30.358953,-91.141274,Buildings,https://louisianasiteselection.com/led/Property/Detail/21663
+"LSU Innovation, Bldg 3005",30.35991,-91.139345,Buildings,https://louisianasiteselection.com/led/Property/Detail/21664
+Neighborhood Market For Sale,30.462435,-91.042889,Buildings,https://louisianasiteselection.com/led/Property/Detail/22658
+Air Cargo Building 2,30.529743,-91.156482,Buildings,https://louisianasiteselection.com/led/Property/Detail/22660
+Baton Rouge Flex Space with Interstate Visibility,30.431219,-91.047843,Buildings,https://louisianasiteselection.com/led/Property/Detail/23155
+Lake Providence Building #1,32.866399,-91.225682,Buildings,https://louisianasiteselection.com/led/Property/Detail/21556
+Terral Norris Building,32.795404,-91.177783,Buildings,https://louisianasiteselection.com/led/Property/Detail/22227
+Lake Providence Port Commission-H&W Warehouses,32.866057,-91.225714,Buildings,https://louisianasiteselection.com/led/Property/Detail/22229
+"25,000 sf building Epps, La",32.597933,-91.484253,Buildings,https://louisianasiteselection.com/led/Property/Detail/22797
+Chauncey Pitre Barn,30.694551,-92.335917,Buildings,https://louisianasiteselection.com/led/Property/Detail/17290
+"1524 HOSPITAL AVE FRANKLIN, LA",29.804057,-91.498287,Buildings,https://louisianasiteselection.com/led/Property/Detail/22001
+"44,720 sq Franklin Parish Warehouse (3 Available)",32.201882,-91.728999,Buildings,https://louisianasiteselection.com/led/Property/Detail/22748
+"82,000 SF building (Gilbert, La) (62,000 climate controlled)",32.015918,-91.65088,Buildings,https://louisianasiteselection.com/led/Property/Detail/23089
+Business Opportunity,30.029256,-91.853413,Buildings,https://louisianasiteselection.com/led/Property/Detail/12044
+3508 Curtis Lane,29.967895,-91.846715,Buildings,https://louisianasiteselection.com/led/Property/Detail/16378
+615 North Landry Drive,30.02057,-91.82029,Buildings,https://louisianasiteselection.com/led/Property/Detail/17578
+Jeanerette Industrial Building,29.909004,-91.663218,Buildings,https://louisianasiteselection.com/led/Property/Detail/21515
+"400 Edwards Avenue, New Orleans, LA 70123",29.947102,-90.190711,Buildings,https://louisianasiteselection.com/led/Property/Detail/22517
+Ridgewood Main Campus Building,29.976669,-90.172775,Buildings,https://louisianasiteselection.com/led/Property/Detail/22534
+RIdgewood Gym Building,29.976193,-90.172895,Buildings,https://louisianasiteselection.com/led/Property/Detail/22535
+Prime Veterans Blvd Investment Property for Sale,30.007079,-90.236689,Buildings,https://louisianasiteselection.com/led/Property/Detail/22547
+East Jefferson Office Space,29.955905,-90.187555,Buildings,https://louisianasiteselection.com/led/Property/Detail/23085
+Prime Redevelopment and Investment Opportunity on Airline Drive,29.980016,-90.240258,Buildings,https://louisianasiteselection.com/led/Property/Detail/23200
+10-unit Multi-family Property in Bridge City,29.931575,-90.163013,Buildings,https://louisianasiteselection.com/led/Property/Detail/23209
+3939 Houma Blvd Building 4 Suite 216,30.011819,-90.180026,Buildings,https://louisianasiteselection.com/led/Property/Detail/23249
+The Best Full Service Office Rate in Metairie CBD,30.007966,-90.154013,Buildings,https://louisianasiteselection.com/led/Property/Detail/23250
+405 N Causeway and 122 Sierra in Metairie for Sale or Lease,29.977685,-90.155796,Buildings,https://louisianasiteselection.com/led/Property/Detail/23346
+Medical Arts Plaza,30.237863,-92.661828,Buildings,https://louisianasiteselection.com/led/Property/Detail/14573
+625 Hector Connoly Road,30.321904,-92.018131,Buildings,https://louisianasiteselection.com/led/Property/Detail/9248
+1016 SW Evangeline Thruway,30.220714,-92.009761,Buildings,https://louisianasiteselection.com/led/Property/Detail/11447
+1229 NW Evangeline Thruway,30.239238,-92.015409,Buildings,https://louisianasiteselection.com/led/Property/Detail/16477
+Aviation/Aerospace Manufacturing & Final Assembly facility,30.205383,-91.997773,Buildings,https://louisianasiteselection.com/led/Property/Detail/18088
+State of the Art Office/Flex Building and Expansion Acreage,30.126912,-91.939555,Buildings,https://louisianasiteselection.com/led/Property/Detail/21148
+State of the Art Office/Flex Building with 13.49 acres for Expansion,30.126085,-91.938772,Buildings,https://louisianasiteselection.com/led/Property/Detail/21150
+Commercial Building/Office Space for Sale,30.13769,-91.955004,Buildings,https://louisianasiteselection.com/led/Property/Detail/21343
+Regional Distribution Center,30.273444,-92.044597,Buildings,https://louisianasiteselection.com/led/Property/Detail/21961
+Dock-high warehouse for Sale,30.232891,-92.043418,Buildings,https://louisianasiteselection.com/led/Property/Detail/22150
+Industrial Facility 100 South Bernard Road,30.160174,-91.972585,Buildings,https://louisianasiteselection.com/led/Property/Detail/22507
+2nd floor of former Sears Box,30.172679,-92.075197,Buildings,https://louisianasiteselection.com/led/Property/Detail/22556
+Industrial: Warehouse/Distribution,30.257237,-92.026143,Buildings,https://louisianasiteselection.com/led/Property/Detail/22604
+Valley Ranch Industrial Park - Two Buildings,30.131593,-91.938818,Buildings,https://louisianasiteselection.com/led/Property/Detail/22827
+"15,300 SF Office Building",29.571024,-90.372218,Buildings,https://louisianasiteselection.com/led/Property/Detail/11546
+Industrial Cold Storage,29.378637,-90.264312,Buildings,https://louisianasiteselection.com/led/Property/Detail/15168
+"Valentine Paper Mill (43 Acres, 18 Buildings)",29.595266,-90.464245,Buildings,https://louisianasiteselection.com/led/Property/Detail/15170
+South Lafourche Nursing & Rehab Center,29.550159,-90.341473,Buildings,https://louisianasiteselection.com/led/Property/Detail/21801
+Galliano Housing Units,29.408493,-90.29479,Buildings,https://louisianasiteselection.com/led/Property/Detail/21826
+Industrial Complex - Warehouse and Office Space,29.476873,-90.322308,Buildings,https://louisianasiteselection.com/led/Property/Detail/22596
+Ruston Steam Plant,32.528991,-92.612574,Buildings,https://louisianasiteselection.com/led/Property/Detail/11668
+Ruston Industrial Building,32.510063,-92.629219,Buildings,https://louisianasiteselection.com/led/Property/Detail/14289
+Range Ave Retail For Lease  ste D,30.478939,-90.956388,Buildings,https://louisianasiteselection.com/led/Property/Detail/22342
+609 Centerville St. Single Tenant NNN Industrial Investment,30.487419,-90.946059,Buildings,https://louisianasiteselection.com/led/Property/Detail/22526
+28145 Walker South Rd,30.475097,-90.864671,Buildings,https://louisianasiteselection.com/led/Property/Detail/22721
+Retail Suite For Lease,30.450817,-90.959629,Buildings,https://louisianasiteselection.com/led/Property/Detail/22768
+Multi-Family Trailer Park For Sale,30.491517,-90.92612,Buildings,https://louisianasiteselection.com/led/Property/Detail/22786
+Denham Springs Retail for Lease 1F,30.475797,-90.955008,Buildings,https://louisianasiteselection.com/led/Property/Detail/23137
+Denham Springs Retail for Lease 2F,30.475797,-90.955008,Buildings,https://louisianasiteselection.com/led/Property/Detail/23139
+Bastrop Warehouse and Office Space,32.753042,-91.886307,Buildings,https://louisianasiteselection.com/led/Property/Detail/14721
+"13,888 sqft Building & 4 acres Land for Sale in Bastrop, La.",32.731467,-91.923059,Buildings,https://louisianasiteselection.com/led/Property/Detail/22594
+"Propel Park | Premier Class A Industrial Space | Up to 800,000 SF",30.017249,-89.922054,Buildings,https://louisianasiteselection.com/led/Property/Detail/19672
+MIXED-USE PROPERTY ON MAGAZINESTREET,29.921629,-90.120525,Buildings,https://louisianasiteselection.com/led/Property/Detail/23208
+OFFICE/WAREHOUSE IN MIDCITY NEW ORLEANS,29.977092,-90.109391,Buildings,https://louisianasiteselection.com/led/Property/Detail/23342
+New Construction Retail/Office in New Orleans,29.968506,-90.104462,Buildings,https://louisianasiteselection.com/led/Property/Detail/23343
+Modern Historic Office Building Bywater New Orleans,29.962076,-90.04243,Buildings,https://louisianasiteselection.com/led/Property/Detail/23345
+MID-CITY OFFICE/RETAIL BLDG. FOR SALE,29.966964,-90.086684,Buildings,https://louisianasiteselection.com/led/Property/Detail/23347
+TWO CANAL STREET BUILDINGS FOR SALE,29.970296,-90.095154,Buildings,https://louisianasiteselection.com/led/Property/Detail/23349
+Mid-city Commercial/Residential for Sale,29.97018,-90.095451,Buildings,https://louisianasiteselection.com/led/Property/Detail/23350
+ULM Facilities Corp (Prof Pharm),32.525688,-92.072639,Buildings,https://louisianasiteselection.com/led/Property/Detail/13506
+ULM Pharmacy Building,32.532604,-92.097896,Buildings,https://louisianasiteselection.com/led/Property/Detail/13508
+Plug and Play Call Center,32.523711,-92.103198,Buildings,https://louisianasiteselection.com/led/Property/Detail/14555
+"Former Data, Storage & Distribution Center",32.523711,-92.103198,Buildings,https://louisianasiteselection.com/led/Property/Detail/14595
+"43,348 SF Ready Call Center",32.523711,-92.103198,Buildings,https://louisianasiteselection.com/led/Property/Detail/14741
+"250,000sq Warehouse Monroe, LA (Jackson St.)",32.480645,-92.108345,Buildings,https://louisianasiteselection.com/led/Property/Detail/17525
+Clarke Williams Innovation Campus,32.590541,-92.067104,Buildings,https://louisianasiteselection.com/led/Property/Detail/21737
+"17,000 SF Warehouse and Office Space - Sterlington, LA",32.689108,-92.066927,Buildings,https://louisianasiteselection.com/led/Property/Detail/22344
+"Versatile 37,000 SF Facility in Prime North Monroe Location  Ideal for Commercial or Industrial Use",32.536904,-92.103296,Buildings,https://louisianasiteselection.com/led/Property/Detail/22751
+"12,000 sq Building Monroe, La",32.430534,-92.090673,Buildings,https://louisianasiteselection.com/led/Property/Detail/23086
+"West Monroe, La Warehouse (20,000 sq) available",32.503009,-92.173228,Buildings,https://louisianasiteselection.com/led/Property/Detail/23120
+"46,000 SF Warehouse (Monroe, La)",32.512166,-92.050589,Buildings,https://louisianasiteselection.com/led/Property/Detail/23453
+"Industrial Complex in Belle Chasse, LA",29.834774,-90.000934,Buildings,https://louisianasiteselection.com/led/Property/Detail/22187
+Building 1500 England Airpark,31.327387,-92.529045,Buildings,https://louisianasiteselection.com/led/Property/Detail/10384
+Building 806 England Airpark,31.327269,-92.536728,Buildings,https://louisianasiteselection.com/led/Property/Detail/10386
+Building 1213 England Airpark,31.32864,-92.53428,Buildings,https://louisianasiteselection.com/led/Property/Detail/10747
+Building 2107,31.321087,-92.534736,Buildings,https://louisianasiteselection.com/led/Property/Detail/10808
+Building 2533,31.322904,-92.531761,Buildings,https://louisianasiteselection.com/led/Property/Detail/10810
+Building 3505,31.323638,-92.525952,Buildings,https://louisianasiteselection.com/led/Property/Detail/10811
+Building 2102,31.321042,-92.536992,Buildings,https://louisianasiteselection.com/led/Property/Detail/10875
+Building #2327 England Airpark,31.330225,-92.529522,Buildings,https://louisianasiteselection.com/led/Property/Detail/11850
+Building #1718 England Airpark,31.331852,-92.533995,Buildings,https://louisianasiteselection.com/led/Property/Detail/11851
+England Airpark Hospital Building,31.321187,-92.527464,Buildings,https://louisianasiteselection.com/led/Property/Detail/14682
+Alexandria Bonded Warehouse Service Inc. - Warehouse,31.258784,-92.437436,Buildings,https://louisianasiteselection.com/led/Property/Detail/21837
+"Class A Office Space in Alexandria, LA",31.310409,-92.44295,Buildings,https://louisianasiteselection.com/led/Property/Detail/22666
+2510 & 2426 Broadway,31.289454,-92.440181,Buildings,https://louisianasiteselection.com/led/Property/Detail/22708
+1501 Wimbledon Blvd,31.276723,-92.476211,Buildings,https://louisianasiteselection.com/led/Property/Detail/22809
+1421 Wimbledon Blvd,31.276832,-92.474516,Buildings,https://louisianasiteselection.com/led/Property/Detail/22855
+"Delhi, La Light Industrial Warehouse (64,572 sf)",32.459114,-91.500011,Buildings,https://louisianasiteselection.com/led/Property/Detail/22724
+"Rayville North Warehouse (56,100 SF)",32.489066,-91.757325,Buildings,https://louisianasiteselection.com/led/Property/Detail/22725
+Chalmette Updated Office/ Warehouse for Lease,29.952199,-89.980414,Buildings,https://louisianasiteselection.com/led/Property/Detail/22549
+New Modern Office Building for Sale,29.952267,-89.980564,Buildings,https://louisianasiteselection.com/led/Property/Detail/22550
+RETAIL CENTER ANDQSR SITE FOR LEASE,29.956456,-89.988629,Buildings,https://louisianasiteselection.com/led/Property/Detail/23351
+James Business Park Five James Park,29.98006,-90.285506,Buildings,https://louisianasiteselection.com/led/Property/Detail/9026
+James Business Park Five James Park,29.980136,-90.285468,Buildings,https://louisianasiteselection.com/led/Property/Detail/9026
+James Business Park St. Charles I,29.984405,-90.285555,Buildings,https://louisianasiteselection.com/led/Property/Detail/9033
+James Business Park St. Charles II,29.981886,-90.281009,Buildings,https://louisianasiteselection.com/led/Property/Detail/9034
+Boutte Warehouse,29.901263,-90.390263,Buildings,https://louisianasiteselection.com/led/Property/Detail/9046
+Plantation Business Campus (Suite 102),29.945121,-90.35996,Buildings,https://louisianasiteselection.com/led/Property/Detail/9049
+Destrehan Flex Space,29.94537,-90.359298,Buildings,https://louisianasiteselection.com/led/Property/Detail/9051
+Village Shopping Center,29.903543,-90.381999,Buildings,https://louisianasiteselection.com/led/Property/Detail/9072
+Winnwood Shopping Center,29.919225,-90.374593,Buildings,https://louisianasiteselection.com/led/Property/Detail/9075
+One American Place,29.94088,-90.383218,Buildings,https://louisianasiteselection.com/led/Property/Detail/9411
+James Business Park Westside I,29.980115,-90.285508,Buildings,https://louisianasiteselection.com/led/Property/Detail/9486
+James Business Park Service Center 23,29.982251,-90.28271,Buildings,https://louisianasiteselection.com/led/Property/Detail/9487
+James Business Park Westside II,29.980781,-90.285258,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
+James Business Park Westside II,29.981227,-90.285519,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
+"150 Teal Street, Suite 180",29.982828,-90.282969,Buildings,https://louisianasiteselection.com/led/Property/Detail/9600
+James Business Park Sealy Business Center I,29.986756,-90.283886,Buildings,https://louisianasiteselection.com/led/Property/Detail/9779
+Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings,https://louisianasiteselection.com/led/Property/Detail/9783
+Plantation Business Campus (Campus Center),29.94512,-90.35996,Buildings,https://louisianasiteselection.com/led/Property/Detail/9783
+River Road Norco,29.996771,-90.41276,Buildings,https://louisianasiteselection.com/led/Property/Detail/9788
+Paul Maillard Doctors Office,29.929495,-90.367654,Buildings,https://louisianasiteselection.com/led/Property/Detail/9852
+Ormond Square,29.969572,-90.376759,Buildings,https://louisianasiteselection.com/led/Property/Detail/9943
+River Road Medical Clinic,29.940646,-90.352564,Buildings,https://louisianasiteselection.com/led/Property/Detail/9980
+River Road Hahnville,29.977202,-90.407378,Buildings,https://louisianasiteselection.com/led/Property/Detail/10365
+James Business Park Westside II,29.98131,-90.285483,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
+James Business Park Service Center 21,29.98226,-90.284154,Buildings,https://louisianasiteselection.com/led/Property/Detail/10644
+Village Square Shopping Center,29.928091,-90.368384,Buildings,https://louisianasiteselection.com/led/Property/Detail/10733
+Red Church Center,29.951177,-90.378855,Buildings,https://louisianasiteselection.com/led/Property/Detail/11348
+Ormond Plantation Plaza,29.968984,-90.374185,Buildings,https://louisianasiteselection.com/led/Property/Detail/11349
+River Road Hahnville,29.964584,-90.405482,Buildings,https://louisianasiteselection.com/led/Property/Detail/10365
+James Business Park Sealy Business Center III,29.987577,-90.282631,Buildings,https://louisianasiteselection.com/led/Property/Detail/11401
+Luling Bridge Warehouse,29.941263,-90.385932,Buildings,https://louisianasiteselection.com/led/Property/Detail/11505
+James Business Park,29.982866,-90.284555,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
+James Business Park,29.978904,-90.283884,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
+James Business Park,29.978899,-90.283927,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
+River Road St. Rose,29.97435,-90.280794,Buildings,https://louisianasiteselection.com/led/Property/Detail/11774
+James Business Park Business Center II,29.987642,-90.284201,Buildings,https://louisianasiteselection.com/led/Property/Detail/11775
+James Business Park,29.982617,-90.281077,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
+James Business Park Two James Park,29.981355,-90.283636,Buildings,https://louisianasiteselection.com/led/Property/Detail/11786
+James Business Park Two James Park,29.981335,-90.283636,Buildings,https://louisianasiteselection.com/led/Property/Detail/11786
+James Business Park Two James Park,29.981351,-90.283626,Buildings,https://louisianasiteselection.com/led/Property/Detail/11786
+James Business Park Westside II,29.981278,-90.285479,Buildings,https://louisianasiteselection.com/led/Property/Detail/9598
+Longview Drive,29.951125,-90.377984,Buildings,https://louisianasiteselection.com/led/Property/Detail/12045
+Airline Commerce Center,29.978114,-90.28112,Buildings,https://louisianasiteselection.com/led/Property/Detail/14446
+James Business Park,29.984077,-90.284596,Buildings,https://louisianasiteselection.com/led/Property/Detail/11719
+Warehouse,29.987458,-90.418403,Buildings,https://louisianasiteselection.com/led/Property/Detail/17401
+"150 Teal Street, Suite 100",29.982828,-90.282969,Buildings,https://louisianasiteselection.com/led/Property/Detail/17560
+Luling Business Park and Enterprise Center,29.935313,-90.388391,Buildings,https://louisianasiteselection.com/led/Property/Detail/19257
+11130 River Road,29.95377,-90.310395,Buildings,https://louisianasiteselection.com/led/Property/Detail/19608
+150 James Dr. East Suite 110,29.981958,-90.281364,Buildings,https://louisianasiteselection.com/led/Property/Detail/19617
+Airline Commerce Center-53K SF,29.977507,-90.282311,Buildings,https://louisianasiteselection.com/led/Property/Detail/19619
+James Business Park Flex Space,29.982319,-90.283107,Buildings,https://louisianasiteselection.com/led/Property/Detail/19622
+James Business Park Flex Space,29.982318,-90.283724,Buildings,https://louisianasiteselection.com/led/Property/Detail/19622
+Hahnville Office Building,29.962049,-90.405582,Buildings,https://louisianasiteselection.com/led/Property/Detail/19638
+Destrehan River Road Storefront,29.940679,-90.352549,Buildings,https://louisianasiteselection.com/led/Property/Detail/19642
+12361 Hwy 90 (former Mimosa Veterinary Hospital),29.91127,-90.352093,Buildings,https://louisianasiteselection.com/led/Property/Detail/19944
+162 Riverbend Business Park-27K SF,29.969583,-90.295846,Buildings,https://louisianasiteselection.com/led/Property/Detail/20958
+One James Business Park,29.980279,-90.283691,Buildings,https://louisianasiteselection.com/led/Property/Detail/21269
+115 Canvasback-James Business Park Flex Space,29.986707,-90.283313,Buildings,https://louisianasiteselection.com/led/Property/Detail/21270
+One American Place Office Luling,29.940703,-90.383664,Buildings,https://louisianasiteselection.com/led/Property/Detail/21319
+Luling Warehouse,29.940041,-90.383974,Buildings,https://louisianasiteselection.com/led/Property/Detail/21325
+Boutte Office/Retail Strip Center,29.903752,-90.378704,Buildings,https://louisianasiteselection.com/led/Property/Detail/21807
+Norco Office,30.005987,-90.410614,Buildings,https://louisianasiteselection.com/led/Property/Detail/22114
+111 Riverbend,29.968183,-90.297408,Buildings,https://louisianasiteselection.com/led/Property/Detail/22584
+Former Pepsi Bottling Plant,30.065522,-90.565861,Buildings,https://louisianasiteselection.com/led/Property/Detail/10794
+"3735 W. Airline Highway | Reserve, Louisiana 70084",30.076146,-90.56034,Buildings,https://louisianasiteselection.com/led/Property/Detail/17532
+Belle Terre Plaza,30.075624,-90.500163,Buildings,https://louisianasiteselection.com/led/Property/Detail/17783
+669 Belle Terre Blvd Office Space,30.092784,-90.505281,Buildings,https://louisianasiteselection.com/led/Property/Detail/22924
+1905 W Airline Hwy. Mixed Use Building,30.073412,-90.503778,Buildings,https://louisianasiteselection.com/led/Property/Detail/22927
+LaPlace Value-Add Shopping Center,30.083835,-90.503196,Buildings,https://louisianasiteselection.com/led/Property/Detail/23013
+Two Building Industrial Property,30.0787,-90.523752,Buildings,https://louisianasiteselection.com/led/Property/Detail/23014
+456 West 5th Street LaPlace,30.069656,-90.496253,Buildings,https://louisianasiteselection.com/led/Property/Detail/23015
+Martco OSB LeMoyen Mill,30.784655,-92.03527,Buildings,https://louisianasiteselection.com/led/Property/Detail/9901
+118 N Main St,30.534431,-92.081099,Buildings,https://louisianasiteselection.com/led/Property/Detail/11344
+ACG Building,30.534672,-92.091162,Buildings,https://louisianasiteselection.com/led/Property/Detail/11722
+Dixie Storage - 4-A,30.540914,-92.02261,Buildings,https://louisianasiteselection.com/led/Property/Detail/17277
+Dixie Storage - 4-B,30.540914,-92.02261,Buildings,https://louisianasiteselection.com/led/Property/Detail/17278
+1703 Rees St,30.287084,-91.909432,Buildings,https://louisianasiteselection.com/led/Property/Detail/10858
+1012 Guidry Rd,30.307225,-91.838334,Buildings,https://louisianasiteselection.com/led/Property/Detail/10859
+Martin Mills/Champion Resources,30.155228,-91.818686,Buildings,https://louisianasiteselection.com/led/Property/Detail/11059
+St. Martinville Retail Box,30.14557,-91.821811,Buildings,https://louisianasiteselection.com/led/Property/Detail/11666
+1320 Petroleum Pkwy,30.075311,-91.934682,Buildings,https://louisianasiteselection.com/led/Property/Detail/11761
+1471 Old Spanish Trail Hwy,30.093015,-91.907859,Buildings,https://louisianasiteselection.com/led/Property/Detail/16375
+1062 Aillet Rd Broussard,30.077324,-91.945967,Buildings,https://louisianasiteselection.com/led/Property/Detail/17579
+1063 Petroleum Parkway,30.081091,-91.925755,Buildings,https://louisianasiteselection.com/led/Property/Detail/19393
+1186 Petroleum Pkwy,30.082745,-91.932274,Buildings,https://louisianasiteselection.com/led/Property/Detail/21051
+St. Mary Plaza,29.681933,-91.271685,Buildings,https://louisianasiteselection.com/led/Property/Detail/11667
+Port of West St. Mary's Baldwin Campus - Building 1,29.826364,-91.539898,Buildings,https://louisianasiteselection.com/led/Property/Detail/17182
+Port of West St. Mary's Baldwin Campus - Building 2,29.826364,-91.539898,Buildings,https://louisianasiteselection.com/led/Property/Detail/17184
+Port of West St. Marys Baldwin Campus - Building 3,29.826364,-91.539898,Buildings,https://louisianasiteselection.com/led/Property/Detail/17185
+"9,600 sq ft Industrial site",30.503144,-90.195496,Buildings,https://louisianasiteselection.com/led/Property/Detail/11694
+"HWY 25 COVINGTON, LA",null,null,Buildings,https://louisianasiteselection.com/led/Property/Detail/21575
+"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.285018,-89.738139,Buildings,https://louisianasiteselection.com/led/Property/Detail/22144
+400 Garrett Road,30.251212,-89.763429,Buildings,https://louisianasiteselection.com/led/Property/Detail/22214
+"Slidell 2,083 sf - 8,727 sf Office Available for Lease",30.284995,-89.738165,Buildings,https://louisianasiteselection.com/led/Property/Detail/22144
+"2nd Floor, Suite 200",30.432984,-90.087077,Buildings,https://louisianasiteselection.com/led/Property/Detail/22611
+"3rd Floor, Suite 300",30.432984,-90.087077,Buildings,https://louisianasiteselection.com/led/Property/Detail/22624
+Retail Suite For Lease 1600 W Causeway Suites 4 & 5,30.391901,-90.101886,Buildings,https://louisianasiteselection.com/led/Property/Detail/22638
+Krentel Road Corporate Office and Warehouse,30.35553,-89.92004,Buildings,https://louisianasiteselection.com/led/Property/Detail/23028
+Prime Hwy 1085 Industrial,30.466395,-90.193825,Buildings,https://louisianasiteselection.com/led/Property/Detail/23029
+Colony Square,30.481521,-90.465374,Buildings,https://louisianasiteselection.com/led/Property/Detail/9884
+I-12 Event Center,30.480674,-90.443558,Buildings,https://louisianasiteselection.com/led/Property/Detail/21891
+I-12 Event Center Parcel B,30.480386,-90.443098,Buildings,https://louisianasiteselection.com/led/Property/Detail/22047
+I-12 Event Center Parcel C,30.480548,-90.441092,Buildings,https://louisianasiteselection.com/led/Property/Detail/22049
+"210 Hewitt Rd. Hammond, LA",30.490368,-90.459121,Buildings,https://louisianasiteselection.com/led/Property/Detail/22108
+1517 W Thomas St.,30.500432,-90.477506,Buildings,https://louisianasiteselection.com/led/Property/Detail/22124
+Spacious Showroom & Warehouse,30.510214,-90.431257,Buildings,https://louisianasiteselection.com/led/Property/Detail/22394
+Alack Building For Sale or Lease,30.507536,-90.436009,Buildings,https://louisianasiteselection.com/led/Property/Detail/22471
+"Warehouse with cold storage, loading docks, office space: Old Covington Hwy, Hammond, LA",30.493292,-90.424087,Buildings,https://louisianasiteselection.com/led/Property/Detail/22561
+Downtown Hammond Commercial Building 408 W  Thomas St.,30.503336,-90.465237,Buildings,https://louisianasiteselection.com/led/Property/Detail/23172
+"10,000 SF Building Tensas Parish",32.069817,-91.254476,Buildings,https://louisianasiteselection.com/led/Property/Detail/23003
+"5,487 SF Office Building off Hwy 311 in Houma",29.595592,-90.754969,Buildings,https://louisianasiteselection.com/led/Property/Detail/22033
+Bright Speed Admin building,32.899344,-92.244138,Buildings,https://louisianasiteselection.com/led/Property/Detail/23288
+Tiffany Plaza,29.975346,-92.103909,Buildings,https://louisianasiteselection.com/led/Property/Detail/11669
+Spec Building #3 (Trane) off Hwy 371,32.954839,-93.458389,Buildings,https://louisianasiteselection.com/led/Property/Detail/9528
+Former GP Mill - T&P Property,32.968362,-93.459447,Buildings,https://louisianasiteselection.com/led/Property/Detail/9775
+Lot #17 - North Webster Parish Ind. Park Subd.,32.956113,-93.46098,Buildings,https://louisianasiteselection.com/led/Property/Detail/14611
+Patrick Property,32.909988,-91.363606,Buildings,https://louisianasiteselection.com/led/Property/Detail/11525
+Epps Industrial Park,32.597887,-91.482674,Buildings,https://louisianasiteselection.com/led/Property/Detail/21548
+"150,000 SF building Oak Grove (40,000 concrete slab on back)",32.86441,-91.391607,Buildings,https://louisianasiteselection.com/led/Property/Detail/22795
+"40,000 sq building Oak Grove, La",32.832762,-91.395753,Buildings,https://louisianasiteselection.com/led/Property/Detail/22796
+Prosperity St Building,30.771594,-91.382424,Buildings,https://louisianasiteselection.com/led/Property/Detail/10065
+McLeod Business Park,29.642355,-90.514263,FastSite,
+Avondale Global,29.920135,-90.188136,FastSite,
+Esperanza Site,29.927041,-90.389081,FastSite,
+NSA,29.96154,-90.03302,FastSite,
+Acadiana Regional Airport P1,30.03913,-91.8797,FastSite,
+Lake Charles Regional Airport,30.13105,-93.21828,FastSite,
+Port Vinton,30.151,-93.568,FastSite,
+Port of South Louisiana Hyundai Project,30.192333,-91.034611,FastSite,
+Gulf South Commerce Park,30.39895,-90.00137,FastSite,
+ScaleBTR,30.43065,-91.1857,FastSite,
+Franklinton Industrial Park,30.8351,-90.1584,FastSite,
+Beaver Lake Industrial Park (BLIP),31.271597,-92.387717,FastSite,
+England Airpark,31.33032,-92.53319,FastSite,
+Port Distran,31.333893,-92.465116,FastSite,
+Natchitoches Parish Port Warehouse,31.84575,-93.07477,FastSite,
+Arq Red River,32.00426,-93.39127,FastSite,
+Port of Columbia,32.186237,-92.103975,FastSite,
+Port of Caddo Bossier,32.358049,-93.650131,FastSite,
+South Monroe Industrial Park,32.48575,-92.00857,FastSite,
