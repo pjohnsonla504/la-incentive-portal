@@ -198,9 +198,12 @@ if check_password():
         
         # --- FIXED LA_ANCHORS INTEGRATION WITH SPECIFIC LAYERS ONLY ---
         anchors = read_csv_with_fallback("la_anchors.csv")
-        anchors = anchors.dropna(subset=['Lat', 'Lon'])  # Clean missing coordinate entries
+        anchors = anchors.dropna(subset=['Lat', 'Lon'])  
         
-        # Mapping to align data format into clean custom visualization layers
+        # Strip spaces and standardize casing to avoid CSV typing syntax errors
+        anchors['Type'] = anchors['Type'].astype(str).str.strip()
+        
+        # Expanded key map to catch all mutations of your label styles flawlessly
         type_mapping = {
             "Rural Healthcare Facility": "Rural Healthcare Facility",
             "Medical": "Rural Healthcare Facility",
@@ -209,11 +212,13 @@ if check_password():
             "Louisiana Main Street": "Main Street",
             "Main Street": "Main Street",
             "Certified Site": "Certified Site",
-            "Fastsites": "FastSite"
+            "Fastsites": "FastSite",
+            "FastSite": "FastSite",
+            "Fast Site": "FastSite"
         }
         
         anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  # Safely strips off unmapped types
+        anchors = anchors.dropna(subset=['Type'])  
         
         centers = {}
         if gj:
@@ -283,7 +288,6 @@ if check_password():
             selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
         ))
         
-        # Traces map directly using the newly scoped layers
         anchor_types = sorted(anchors_df['Type'].unique())
         color_palette = px.colors.qualitative.Bold 
         for i, a_type in enumerate(anchor_types):
@@ -411,7 +415,6 @@ if check_password():
                 st.session_state["active_tract"] = selected_search
                 st.rerun()
 
-    # --- PARISH SNAPSHOT / QUOTA FEATURE ---
     if selected_parish != "All in Region":
         parish_data = master_df[master_df['Parish'] == selected_parish]
         total_parish_tracts = len(parish_data)
@@ -472,7 +475,8 @@ if check_password():
                 list_html = ""
                 for _, a in working.sort_values('dist').head(15).iterrows():
                     link_btn = ""
-                    if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "":
+                    # Enhanced string check to ensure links render even with minor CSV trail spaces
+                    if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "" and str(a['Link']).strip().lower() != "nan":
                         link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
                     list_html += f"<div class='anchor-card'><div style='color:#4ade80; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
                 components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
