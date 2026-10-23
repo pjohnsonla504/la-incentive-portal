@@ -280,7 +280,8 @@ if check_password():
         sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
         revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
         fig = go.Figure()
-        fig.add_trace(go.Choroplethmapbox(
+        # UPDATED: Choroplethmapbox -> Choroplethmap (MapLibre-based, current Plotly)
+        fig.add_trace(go.Choroplethmap(
             geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
             featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
             colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2,
@@ -293,13 +294,15 @@ if check_password():
         for i, a_type in enumerate(anchor_types):
             type_data = anchors_df[anchors_df['Type'] == a_type]
             marker_color = color_palette[i % len(color_palette)]
-            fig.add_trace(go.Scattermapbox(
+            # UPDATED: Scattermapbox -> Scattermap
+            fig.add_trace(go.Scattermap(
                 lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
-                marker=go.scattermapbox.Marker(size=11, color=marker_color, symbol="circle"),
+                marker=go.scattermap.Marker(size=11, color=marker_color),
                 text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
             ))
         fig.update_layout(
-            mapbox=dict(style="carto-positron", zoom=zoom, center=center),
+            # UPDATED: mapbox=dict(...) -> map=dict(...)
+            map=dict(style="carto-positron", zoom=zoom, center=center),
             margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, 
             clickmode='event+select', uirevision=revision_key,
             legend=dict(title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)), yanchor="top", y=0.98, xanchor="left", x=0.02, bgcolor="rgba(255, 255, 255, 0.9)", font=dict(size=11, color="#1e293b"), bordercolor="#cbd5e1", borderwidth=1)
