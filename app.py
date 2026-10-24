@@ -1,494 +1,1208 @@
-import streamlit as st
+"""
+Louisiana Opportunity Zones 2.0 - Developer Connection Portal
+=============================================================
+
+Five sections, in order:
+  1. Louisiana nomination process   (timeline + key numbers)
+  2. Regional partners              (one row per region, nominated-tract counts, OZ page links)
+  3. Development incentives         (site readiness / workforce / business costs)
+  4. Asset map                      (map, selected-tract details + partner justification, anchors, shortlist)
+  5. Tell us about your project     (introduction request routed by region)
+
+DATA SOURCES
+  CSV / JSON in the repo   : master data file, la_anchors.csv, tl_2025_22_tract.json
+  Google Sheet "Recommendations" : the nominated tracts and each partner's justification
+        - optional column "Status": only rows that are blank, "Published", "Nominated" or
+          "Approved" appear publicly (see VISIBLE_STATUSES). Without a Status column every row appears.
+        - if a tract appears more than once, the newest row with text wins.
+  Google Sheet "Regions" (optional): Region, Partner, OZ_URL, Contact_Email
+  Google Sheet "Introductions" (create it): receives every introduction request
+  Google Sheet "Users" (optional): only used for partner sign-in
+
+SECRETS (optional, .streamlit/secrets.toml)
+  require_login = true     -> put the whole site behind partner sign-in (default: public)
+
+All page copy that is still a placeholder lives in CONTENT below.
+"""
+
+import html as _html
+import re
+import ssl
+import json
+import os
+from datetime import datetime, timezone
+
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import json
-import os
-import numpy as np
-import ssl
-from math import radians, cos, sin, asin, sqrt
+import streamlit as st
 from streamlit_gsheets import GSheetsConnection
-import streamlit.components.v1 as components
 
 # --- 0. INITIAL CONFIG ---
-st.set_page_config(page_title="Louisiana Opportunity Zones 2.0 Portal", layout="wide")
-
-# Initialize session state keys
-if "session_recs" not in st.session_state:
-    st.session_state["session_recs"] = []
-if "active_tract" not in st.session_state:
-    st.session_state["active_tract"] = None 
-if "password_correct" not in st.session_state:
-    st.session_state["password_correct"] = False
-if "username" not in st.session_state:
-    st.session_state["username"] = ""
+st.set_page_config(
+    page_title="Louisiana Opportunity Zones 2.0",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
 try:
+    # Kept from the original app so Google Sheets connectivity behaves exactly as before.
     ssl._create_default_https_context = ssl._create_unverified_context
-except:
+except Exception:
     pass
+
+
+def _secret(name, default=None):
+    try:
+        return st.secrets.get(name, default)
+    except Exception:
+        return default
+
+
+REQUIRE_LOGIN = str(_secret("require_login", "false")).strip().lower() in ("1", "true", "yes")
+
+# Rows in the Recommendations sheet are public when their Status is one of these (blank counts too).
+VISIBLE_STATUSES = {"", "published", "nominated", "approved"}
+
+CATEGORIES = [
+    "Housing Development",
+    "Business Development",
+    "Technology & Research",
+    "Healthcare & Community Services",
+]
+
+ANCHOR_COLORS = {}  # filled after the anchors load, using the same Bold palette as the original map
+
+# Fallback OZ page links by region name (the "Regions" sheet overrides these).
+REGION_OZ_URLS = {
+    # "GBREP": "https://example.org/oz",
+}
+
+# --- PAGE COPY (replace the bracketed placeholders) ---
+CONTENT = {
+    "process_intro": "[One or two sentences describing the Louisiana nomination process.]",
+    "process_steps": [
+        {"title": "Regions recommend", "text": "[One line on how regions identified tracts.]", "date": "[Date]"},
+        {"title": "Tracts are documented", "text": "[One line on the case behind each tract.]", "date": "[Date]"},
+        {"title": "The state nominates", "text": "[One line on the nomination step.]", "date": "[Date]"},
+        {"title": "Developers connect", "text": "[One line on how developers connect.]", "date": "We are here", "now": True},
+    ],
+    "partners_intro": "[One line on who these organizations are.]",
+    "incentives_intro": "[One line on how state and local incentives layer with the federal OZ benefits.]",
+    # "rule" decides which tracts an incentive applies to. None = every tract.
+    # Supported keys: nmtc (bool), deep_distress (bool), metro ("Metropolitan" / "Rural"),
+    #                 regions (list of region names), parishes (list of parish names)
+    "incentives": [
+        {
+            "label": "Site readiness", "question": "Is the site ready to build?", "color": "#4ADE80", "text_color": "#4ADE80",
+            "items": [
+                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+            ],
+        },
+        {
+            "label": "Workforce", "question": "Can I hire and train?", "color": "#60A5FA", "text_color": "#93C5FD",
+            "items": [
+                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+            ],
+        },
+        {
+            "label": "Business costs", "question": "Will the numbers work?", "color": "#FBBF24", "text_color": "#FCD34D",
+            "items": [
+                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+            ],
+        },
+    ],
+    "project_intro": "Your request goes to the regional partner for the tracts you select. [Add expected response time.]",
+    "project_steps": [
+        {"title": "Routed to the right region", "text": "[One line.]"},
+        {"title": "A partner reaches out", "text": "[One line.]"},
+        {"title": "Incentives are mapped to your project", "text": "[One line.]"},
+    ],
+    "privacy_line": "[Privacy and consent line.]",
+    "agency": "[Sponsoring agency]",
+}
+
+# Master-data column names
+POP_COL = "Estimate!!Total!!Population for whom poverty status is determined"
+POV_COL = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
+MFI_COL = "Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)"
+METRO_COL = "Metro Status (Metropolitan/Rural)"
+
+# Session state
+for _k, _v in {
+    "active_tract": None,
+    "shortlist": [],
+    "partner": None,
+    "_last_search": None,
+    "find_parish": "Select a parish",
+}.items():
+    if _k not in st.session_state:
+        st.session_state[_k] = _v
+
 
 # --- HELPERS ---
 def safe_float(val):
     try:
-        if pd.isna(val) or val == '' or val == 'N/A': return 0.0
-        s = str(val).replace('$', '').replace(',', '').replace('%', '').strip()
+        if pd.isna(val) or val == "" or val == "N/A":
+            return 0.0
+        s = str(val).replace("$", "").replace(",", "").replace("%", "").strip()
         return float(s)
-    except: return 0.0
+    except Exception:
+        return 0.0
+
 
 def safe_int(val):
     return int(safe_float(val))
 
-# --- 1. PERSISTENCE ENGINE ---
-def load_user_recs(username):
+
+def esc(value):
+    """HTML-escape any dynamic text. '$' is escaped too so Streamlit never reads it as math."""
+    return _html.escape("" if value is None else str(value), quote=True).replace("$", "&#36;")
+
+
+def safe_url(url):
+    u = str(url or "").strip()
+    return u if re.match(r"^https?://", u, re.I) else ""
+
+
+def norm_geoid(value):
+    s = str(value).strip()
+    if s in ("", "nan", "None", "NaN"):
+        return ""
+    try:
+        s = str(int(float(s)))
+    except Exception:
+        s = s.split(".")[0]
+    return s.zfill(11)
+
+
+def render(markup):
+    """Render an HTML block. Lines are stripped and blank lines removed so Markdown
+    never mistakes indentation or a gap for the end of the HTML block."""
+    clean = "\n".join(line.strip() for line in markup.splitlines() if line.strip())
+    st.markdown(clean, unsafe_allow_html=True)
+
+
+def spacer(px):
+    render(f"<div style='height:{int(px)}px'></div>")
+
+
+def section(name):
+    """A keyed container (Streamlit >= 1.39) so each section can have its own full-bleed band."""
+    try:
+        return st.container(key=f"sec-{name}")
+    except TypeError:
+        return st.container()
+
+
+def plot(fig, **kwargs):
+    try:
+        return st.plotly_chart(fig, width="stretch", **kwargs)
+    except TypeError:
+        return st.plotly_chart(fig, use_container_width=True, **kwargs)
+
+
+def para_html(text):
+    text = str(text).replace("\r\n", "\n").strip()
+    parts = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    if len(parts) <= 1:
+        parts = [p.strip() for p in text.split("\n") if p.strip()]
+    return "".join(f"<p>{esc(p)}</p>" for p in parts)
+
+
+# --- 1. DATA ---
+@st.cache_data(ttl=3600, show_spinner="Loading Louisiana data...")
+def load_assets():
+    gj = None
+    if os.path.exists("tl_2025_22_tract.json"):
+        with open("tl_2025_22_tract.json", "r") as f:
+            gj = json.load(f)
+
+    def read_csv_with_fallback(path):
+        for enc in ["utf-8", "latin1", "cp1252"]:
+            try:
+                return pd.read_csv(path, encoding=enc)
+            except Exception:
+                continue
+        return pd.read_csv(path)
+
+    master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
+    master["geoid_str"] = master["11-digit FIP"].astype(str).str.split(".").str[0].str.zfill(11)
+
+    master["Eligibility_Status"] = master["Opportunity Zones Insiders Eligibilty"].apply(
+        lambda x: "Eligible" if str(x).strip().lower() in ["eligible", "yes", "1", "true"] else "Ineligible"
+    )
+
+    def get_nmtc_status(row):
+        is_deep = str(row.get("Deep Distress", "")).strip().upper()
+        is_eligible = str(row.get("NMTC Eligible", "")).strip().upper()
+        if is_deep in ["YES", "TRUE", "1"]:
+            return "Deep Distress"
+        elif is_eligible in ["YES", "TRUE", "1"]:
+            return "Eligible"
+        return "Ineligible"
+
+    master["NMTC_Calculated"] = master.apply(get_nmtc_status, axis=1)
+
+    anchors = read_csv_with_fallback("la_anchors.csv")
+    anchors["Lat"] = pd.to_numeric(anchors["Lat"], errors="coerce")
+    anchors["Lon"] = pd.to_numeric(anchors["Lon"], errors="coerce")
+    anchors = anchors.dropna(subset=["Lat", "Lon"])
+    anchors["Type"] = anchors["Type"].astype(str).str.strip()
+    type_mapping = {
+        "Rural Healthcare Facility": "Rural Healthcare Facility",
+        "Medical": "Rural Healthcare Facility",
+        "Land": "Land",
+        "Buildings": "Buildings",
+        "Louisiana Main Street": "Main Street",
+        "Main Street": "Main Street",
+        "Certified Site": "Certified Site",
+        "Fastsites": "FastSite",
+        "FastSite": "FastSite",
+        "Fast Site": "FastSite",
+    }
+    anchors["Type"] = anchors["Type"].map(type_mapping)
+    anchors = anchors.dropna(subset=["Type"]).reset_index(drop=True)
+
+    centers = {}
+    if gj:
+        for feature in gj["features"]:
+            geoid = feature["properties"].get("GEOID") or feature["properties"].get("GEOID20")
+            try:
+                geom = feature["geometry"]
+                if geom["type"] == "Polygon":
+                    pts = np.array(geom["coordinates"][0])
+                elif geom["type"] == "MultiPolygon":
+                    pts = np.array(geom["coordinates"][0][0])
+                centers[geoid] = [np.mean(pts[:, 0]), np.mean(pts[:, 1])]
+            except Exception:
+                continue
+    return gj, master, anchors, centers
+
+
+def _empty_nominations():
+    return pd.DataFrame(columns=["geoid_str", "justification", "category", "username", "status"])
+
+
+def _coalesce(frame, prefix):
+    """First non-blank value across columns named <prefix>, <prefix>.1, ... (case-insensitive).
+    The Recommendations sheet has duplicated headers, which pandas renames with a '.1' suffix."""
+    cols = [c for c in frame.columns if str(c).strip().lower().split(".")[0] == prefix]
+    if not cols:
+        return pd.Series([""] * len(frame), index=frame.index)
+    sub = frame[cols].fillna("").astype(str).apply(lambda s: s.str.strip())
+    sub = sub.replace({"nan": "", "None": "", "NaN": ""})
+    out = sub.iloc[:, 0]
+    for c in sub.columns[1:]:
+        out = out.where(out != "", sub[c])
+    return out
+
+
+@st.cache_data(ttl=120, show_spinner=False)
+def load_nominations():
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
-        recs_df = conn.read(worksheet="Recommendations", ttl=0) 
-        if recs_df.empty:
-            return []
-        user_recs = recs_df[recs_df['username'] == username].to_dict('records')
-        return user_recs
-    except Exception as e:
-        return []
+        raw = conn.read(worksheet="Recommendations", ttl=0)
+    except Exception:
+        return _empty_nominations()
+    if raw is None or len(raw) == 0:
+        return _empty_nominations()
 
-def save_rec_to_cloud(rec_entry):
+    raw = raw.copy()
+    raw.columns = [str(c).strip() for c in raw.columns]
+    df = pd.DataFrame(
+        {
+            "geoid_str": _coalesce(raw, "tract").map(norm_geoid),
+            "justification": _coalesce(raw, "justification"),
+            "category": _coalesce(raw, "category"),
+            "username": _coalesce(raw, "username"),
+            "status": _coalesce(raw, "status").str.lower(),
+        }
+    )
+    df = df[df["geoid_str"] != ""]
+    df = df[df["status"].isin(VISIBLE_STATUSES)]
+    if df.empty:
+        return _empty_nominations()
+    # newest row with text wins for each tract
+    df = df.replace("", np.nan).groupby("geoid_str", as_index=False, sort=False).last().fillna("")
+    return df
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_regions_sheet():
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
-        existing_df = conn.read(worksheet="Recommendations", ttl=0)
-        rec_entry['username'] = st.session_state["username"]
-        new_row_df = pd.DataFrame([rec_entry])
-        if not existing_df.empty:
-            updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
-        else:
-            updated_df = new_row_df
-        conn.update(worksheet="Recommendations", data=updated_df)
-    except Exception as e:
-        st.error(f"Cloud Save Failed: {e}")
+        df = conn.read(worksheet="Regions", ttl=0)
+        df.columns = [str(c).strip().lower() for c in df.columns]
+        return df
+    except Exception:
+        return pd.DataFrame(columns=["region", "partner", "oz_url", "contact_email"])
 
-# --- 2. AUTHENTICATION ---
-def check_password():
-    def password_entered():
-        try:
-            conn = st.connection("gsheets", type=GSheetsConnection)
-            users_df = conn.read(worksheet="Users", ttl="5m")
-            users_df.columns = users_df.columns.str.strip().str.lower()
-            u = st.session_state["username_input"].strip()
-            p = str(st.session_state["password_input"]).strip()
-            
-            if u in users_df['username'].astype(str).values:
-                user_row = users_df[users_df['username'].astype(str) == u]
-                if str(user_row['password'].values[0]).strip() == p:
-                    st.session_state["password_correct"] = True
-                    st.session_state["username"] = u
-                    st.session_state["session_recs"] = load_user_recs(u)
-                    return
-            st.session_state["password_correct"] = False
-            st.error("Invalid username or password")
-        except Exception as e:
-            st.error(f"Error connecting to database: {e}")
 
-    if not st.session_state["password_correct"]:
-        st.markdown("""
-            <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-            .stApp { background-color: #0b0f19 !important; font-family: 'Inter', sans-serif; }
-            div[data-testid="stVerticalBlock"] > div:has(input) {
-                background-color: #111827; padding: 40px; border-radius: 15px;
-                border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+def save_introduction(row):
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    try:
+        existing = conn.read(worksheet="Introductions", ttl=0)
+    except Exception:
+        existing = pd.DataFrame()
+    new_row = pd.DataFrame([row])
+    updated = new_row if existing is None or existing.empty else pd.concat([existing, new_row], ignore_index=True)
+    conn.update(worksheet="Introductions", data=updated)
+
+
+def save_recommendation(entry):
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    existing = conn.read(worksheet="Recommendations", ttl=0)
+    new_row = pd.DataFrame([entry])
+    updated = new_row if existing is None or existing.empty else pd.concat([existing, new_row], ignore_index=True)
+    conn.update(worksheet="Recommendations", data=updated)
+    load_nominations.clear()
+
+
+def authenticate(username, password):
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    users = conn.read(worksheet="Users", ttl="5m")
+    users.columns = users.columns.str.strip().str.lower()
+    u, p = str(username).strip(), str(password).strip()
+    match = users[users["username"].astype(str) == u]
+    if match.empty or str(match["password"].values[0]).strip() != p:
+        return None
+    r = match.iloc[0]
+    return {
+        "username": u,
+        "role": str(r.get("role", "")).strip(),
+        "assigned_type": str(r.get("assigned_type", "")).strip(),
+        "assigned_value": str(r.get("assigned_value", "")).strip(),
+    }
+
+
+# --- LOAD ---
+gj, master_df, anchors_df, tract_centers = load_assets()
+ANCHOR_TYPES = sorted(anchors_df["Type"].unique().tolist())
+_BOLD = px.colors.qualitative.Bold
+ANCHOR_COLORS = {t: _BOLD[i % len(_BOLD)] for i, t in enumerate(ANCHOR_TYPES)}
+ID_KEY = "GEOID"
+if gj and gj.get("features"):
+    ID_KEY = "GEOID" if "GEOID" in gj["features"][0]["properties"] else "GEOID20"
+
+nominations = load_nominations()
+nominated = nominations.merge(master_df[["geoid_str", "Parish", "Region"]], on="geoid_str", how="inner")
+nominated_ids = set(nominated["geoid_str"])
+nominated_by_id = {r["geoid_str"]: r for r in nominated.to_dict("records")}
+
+
+def build_region_table():
+    sheet = load_regions_sheet()
+    sheet_by_region = {}
+    for rec in sheet.to_dict("records"):
+        key = str(rec.get("region", "")).strip().lower()
+        if key and key != "nan":
+            sheet_by_region[key] = rec
+    counts = nominated.groupby("Region").size().to_dict()
+    table = []
+    for region in sorted(master_df["Region"].dropna().astype(str).unique().tolist()):
+        info = sheet_by_region.get(region.strip().lower(), {})
+        parishes = sorted(master_df.loc[master_df["Region"] == region, "Parish"].dropna().astype(str).unique().tolist())
+        partner = str(info.get("partner", "") or "").strip()
+        url = str(info.get("oz_url", "") or "").strip()
+        email = str(info.get("contact_email", "") or "").strip()
+        table.append(
+            {
+                "region": region,
+                "partner": "" if partner.lower() == "nan" else partner or region,
+                "parishes": parishes,
+                "url": safe_url(url if url.lower() != "nan" else REGION_OZ_URLS.get(region, "")),
+                "email": "" if email.lower() == "nan" else email,
+                "count": int(counts.get(region, 0)),
             }
-            label { color: #94a3b8 !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.75rem !important; letter-spacing: 0.05em; }
-            input { background-color: #0b0f19 !important; color: white !important; border: 1px solid #2d3748 !important; border-radius: 8px !important; }
-            button[kind="primary"], .stButton > button { background-color: #4ade80 !important; color: #0b0f19 !important; font-weight: 900 !important; border: none !important; height: 3em !important; margin-top: 10px; }
-            button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3); }
-            .login-header { text-align: center; margin-bottom: 2rem; }
-            </style>
-        """, unsafe_allow_html=True)
+        )
+    return table
 
-        _, col_mid, _ = st.columns([1, 0.8, 1])
-        with col_mid:
-            st.markdown("""
-                <div class="login-header">
-                    <p style='color: #4ade80; font-weight: 900; letter-spacing: 0.2em; font-size: 0.8rem; margin-bottom: 0;'>SECURE ACCESS</p>
-                    <h1 style='color: white; font-weight: 900; margin-top: 0;'>OZ 2.0 Portal</h1>
-                </div>
-            """, unsafe_allow_html=True)
-            with st.container():
-                st.text_input("Username", key="username_input", placeholder="Enter your username")
-                st.text_input("Password", type="password", key="password_input", placeholder="••••••••")
-                st.button("Sign In", on_click=password_entered, use_container_width=True)
-            st.markdown("<p style='text-align:center; color:#475569; font-size:0.8rem; margin-top:20px;'>Louisiana Opportunity Zones 2.0 | Admin Access Only</p>", unsafe_allow_html=True)
+
+region_table = build_region_table()
+parish_to_region = (
+    master_df.dropna(subset=["Parish", "Region"]).drop_duplicates("Parish").set_index("Parish")["Region"].to_dict()
+)
+
+
+# --- 2. STYLES ---
+CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
+:root{--bg:#06090F;--bg2:#090E18;--panel:#0C1322;--line:#172033;--line2:#26344E;--text:#EEF2F7;--muted:#8B98AE;--soft:#B6C1D3;--accent:#4ADE80}
+html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"]{background:#06090F !important;color:#EEF2F7;font-family:'Inter',system-ui,sans-serif !important;scroll-behavior:smooth;overflow-x:hidden}
+header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],#MainMenu,footer{display:none !important}
+[data-testid="stMainBlockContainer"],.block-container{max-width:1280px !important;padding:0 40px !important}
+[data-testid="stVerticalBlock"]{gap:0 !important}
+[data-testid="stHorizontalBlock"]{gap:24px !important;align-items:flex-end}
+[data-testid="stElementContainer"]{width:100%}
+[id]{scroll-margin-top:96px}
+.g{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}
+@media (max-width:900px){
+.g{grid-template-columns:minmax(0,1fr);row-gap:32px}
+.g>*{grid-column:1 / -1 !important;justify-self:start !important}
+[data-testid="stMainBlockContainer"],.block-container{padding:0 24px !important}
+.oz-nav nav{display:none}
+.oz-just{padding:28px !important}
+[data-testid="stHorizontalBlock"]{flex-wrap:wrap}
+}
+
+/* full-bleed section bands */
+.st-key-sec-process,.st-key-sec-incentives,.st-key-sec-project{background:#06090F;box-shadow:0 0 0 100vmax #06090F;clip-path:inset(0 -100vmax)}
+.st-key-sec-regions,.st-key-sec-map{background:#090E18;box-shadow:0 0 0 100vmax #090E18;clip-path:inset(0 -100vmax)}
+.st-key-sec-process,.st-key-sec-regions,.st-key-sec-incentives,.st-key-sec-map,.st-key-sec-project{position:relative;padding:clamp(88px,11vw,160px) 0}
+.st-key-sec-process{padding-top:clamp(120px,14vw,200px)}
+.st-key-sec-regions::before,.st-key-sec-incentives::before,.st-key-sec-map::before,.st-key-sec-project::before{content:'';position:absolute;top:0;left:-100vmax;right:-100vmax;border-top:1px solid #172033}
+
+/* nav */
+.oz-nav{position:fixed;top:0;left:0;right:0;height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 max(40px,calc((100vw - 1200px)/2));background:rgba(6,9,15,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid #172033;z-index:999999}
+.oz-brand{display:flex;align-items:center;gap:14px;color:#EEF2F7 !important;text-decoration:none !important;font-size:13px;font-weight:500;letter-spacing:.24em;text-transform:uppercase}
+.oz-brand i{width:10px;height:10px;border-radius:50%;background:#4ADE80;box-shadow:0 0 16px rgba(74,222,128,.7)}
+.oz-nav nav{display:flex;gap:48px}
+.oz-nav nav a{color:#B6C1D3 !important;text-decoration:none !important;font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase}
+.oz-nav nav a:hover{color:#4ADE80 !important}
+.oz-navcta{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 28px;border-radius:999px;border:1px solid #4ADE80;color:#4ADE80 !important;text-decoration:none !important;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+
+/* type */
+.oz-label{font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#8B98AE;margin-bottom:40px}
+.oz-label b{color:#4ADE80;font-weight:500}
+.oz-h1{font-size:clamp(52px,7.8vw,112px) !important;line-height:1 !important;font-weight:200 !important;letter-spacing:-.055em !important;color:#EEF2F7;margin:0 0 80px !important;padding:0 !important}
+.oz-h2{font-size:clamp(40px,5.6vw,80px) !important;line-height:1.02 !important;font-weight:200 !important;letter-spacing:-.05em !important;color:#EEF2F7;margin:0 0 48px !important;padding:0 !important}
+.oz-h3{font-size:clamp(32px,3.9vw,56px) !important;line-height:1.05 !important;font-weight:200 !important;letter-spacing:-.045em !important;color:#EEF2F7;margin:0 !important;padding:0 !important}
+.oz-intro{font-size:18px;line-height:1.75;font-weight:300;color:#8B98AE}
+.oz-intro.lg{font-size:20px}
+.oz-btn{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 40px;border-radius:999px;background:#4ADE80;color:#06090F !important;text-decoration:none !important;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;box-shadow:0 0 56px rgba(74,222,128,.28)}
+.oz-tlink{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:#EEF2F7 !important;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none !important}
+.oz-tlink:hover{text-decoration:underline !important;text-underline-offset:6px}
+.oz-tlink em{color:#4ADE80;font-style:normal}
+
+/* timeline + stats */
+.oz-step{position:relative;padding-top:32px;border-top:1px solid #26344E}
+.oz-step i{position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:#26344E}
+.oz-step.now{border-top-color:#4ADE80}
+.oz-step.now i{background:#4ADE80;box-shadow:0 0 16px rgba(74,222,128,.8)}
+.oz-step-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:24px}
+.oz-num{font-size:12px;font-weight:500;letter-spacing:.22em;color:#4ADE80}
+.oz-date{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
+.oz-step.now .oz-date{color:#4ADE80;font-weight:600}
+.oz-step-title{font-size:24px;font-weight:300;letter-spacing:-.02em;color:#EEF2F7;margin-bottom:16px}
+.oz-step-text{font-size:15px;line-height:1.75;font-weight:300;color:#8B98AE}
+.oz-stat b{display:block;font-size:clamp(64px,8.9vw,128px);font-weight:200;letter-spacing:-.06em;line-height:1;color:#EEF2F7}
+.oz-stat.acc b{color:#4ADE80}
+.oz-stat span{display:block;margin-top:24px;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#8B98AE}
+
+/* rows */
+.oz-row{padding:40px 0;border-top:1px solid #172033;align-items:center}
+.oz-rows>.oz-row:last-child{border-bottom:1px solid #172033}
+.oz-rname{font-size:clamp(28px,2.8vw,40px);font-weight:200;letter-spacing:-.035em;color:#EEF2F7}
+.oz-row.hl .oz-rname{color:#4ADE80}
+.oz-rsub{font-size:14px;font-weight:300;color:#8B98AE}
+.oz-rcount{display:flex;align-items:baseline;gap:10px}
+.oz-rcount b{font-size:clamp(36px,3.9vw,56px);font-weight:200;letter-spacing:-.04em;color:#4ADE80;line-height:1}
+.oz-rcount span{font-size:12px;color:#8B98AE}
+.oz-akind{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase}
+.oz-akind i{width:8px;height:8px;border-radius:50%}
+.oz-aname{font-size:clamp(24px,2.5vw,36px);font-weight:200;letter-spacing:-.035em;color:#EEF2F7}
+
+/* incentives */
+.oz-band{padding:72px 0;border-top:1px solid #172033;align-items:start}
+.oz-bands>.oz-band:last-child{border-bottom:1px solid #172033}
+.oz-bhead{display:flex;align-items:center;gap:12px;margin-bottom:24px;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase}
+.oz-bhead i{width:8px;height:8px;border-radius:50%}
+.oz-bq{font-size:clamp(26px,2.5vw,36px);line-height:1.15;font-weight:200;letter-spacing:-.035em;color:#EEF2F7}
+.oz-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 24px}
+.oz-iname{font-size:18px;font-weight:500;color:#EEF2F7}
+.oz-itext{margin:12px 0 16px;font-size:15px;line-height:1.75;font-weight:300;color:#8B98AE}
+.oz-ielig{font-size:12px;letter-spacing:.06em;color:#8B98AE}
+
+/* selected tract */
+.oz-kicker{font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#8B98AE;margin-bottom:20px}
+.oz-kicker.acc{color:#4ADE80}
+.oz-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;border:1px solid #26344E;font-size:12px;color:#EEF2F7}
+.oz-chip i{width:6px;height:6px;border-radius:50%}
+.oz-chips{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.oz-ks{display:flex;gap:24px;margin-top:56px;padding:32px 0;border-top:1px solid #172033;border-bottom:1px solid #172033}
+.oz-ks div{flex:1;min-width:0}
+.oz-ks b{display:block;font-size:clamp(26px,2.5vw,36px);font-weight:200;letter-spacing:-.04em;line-height:1;color:#EEF2F7}
+.oz-ks span{display:block;margin-top:12px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
+.oz-kvs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px}
+.oz-kv{display:flex;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid #172033;font-size:14px;color:#EEF2F7}
+.oz-kv span{color:#8B98AE;font-weight:300}
+.oz-just{padding:48px;border-radius:24px;background:#0C1322;border:1px solid #172033;display:flex;flex-direction:column;gap:24px}
+.oz-just p{margin:0 !important;font-size:17px;line-height:1.85;font-weight:300;color:#D5DCE8}
+.oz-just .by{padding-top:24px;border-top:1px solid #172033;font-size:13px;font-weight:300;color:#8B98AE}
+.oz-key{display:flex;flex-wrap:wrap;gap:12px 28px;font-size:12px;color:#B6C1D3;padding-bottom:14px}
+.oz-key span{display:inline-flex;align-items:center;gap:8px}
+.oz-key i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.oz-empty{padding:64px 0;border-top:1px solid #172033;border-bottom:1px solid #172033;font-size:18px;font-weight:300;color:#8B98AE}
+.oz-count{text-align:right;font-size:13px;font-weight:300;color:#8B98AE;padding-bottom:12px}
+.oz-count b{display:block;font-size:40px;font-weight:200;letter-spacing:-.04em;line-height:1;color:#4ADE80;margin-bottom:8px}
+.oz-pstep{display:flex;gap:24px;padding-top:32px;border-top:1px solid #172033;margin-bottom:48px}
+.oz-pstep .n{flex:none;font-size:12px;font-weight:500;letter-spacing:.2em;color:#4ADE80;padding-top:5px}
+.oz-pstep .t{font-size:20px;font-weight:300;letter-spacing:-.01em;color:#EEF2F7;margin-bottom:10px}
+.oz-pstep .d{font-size:15px;line-height:1.75;font-weight:300;color:#8B98AE}
+.oz-footer{padding:56px 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 40px;color:#8B98AE;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.oz-footer nav{display:flex;flex-wrap:wrap;gap:0 36px}
+.oz-footer a{color:#B6C1D3 !important;text-decoration:none !important;font-weight:500;letter-spacing:.16em;padding:14px 0}
+
+.oz-th{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:40px 0;border-top:1px solid #172033;border-bottom:1px solid #172033}
+.oz-pop{text-align:right}
+.oz-pop b{display:block;font-size:clamp(32px,3.9vw,56px);font-weight:200;letter-spacing:-.045em;line-height:1;color:#EEF2F7}
+.oz-pop span{display:block;margin-top:10px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
+.oz-mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:24px;border-top:1px solid #172033;margin-top:4px}
+.oz-m{padding:28px 0;border-bottom:1px solid #172033}
+.oz-m b{display:block;font-size:clamp(22px,2.2vw,32px);font-weight:200;letter-spacing:-.035em;line-height:1.1;color:#EEF2F7}
+.oz-m span{display:block;margin-top:12px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
+.oz-arows>.oz-arow:last-child{border-bottom:1px solid #172033}
+.oz-arow{padding:24px 0;border-top:1px solid #172033}
+.oz-aname2{font-size:22px;font-weight:200;letter-spacing:-.025em;margin:12px 0 8px;color:#EEF2F7}
+.oz-arow-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+/* widgets */
+[data-testid="stWidgetLabel"] p,label[data-testid="stWidgetLabel"] p{font-size:12px !important;font-weight:500 !important;letter-spacing:.18em !important;text-transform:uppercase !important;color:#8B98AE !important}
+div[data-baseweb="select"]>div{background:transparent !important;border:none !important;border-bottom:1px solid #26344E !important;border-radius:0 !important;min-height:52px;box-shadow:none !important}
+div[data-baseweb="select"] *{color:#EEF2F7 !important;font-family:'Inter',sans-serif !important;font-size:16px !important;font-weight:300 !important}
+div[data-baseweb="select"] svg{fill:#8B98AE !important}
+div[data-baseweb="popover"]>div,div[data-baseweb="popover"] ul,ul[role="listbox"]{background:#0C1322 !important;border-radius:12px}
+li[role="option"]{background:#0C1322 !important;color:#EEF2F7 !important}
+li[role="option"]:hover,li[aria-selected="true"]{background:#16233B !important}
+span[data-baseweb="tag"]{background:transparent !important;border:1px solid #26344E !important;border-radius:999px !important;height:40px;padding-left:16px}
+span[data-baseweb="tag"] span{color:#EEF2F7 !important;font-size:13px !important;font-weight:400 !important}
+span[data-baseweb="tag"] svg{fill:#8B98AE !important}
+div[data-baseweb="input"],div[data-baseweb="base-input"],div[data-baseweb="textarea"]{background:transparent !important;border:none !important;border-bottom:1px solid #26344E !important;border-radius:0 !important}
+div[data-baseweb="input"]>div,div[data-baseweb="base-input"]>div{background:transparent !important}
+div[data-baseweb="input"] input,div[data-baseweb="base-input"] input,div[data-baseweb="textarea"] textarea,textarea{background:transparent !important;color:#EEF2F7 !important;font-family:'Inter',sans-serif !important;font-size:17px !important;font-weight:300 !important;padding-left:0 !important;-webkit-text-fill-color:#EEF2F7}
+input::placeholder,textarea::placeholder{color:#8B98AE !important;-webkit-text-fill-color:#8B98AE}
+input:disabled{-webkit-text-fill-color:#B6C1D3 !important;opacity:1 !important}
+.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button{border-radius:999px !important;min-height:56px;padding:0 36px !important;font-family:'Inter',sans-serif !important;background:transparent !important;color:#EEF2F7 !important;border:1px solid #26344E !important;box-shadow:none !important}
+.stButton>button *,.stFormSubmitButton>button *,.stDownloadButton>button *{color:inherit !important;font-size:12px !important;font-weight:600 !important;letter-spacing:.14em !important;text-transform:uppercase !important}
+.stButton>button:hover,.stDownloadButton>button:hover{border-color:#4ADE80 !important;color:#4ADE80 !important}
+.stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"],button[data-testid="stBaseButton-primary"],button[data-testid="stBaseButton-primaryFormSubmit"]{background:#4ADE80 !important;color:#06090F !important;border:none !important;box-shadow:0 0 48px rgba(74,222,128,.25) !important}
+.stButton>button[kind="primary"]:hover{color:#06090F !important}
+.stButton{display:flex;justify-content:flex-start}
+[data-testid="stForm"]{border:none !important;padding:0 !important}
+[data-testid="stPlotlyChart"]{border-radius:24px;overflow:hidden;border:1px solid #172033;background:#E5E7EB}
+[data-testid="stExpander"]{border:1px solid #172033 !important;border-radius:16px !important;background:transparent !important}
+[data-testid="stExpander"] summary p{color:#B6C1D3 !important;font-size:12px !important;letter-spacing:.16em;text-transform:uppercase}
+[data-testid="stAlert"]{background:#0C1322 !important;border:1px solid #26344E !important;border-radius:16px !important}
+[data-testid="stAlert"] *{color:#EEF2F7 !important}
+@media (max-width:900px){.oz-mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+"""
+st.markdown(CSS, unsafe_allow_html=True)
+
+
+# --- 3. PARTNER SIGN-IN (optional) ---
+def partner_login_form(key):
+    with st.form(key):
+        u = st.text_input("Username", key=f"{key}_u")
+        p = st.text_input("Password", type="password", key=f"{key}_p")
+        if st.form_submit_button("Sign in"):
+            try:
+                who = authenticate(u, p)
+            except Exception as exc:
+                st.error(f"Error connecting to database: {exc}")
+                return
+            if who:
+                st.session_state["partner"] = who
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+
+
+if REQUIRE_LOGIN and not st.session_state["partner"]:
+    render("<div style='height:25vh'></div>")
+    left, mid, right = st.columns([1, 1, 1])
+    with mid:
+        render(
+            """
+            <div class="oz-label"><b>Secure access</b></div>
+            <div class="oz-h3" style="margin-bottom:48px !important">Louisiana OZ 2.0 Portal</div>
+            """
+        )
+        partner_login_form("gate_login")
+    st.stop()
+
+
+# --- 4. NAV ---
+render(
+    """
+    <div class="oz-nav">
+      <a class="oz-brand" href="#process"><i></i>Louisiana OZ 2.0</a>
+      <nav>
+        <a href="#process">Process</a><a href="#regions">Partners</a><a href="#incentives">Incentives</a><a href="#map">Asset map</a>
+      </nav>
+      <a class="oz-navcta" href="#project">Your project</a>
+    </div>
+    """
+)
+
+# --- SECTION 1: NOMINATION PROCESS ---
+with section("process"):
+    steps_html = ""
+    for i, s in enumerate(CONTENT["process_steps"]):
+        now = " now" if s.get("now") else ""
+        steps_html += (
+            f"<div class='oz-step{now}' style='grid-column:span 3'><i></i>"
+            f"<div class='oz-step-top'><span class='oz-num'>{i + 1:02d}</span><span class='oz-date'>{esc(s.get('date', ''))}</span></div>"
+            f"<div class='oz-step-title'>{esc(s['title'])}</div><div class='oz-step-text'>{esc(s['text'])}</div></div>"
+        )
+    parishes_with = int(nominated["Parish"].nunique()) if len(nominated) else 0
+    render(
+        f"""
+        <div id="process">
+          <div class="g">
+            <div class="oz-label" style="grid-column:1 / span 12"><b>01</b> &nbsp;/&nbsp; Louisiana nomination process</div>
+            <div role="heading" aria-level="1" class="oz-h1" style="grid-column:1 / span 11">How Louisiana nominated its Opportunity Zone 2.0 tracts.</div>
+            <div class="oz-intro lg" style="grid-column:1 / span 5">{esc(CONTENT['process_intro'])}</div>
+            <div style="grid-column:8 / span 5;align-self:end;display:flex;justify-content:flex-end"><a class="oz-btn" href="#map">Explore the asset map</a></div>
+          </div>
+          <div class="g" style="margin-top:clamp(96px,12vw,176px)">{steps_html}</div>
+          <div class="g" style="margin-top:clamp(80px,10vw,144px)">
+            <div class="oz-stat" style="grid-column:span 4"><b>{len(region_table)}</b><span>Regional partners</span></div>
+            <div class="oz-stat" style="grid-column:span 4"><b>{parishes_with}</b><span>Parishes with nominations</span></div>
+            <div class="oz-stat acc" style="grid-column:span 4"><b>{len(nominated)}</b><span>Nominated tracts</span></div>
+          </div>
+        </div>
+        """
+    )
+
+# --- SECTION 2: REGIONAL PARTNERS ---
+with section("regions"):
+    render(
+        """
+        <div id="regions">
+          <div class="oz-label"><b>02</b> &nbsp;/&nbsp; Regional partners</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Start with the partner in your region.</div>
+        </div>
+        """
+    )
+    c_intro, _gap, c_find = st.columns([5, 2, 5])
+    with c_intro:
+        render(f"<div class='oz-intro'>{esc(CONTENT['partners_intro'])}</div>")
+    highlight_region = None
+    with c_find:
+        parish_options = ["Select a parish"] + sorted(parish_to_region.keys())
+        chosen_parish = st.selectbox("Find your region by parish", parish_options, key="find_parish")
+        if chosen_parish != "Select a parish":
+            highlight_region = parish_to_region.get(chosen_parish)
+            if highlight_region:
+                render(
+                    f"<div class='oz-rsub' style='margin-top:12px'>{esc(chosen_parish)} is served by "
+                    f"<span style='color:#4ADE80'>{esc(highlight_region)}</span>.</div>"
+                )
+    spacer(112)
+
+    rows_html = ""
+    for r in region_table:
+        parishes = r["parishes"]
+        shown = ", ".join(parishes[:5]) + (f" +{len(parishes) - 5} more" if len(parishes) > 5 else "")
+        link = (
+            f"<a class='oz-tlink' href='{esc(r['url'])}' target='_blank' rel='noopener' style='grid-column:11 / span 2;justify-self:end'>OZ page <em>↗</em></a>"
+            if r["url"]
+            else "<span class='oz-rsub' style='grid-column:11 / span 2;justify-self:end'>OZ page soon</span>"
+        )
+        hl = " hl" if highlight_region and r["region"] == highlight_region else ""
+        rows_html += (
+            f"<div class='g oz-row{hl}'>"
+            f"<div class='oz-rname' style='grid-column:1 / span 4'>{esc(r['partner'])}</div>"
+            f"<div class='oz-rsub' style='grid-column:5 / span 4'>{esc(shown)}</div>"
+            f"<div class='oz-rcount' style='grid-column:9 / span 2'><b>{r['count']}</b><span>nominated</span></div>"
+            f"{link}</div>"
+        )
+    render(f"<div class='oz-rows'>{rows_html}</div>")
+
+# --- SECTION 3: INCENTIVES ---
+with section("incentives"):
+    bands_html = ""
+    for cat in CONTENT["incentives"]:
+        items = "".join(
+            f"<div><div class='oz-iname'>{esc(it['name'])}</div><div class='oz-itext'>{esc(it['text'])}</div>"
+            f"<div class='oz-ielig'>Eligibility · {esc(it['eligibility'])}</div></div>"
+            for it in cat["items"]
+        )
+        bands_html += (
+            f"<div class='g oz-band'>"
+            f"<div style='grid-column:1 / span 4'><div class='oz-bhead' style='color:{esc(cat['text_color'])}'>"
+            f"<i style='background:{esc(cat['color'])};box-shadow:0 0 12px {esc(cat['color'])}'></i>{esc(cat['label'])}</div>"
+            f"<div class='oz-bq'>{esc(cat['question'])}</div></div>"
+            f"<div class='oz-items' style='grid-column:5 / span 8'>{items}</div></div>"
+        )
+    render(
+        f"""
+        <div id="incentives">
+          <div class="oz-label"><b>03</b> &nbsp;/&nbsp; Development incentives</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Incentives that de-risk the investment.</div>
+          <div class="g" style="margin-bottom:112px"><div class="oz-intro" style="grid-column:1 / span 5">{esc(CONTENT['incentives_intro'])}</div></div>
+          <div class="oz-bands">{bands_html}</div>
+          <div style="margin-top:64px"><a class="oz-tlink" href="#map">See which incentives apply to each tract <em>→</em></a></div>
+        </div>
+        """
+    )
+
+
+def rule_applies(rule, row, region, parish):
+    if not rule:
+        return True
+    nm = str(row.get("NMTC_Calculated", ""))
+    if rule.get("nmtc") and nm not in ("Eligible", "Deep Distress"):
+        return False
+    if rule.get("deep_distress") and nm != "Deep Distress":
+        return False
+    if rule.get("metro") and str(rule["metro"]).lower() not in str(row.get(METRO_COL, "")).lower():
+        return False
+    if rule.get("regions") and region not in rule["regions"]:
+        return False
+    if rule.get("parishes") and parish not in rule["parishes"]:
         return False
     return True
 
-if check_password():
-    # --- 3. GLOBAL STYLING & FROZEN NAV ---
-    st.markdown("""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        html, body, [class*="stApp"] { font-family: 'Inter', sans-serif !important; background-color: #0b0f19 !important; color: #ffffff; scroll-behavior: smooth; }
-        .nav-container { position: fixed; top: 0; left: 0; width: 100%; background-color: rgba(11, 15, 25, 0.98); border-bottom: 1px solid #1e293b; padding: 15px 50px; z-index: 999999; display: flex; justify-content: center; gap: 30px; backdrop-filter: blur(10px); }
-        .nav-link, .nav-link:link, .nav-link:visited { color: #ffffff !important; text-decoration: none !important; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s ease; }
-        .nav-link:hover, .nav-link:active { color: #4ade80 !important; text-decoration: none !important; }
-        .main .block-container { padding-top: 80px !important; }
-        div[data-baseweb="select"] > div { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important; }
-        div[data-baseweb="select"] * { color: #0f172a !important; }
-        label[data-testid="stWidgetLabel"] { color: #94a3b8 !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.75rem !important; letter-spacing: 0.05em; }
-        .content-section { padding: 60px 0; border-bottom: 1px solid #1e293b; width: 100%; }
-        .section-num { font-size: 0.8rem; font-weight: 900; color: #4ade80; margin-bottom: 10px; letter-spacing: 0.1em; }
-        .section-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 20px; }
-        .hero-title { font-size: 3.8rem; font-weight: 900; color: #f8fafc; margin-bottom: 20px; line-height: 1.1; }
-        .narrative-text { font-size: 1.15rem; color: #94a3b8; line-height: 1.7; max-width: 900px; margin-bottom: 30px; }
-        .benefit-card { background-color: #111827 !important; padding: 30px; border: 1px solid #2d3748; border-radius: 12px; height: 100%; min-height: 280px; transition: all 0.3s ease; display: flex; flex-direction: column; }
-        .benefit-card:hover { border-color: #4ade80 !important; transform: translateY(-5px); }
-        .benefit-card h3 { color: #f8fafc; margin-bottom: 15px; font-weight: 800; font-size: 1.3rem; }
-        .benefit-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; flex-grow: 1; }
-        .benefit-card a { color: #4ade80; text-decoration: none; font-weight: 700; margin-top: 15px; }
-        .metric-card { background-color: #111827 !important; padding: 10px; border: 1px solid #1e293b; border-radius: 8px; text-align: center; height: 95px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 10px; }
-        .metric-value { font-size: 1.05rem; font-weight: 900; color: #4ade80; line-height: 1.1; }
-        .metric-label { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; margin-top: 4px; letter-spacing: 0.05em; }
-        .anchor-card { background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }
-        .view-site-btn { display: block; background-color: #4ade80; color: #0b0f19 !important; padding: 8px 0; border-radius: 4px; text-decoration: none !important; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }
-        .view-site-btn:hover { background-color: #22c55e; }
-        </style>
 
-        <div class="nav-container">
-            <a class="nav-link" href="#section-1">Overview</a>
-            <a class="nav-link" href="#section-2">Benefits</a>
-            <a class="nav-link" href="#section-3">Strategy</a>
-            <a class="nav-link" href="#section-4">Best Practices</a>
-            <a class="nav-link" href="#section-5">Mapping</a>
-            <a class="nav-link" href="#section-6">Report</a>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # --- 4. DATA ENGINE ---
-    def haversine(lon1, lat1, lon2, lat2):
-        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-        dlon, dlat = lon2 - lon1, lat2 - lat1
-        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-        return 3956 * 2 * asin(sqrt(a))
-
-    @st.cache_data(ttl=3600)
-    def load_assets():
-        gj = None
-        if os.path.exists("tl_2025_22_tract.json"):
-            with open("tl_2025_22_tract.json", "r") as f: gj = json.load(f)
-        
-        def read_csv_with_fallback(path):
-            for enc in ['utf-8', 'latin1', 'cp1252']:
-                try: return pd.read_csv(path, encoding=enc)
-                except: continue
-            return pd.read_csv(path)
-
-        master = read_csv_with_fallback("Opportunity Zones 2.0 - Master Data File.csv")
-        master['geoid_str'] = master['11-digit FIP'].astype(str).str.split('.').str[0].str.zfill(11)
-        
-        master['Eligibility_Status'] = master['Opportunity Zones Insiders Eligibilty'].apply(
-            lambda x: 'Eligible' if str(x).strip().lower() in ['eligible', 'yes', '1', 'true'] else 'Ineligible'
-        )
-
-        def get_nmtc_status(row):
-            is_deep = str(row.get('Deep Distress', '')).strip().upper()
-            is_eligible = str(row.get('NMTC Eligible', '')).strip().upper()
-            if is_deep in ['YES', 'TRUE', '1']: return "Deep Distress"
-            elif is_eligible in ['YES', 'TRUE', '1']: return "Eligible"
-            return "Ineligible"
-
-        master['NMTC_Calculated'] = master.apply(get_nmtc_status, axis=1)
-        
-        # --- FIXED LA_ANCHORS INTEGRATION WITH SPECIFIC LAYERS ONLY ---
-        anchors = read_csv_with_fallback("la_anchors.csv")
-        anchors = anchors.dropna(subset=['Lat', 'Lon'])  
-        
-        # Strip spaces and standardize casing to avoid CSV typing syntax errors
-        anchors['Type'] = anchors['Type'].astype(str).str.strip()
-        
-        # Expanded key map to catch all mutations of your label styles flawlessly
-        type_mapping = {
-            "Rural Healthcare Facility": "Rural Healthcare Facility",
-            "Medical": "Rural Healthcare Facility",
-            "Land": "Land",
-            "Buildings": "Buildings",
-            "Louisiana Main Street": "Main Street",
-            "Main Street": "Main Street",
-            "Certified Site": "Certified Site",
-            "Fastsites": "FastSite",
-            "FastSite": "FastSite",
-            "Fast Site": "FastSite"
-        }
-        
-        anchors['Type'] = anchors['Type'].map(type_mapping)
-        anchors = anchors.dropna(subset=['Type'])  
-        
-        centers = {}
-        if gj:
-            for feature in gj['features']:
-                geoid = feature['properties'].get('GEOID') or feature['properties'].get('GEOID20')
-                try:
-                    geom = feature['geometry']
-                    if geom['type'] == 'Polygon': pts = np.array(geom['coordinates'][0])
-                    elif geom['type'] == 'MultiPolygon': pts = np.array(geom['coordinates'][0][0])
-                    centers[geoid] = [np.mean(pts[:, 0]), np.mean(pts[:, 1])]
-                except: continue
-        return gj, master, anchors, centers
-
-    gj, master_df, anchors_df, tract_centers = load_assets()
-
-    def get_zoom_center(geoids):
-        if not geoids or not gj: return {"lat": 30.9, "lon": -91.8}, 6.0
-        lats, lons = [], []
-        id_key = "GEOID" if "GEOID" in str(gj['features'][0]['properties']) else "GEOID20"
-        for feature in gj['features']:
-            gid = feature['properties'].get(id_key)
-            if gid in geoids:
-                geom = feature['geometry']
-                if geom['type'] == 'Polygon':
-                    coords = np.array(geom['coordinates'][0])
+# --- MAP HELPERS ---
+def get_zoom_center(geoids):
+    default = {"lat": 30.9, "lon": -91.8}, 6.0
+    if not geoids or not gj:
+        return default
+    lats, lons = [], []
+    for feature in gj["features"]:
+        if feature["properties"].get(ID_KEY) in geoids:
+            geom = feature["geometry"]
+            if geom["type"] == "Polygon":
+                coords = np.array(geom["coordinates"][0])
+                lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
+            elif geom["type"] == "MultiPolygon":
+                for poly in geom["coordinates"]:
+                    coords = np.array(poly[0])
                     lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
-                elif geom['type'] == 'MultiPolygon':
-                    for poly in geom['coordinates']:
-                        coords = np.array(poly[0])
-                        lons.extend(coords[:, 0]); lats.extend(coords[:, 1])
-        if not lats: return {"lat": 30.9, "lon": -91.8}, 6.0
-        min_lat, max_lat = min(lats), max(lats)
-        min_lon, max_lon = min(lons), max(lons)
-        center = {"lat": (min_lat + max_lat) / 2, "lon": (min_lon + max_lon) / 2}
-        lat_diff = max_lat - min_lat
-        lon_diff = max_lon - min_lon
-        max_diff = max(lat_diff, lon_diff)
-        if max_diff == 0: zoom = 12.5
-        elif max_diff < 0.05: zoom = 12.0
-        elif max_diff < 0.1: zoom = 11.0
-        elif max_diff < 0.3: zoom = 10.0
-        elif max_diff < 0.8: zoom = 8.5
-        elif max_diff < 1.5: zoom = 7.5
-        else: zoom = 6.2
-        return center, zoom
+    if not lats:
+        return default
+    center = {"lat": (min(lats) + max(lats)) / 2, "lon": (min(lons) + max(lons)) / 2}
+    max_diff = max(max(lats) - min(lats), max(lons) - min(lons))
+    if max_diff == 0: zoom = 12.5
+    elif max_diff < 0.05: zoom = 12.0
+    elif max_diff < 0.1: zoom = 11.0
+    elif max_diff < 0.3: zoom = 10.0
+    elif max_diff < 0.8: zoom = 8.5
+    elif max_diff < 1.5: zoom = 7.5
+    else: zoom = 6.2
+    return center, zoom
 
-    def render_map_go(df):
-        map_df = df.copy().reset_index(drop=True)
-        selected_geoids = [str(rec['Tract']) for rec in st.session_state["session_recs"]]
-        def get_color_cat(row):
-            if str(row['geoid_str']) in selected_geoids: return 2
-            return 1 if row['Eligibility_Status'] == 'Eligible' else 0
-        map_df['Color_Category'] = map_df.apply(get_color_cat, axis=1)
-        if st.session_state.get("active_tract") and st.session_state["active_tract"] in map_df['geoid_str'].values:
-            focus_geoids = {st.session_state["active_tract"]}
-        else:
-            focus_geoids = set(map_df['geoid_str'].tolist())
-        center, zoom = get_zoom_center(focus_geoids)
-        sel_idx = map_df.index[map_df['geoid_str'] == st.session_state["active_tract"]].tolist() if st.session_state["active_tract"] else []
-        revision_key = "_".join(sorted(list(focus_geoids))) if len(focus_geoids) < 5 else str(hash(tuple(sorted(list(focus_geoids)))))
-        fig = go.Figure()
-        # UPDATED: Choroplethmapbox -> Choroplethmap (MapLibre-based, current Plotly)
-        fig.add_trace(go.Choroplethmap(
-            geojson=gj, locations=map_df['geoid_str'], z=map_df['Color_Category'],
-            featureidkey="properties.GEOID" if "GEOID" in str(gj) else "properties.GEOID20",
-            colorscale=[[0, '#e2e8f0'], [0.5, '#4ade80'], [1, '#f97316']], zmin=0, zmax=2,
-            showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color='black')),
-            selectedpoints=sel_idx, hoverinfo="location", name="Census Tracts"
-        ))
-        
-        anchor_types = sorted(anchors_df['Type'].unique())
-        color_palette = px.colors.qualitative.Bold 
-        for i, a_type in enumerate(anchor_types):
-            type_data = anchors_df[anchors_df['Type'] == a_type]
-            marker_color = color_palette[i % len(color_palette)]
-            # UPDATED: Scattermapbox -> Scattermap
-            fig.add_trace(go.Scattermap(
-                lat=type_data['Lat'], lon=type_data['Lon'], mode='markers',
-                marker=go.scattermap.Marker(size=11, color=marker_color),
-                text=type_data['Name'], hoverinfo='text', name=f"{a_type}", visible="legendonly" 
-            ))
-        fig.update_layout(
-            # UPDATED: mapbox=dict(...) -> map=dict(...)
-            map=dict(style="carto-positron", zoom=zoom, center=center),
-            margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', height=700, 
-            clickmode='event+select', uirevision=revision_key,
-            legend=dict(title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)), yanchor="top", y=0.98, xanchor="left", x=0.02, bgcolor="rgba(255, 255, 255, 0.9)", font=dict(size=11, color="#1e293b"), bordercolor="#cbd5e1", borderwidth=1)
+
+def render_map(df, active):
+    """Same look as the original portal map: light carto-positron basemap, grey tracts, green for
+    nominated tracts, orange for the selected tract, and the in-map 'Toggle Anchor Assets' legend."""
+    map_df = df[["geoid_str", "Parish"]].copy().reset_index(drop=True)
+    sel = str(active) if active else None
+
+    def tract_cat(g):
+        if sel and g == sel:
+            return 2
+        return 1 if g in nominated_ids else 0
+
+    map_df["Color_Category"] = map_df["geoid_str"].map(tract_cat)
+    map_df["hover"] = (
+        map_df["Parish"].astype(str) + " · " + map_df["geoid_str"]
+        + np.where(map_df["geoid_str"].isin(nominated_ids), " · Nominated", "")
+    )
+    in_view = sel is not None and sel in set(map_df["geoid_str"])
+    focus = {sel} if in_view else set(map_df["geoid_str"])
+    center, zoom = get_zoom_center(focus)
+    revision_key = sel if in_view else f"{len(focus)}-{min(focus) if focus else ''}"
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Choroplethmap(
+            geojson=gj, locations=map_df["geoid_str"], z=map_df["Color_Category"],
+            featureidkey=f"properties.{ID_KEY}",
+            colorscale=[[0, "#e2e8f0"], [0.5, "#4ade80"], [1, "#f97316"]], zmin=0, zmax=2,
+            showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color="black")),
+            selected=dict(marker=dict(opacity=0.6)), unselected=dict(marker=dict(opacity=0.6)),
+            hovertext=map_df["hover"], hoverinfo="text", name="Census Tracts",
         )
-        return fig
+    )
+    for a_type in ANCHOR_TYPES:
+        type_data = anchors_df[anchors_df["Type"] == a_type]
+        fig.add_trace(
+            go.Scattermap(
+                lat=type_data["Lat"], lon=type_data["Lon"], mode="markers",
+                marker=go.scattermap.Marker(size=11, color=ANCHOR_COLORS[a_type]),
+                text=type_data["Name"], hoverinfo="text", name=a_type, visible="legendonly",
+            )
+        )
+    fig.update_layout(
+        map=dict(style="carto-positron", zoom=zoom, center=center),
+        margin={"r": 0, "t": 0, "l": 0, "b": 0}, paper_bgcolor="rgba(0,0,0,0)", height=700,
+        clickmode="event+select", uirevision=revision_key,
+        legend=dict(
+            title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)),
+            yanchor="top", y=0.98, xanchor="left", x=0.02,
+            bgcolor="rgba(255, 255, 255, 0.9)", font=dict(size=11, color="#1e293b"),
+            bordercolor="#cbd5e1", borderwidth=1,
+        ),
+    )
+    return fig
 
-    # --- SECTION 1: OVERVIEW ---
-    st.markdown("<div id='section-1'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 1</div>
-        <div style='color: #4ade80; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;'>Opportunity Zones 2.0</div>
-        <div class='hero-title'>Louisiana OZ 2.0 Portal</div>
-        <div class='narrative-text'>
-            The Opportunity Zones Program is a federal capital gains tax incentive program designed to drive long-term investments to low-income communities. 
-            Under the new Opportunity Zones 2.0 framework, Louisiana is strategically aligning census tracts with high-growth industries like renewable energy, 
-            biotechnology, and advanced manufacturing to maximize both social impact and investor returns.
+
+def nearest_anchors(lon, lat, types, n=5):
+    sub = anchors_df if not types else anchors_df[anchors_df["Type"].isin(types)]
+    if sub.empty:
+        return sub
+    lon1, lat1 = np.radians(lon), np.radians(lat)
+    lon2, lat2 = np.radians(sub["Lon"].values), np.radians(sub["Lat"].values)
+    h = np.sin((lat2 - lat1) / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
+    return sub.assign(dist=3956 * 2 * np.arcsin(np.sqrt(h))).sort_values("dist").head(n)
+
+
+def add_to_shortlist(gid):
+    current = list(st.session_state.get("shortlist", []))
+    if gid not in current:
+        current.append(gid)
+    st.session_state["shortlist"] = current
+
+
+def reset_view():
+    st.session_state["active_tract"] = None
+
+
+# --- SECTION 4: ASSET MAP ---
+with section("map"):
+    render(
+        """
+        <div id="map">
+          <div class="oz-label"><b>04</b> &nbsp;/&nbsp; Asset map</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Nominated tracts and the assets around them.</div>
+          <div class="g" style="margin-bottom:96px"><div class="oz-intro" style="grid-column:1 / span 5">Select a tract to read the regional partner’s case and see what’s nearby.</div></div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """
+    )
 
-    # --- SECTION 2: BENEFITS ---
-    st.markdown("<div id='section-2'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 2</div><div class='section-title'>The Benefit Framework</div>", unsafe_allow_html=True)
-    b1, b2, b3 = st.columns(3)
-    b1.markdown("""
-    <div class='benefit-card'>
-        <h3>Capital Gain Deferral</h3>
-        <p>Investors can defer federal taxes on any prior capital gains until December 31, 2026, or until the date on which the investment is sold or exchanged, whichever comes first, provided that the gain is reinvested in a Qualified Opportunity Fund (QOF).</p>
-    </div>""", unsafe_allow_html=True)
-    b2.markdown("""
-    <div class='benefit-card'>
-        <h3>Basis Step-Up</h3>
-        <p>For capital gains reinvested in a QOF, the basis is increased by 10% if the investment is held for at least 5 years and by an additional 5% if held for at least 7 years, excluding up to 15% of the original gain from taxation.</p>
-    </div>""", unsafe_allow_html=True)
-    b3.markdown("""
-    <div class='benefit-card'>
-        <h3>10-Year Gain Exclusion</h3>
-        <p>The most significant benefit: if an investor holds their investment in a QOF for at least 10 years, they pay zero capital gains tax on any post-acquisition gains from the investment itself.</p>
-    </div>""", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # --- SECTION 3: STRATEGY ---
-    st.markdown("<div id='section-3'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 3</div>
-        <div class='section-title'>Strategic Tract Advocacy</div>
-        <div class='narrative-text'>
-            Advocating for specific census tracts requires a data-driven approach. We prioritize tracts that demonstrate high potential for job creation, 
-            proximity to transit corridors, and alignment with parish-level master plans. By layering economic data with visual storytelling, 
-            we can present a compelling case for investment.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- SECTION 4: NATIONAL BEST PRACTICES ---
-    st.markdown("<div id='section-4'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 4</div>
-        <div class='section-title'>National Best Practices</div>
-        <div class='narrative-text'>
-            Louisiana's framework is built upon successful models and guidance from leading economic policy thinktanks, 
-            ensuring our Opportunity Zone 2.0 strategy meets national standards for impact and transparency.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    p_col1, p_col2, p_col3 = st.columns(3)
-
-    with p_col1:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>Economic Innovation Group</h3>
-            <p>This guide defines successful OZ designation strategies around eight core principles focused on long-term growth and community equity.</p>
-            <a href='https://eig.org/ozs-guidance/' target='_blank'>A Guide for Governors ↗</a>
-        </div>""", unsafe_allow_html=True)
-
-    with p_col2:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>FBT Gibbons</h3>
-            <p>Frameworks to support diverse project types, including commercial, industrial, and mixed-use developments that align with local needs.</p>
-            <a href='https://fbtgibbons.com/strategic-selection-of-opportunity-zones-2-0-a-governors-guide-to-best-practices/' target='_blank'>Strategic Selection Guide ↗</a>
-        </div>""", unsafe_allow_html=True)
-
-    with p_col3:
-        st.markdown("""
-        <div class='benefit-card'>
-            <h3>America First Policy Institute</h3>
-            <p>Strategic alignment with state-level blueprints for revitalizing American communities through comprehensive policy reform and impact tracking.</p>
-            <a href='https://www.americafirstpolicy.com/issues/from-policy-to-practice-opportunity-zones-2.0-reforms-and-a-state-blueprint-for-impact' target='_blank'>State Blueprint for Impact ↗</a>
-        </div>""", unsafe_allow_html=True)
-
-    # --- SECTION 5: MAPPING SECTION ---
-    st.markdown("<div id='section-5'></div>", unsafe_allow_html=True)
-    st.markdown("<div class='content-section'><div class='section-num'>SECTION 5</div><div class='section-title'>Strategic Opportunity Zone Mapping & Recommendation</div></div>", unsafe_allow_html=True)
-    
-    f_col1, f_col2, f_col3 = st.columns(3)
-    with f_col1: selected_region = st.selectbox("Region", ["All Louisiana"] + sorted(master_df['Region'].dropna().unique().tolist()))
+    # filters
+    f1, f2, f3, f4 = st.columns(4)
+    with f1:
+        regions_list = sorted(master_df["Region"].dropna().astype(str).unique().tolist())
+        selected_region = st.selectbox("Region", ["All Louisiana"] + regions_list, key="f_region")
     filtered_df = master_df.copy()
-    if selected_region != "All Louisiana": filtered_df = filtered_df[filtered_df['Region'] == selected_region]
-    
-    with f_col2: selected_parish = st.selectbox("Parish", ["All in Region"] + sorted(filtered_df['Parish'].dropna().unique().tolist()))
-    if selected_parish != "All in Region": filtered_df = filtered_df[filtered_df['Parish'] == selected_parish]
-    
-    with f_col3:
-        tract_list = ["Search Tract GEOID..."] + sorted([str(x) for x in filtered_df['geoid_str'].tolist()])
-        selected_search = st.selectbox("Find Census Tract", tract_list)
-        if selected_search != "Search Tract GEOID...":
-            if st.session_state["active_tract"] != selected_search:
-                st.session_state["active_tract"] = selected_search
+    if selected_region != "All Louisiana":
+        filtered_df = filtered_df[filtered_df["Region"] == selected_region]
+    with f2:
+        selected_parish = st.selectbox(
+            "Parish", ["All in region"] + sorted(filtered_df["Parish"].dropna().astype(str).unique().tolist()), key="f_parish"
+        )
+    if selected_parish != "All in region":
+        filtered_df = filtered_df[filtered_df["Parish"] == selected_parish]
+    nom_in_view = nominated[nominated["geoid_str"].isin(filtered_df["geoid_str"])]
+    parish_by_gid = nominated.set_index("geoid_str")["Parish"].to_dict()
+    with f3:
+        PLACEHOLDER = "Search a nominated tract"
+        search = st.selectbox(
+            "Census tract", [PLACEHOLDER] + sorted(nom_in_view["geoid_str"].tolist()),
+            format_func=lambda g: g if g == PLACEHOLDER else f"{g} · {parish_by_gid.get(g, '')}", key="f_tract",
+        )
+        if search != PLACEHOLDER and search != st.session_state["_last_search"]:
+            st.session_state["_last_search"] = search
+            st.session_state["active_tract"] = search
+            st.rerun()
+    with f4:
+        scope = selected_parish if selected_parish != "All in region" else (selected_region if selected_region != "All Louisiana" else "Louisiana")
+        render(f"<div class='oz-count'><b>{len(nom_in_view)}</b>nominated in {esc(scope)}</div>")
+
+    spacer(40)
+
+    if gj is None:
+        st.warning("The tract boundary file (tl_2025_22_tract.json) was not found, so the map cannot be drawn.")
+    else:
+        active = st.session_state["active_tract"]
+
+        event = plot(
+            render_map(filtered_df, active), on_select="rerun", key="oz_map",
+            config={"scrollZoom": True},
+        )
+        try:
+            points = event["selection"]["points"]
+        except Exception:
+            points = []
+        for p in points:
+            loc = p.get("location") if isinstance(p, dict) else None
+            if loc and str(loc) != st.session_state["active_tract"]:
+                st.session_state["active_tract"] = str(loc)
                 st.rerun()
 
-    if selected_parish != "All in Region":
-        parish_data = master_df[master_df['Parish'] == selected_parish]
-        total_parish_tracts = len(parish_data)
-        eligible_oz_tracts = len(parish_data[parish_data['Eligibility_Status'] == 'Eligible'])
-        allowed_selections = round(eligible_oz_tracts * 0.25)
-        st.markdown(f"<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-top:20px; margin-bottom:10px;'>{selected_parish.upper()} PARISH ALLOCATION SNAPSHOT</p>", unsafe_allow_html=True)
-        q_col1, q_col2, q_col3 = st.columns(3)
-        q_col1.markdown(f"<div class='metric-card'><div class='metric-value'>{total_parish_tracts}</div><div class='metric-label'>Total Tracts</div></div>", unsafe_allow_html=True)
-        q_col2.markdown(f"<div class='metric-card'><div class='metric-value'>{eligible_oz_tracts}</div><div class='metric-label'>Eligible OZ Tracts</div></div>", unsafe_allow_html=True)
-        q_col3.markdown(f"<div class='metric-card' style='border-color: #f97316;'><div class='metric-value' style='color:#f97316;'>{allowed_selections}</div><div class='metric-label'>Max (25% Limit)</div></div>", unsafe_allow_html=True)
+        spacer(32)
+        k1, k3 = st.columns([10, 2])
+        with k1:
+            render(
+                """
+                <div class="oz-key">
+                  <span><i style="background:#ECEFF4;border:1px solid #cbd5e1"></i>Other tracts</span>
+                  <span><i style="background:#90E9B1"></i>Nominated</span>
+                  <span><i style="background:#F9A971"></i>Selected</span>
+                  <span style="color:#8B98AE">Use the map legend to show anchor assets</span>
+                </div>
+                """
+            )
+        with k3:
+            st.button("Reset", key="reset_view", on_click=reset_view)
 
-    combined_map = st.plotly_chart(render_map_go(filtered_df), use_container_width=True, on_select="rerun", key="combined_map", config={'scrollZoom': True})
-    
-    if combined_map and "selection" in combined_map and combined_map["selection"]["points"]:
-        new_id = str(combined_map["selection"]["points"][0]["location"])
-        if st.session_state["active_tract"] != new_id:
-            st.session_state["active_tract"] = new_id
-            st.rerun()
+    # selected tract: header strip, then metrics + justification (left) and nearby anchors (right),
+    # the same orientation as the original portal
+    spacer(96)
+    active = st.session_state["active_tract"]
+    match = master_df[master_df["geoid_str"] == str(active)] if active else master_df.iloc[0:0]
+    if match.empty:
+        render(
+            "<div class='oz-empty'>Select a nominated tract on the map to read the regional partner’s case "
+            "and see the assets nearby.</div>"
+        )
+    else:
+        row = match.iloc[0]
+        gid = str(active)
+        parish, region = str(row["Parish"]), str(row["Region"])
+        nom = nominated_by_id.get(gid)
+        pop = safe_int(row.get(POP_COL, 0))
+        nmtc_yes = row["NMTC_Calculated"] in ("Eligible", "Deep Distress")
+        deep_yes = row["NMTC_Calculated"] == "Deep Distress"
 
-    if st.session_state["active_tract"]:
-        curr = st.session_state["active_tract"]
-        row = master_df[master_df["geoid_str"] == str(curr)].iloc[0]
-        st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 20px;'><div><div style='font-size: 1.8rem; font-weight: 900; color: #4ade80;'>{str(row['Parish']).upper()}</div><div style='color: #94a3b8; font-size: 0.85rem;'>GEOID: {curr}</div></div><div style='text-align: right;'><div style='font-size: 1.6rem; font-weight: 900; color: #f8fafc;'>{safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)):,}</div><div style='color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;'>Population</div></div></div>", unsafe_allow_html=True)
-        d_col1, d_col2 = st.columns([0.6, 0.4], gap="large")
-        with d_col1:
-            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>TRACT DEMOGRAPHICS</p>", unsafe_allow_html=True)
-            m1 = st.columns(3)
-            m1[0].markdown(f"<div class='metric-card'><div class='metric-value'>{row.get('Metro Status (Metropolitan/Rural)', 'N/A')}</div><div class='metric-label'>Metro Status</div></div>", unsafe_allow_html=True)
-            is_nmtc = "YES" if row['NMTC_Calculated'] in ["Eligible", "Deep Distress"] else "NO"
-            m1[1].markdown(f"<div class='metric-card'><div class='metric-value'>{is_nmtc}</div><div class='metric-label'>NMTC Eligible</div></div>", unsafe_allow_html=True)
-            is_deep = "YES" if row['NMTC_Calculated'] == "Deep Distress" else "NO"
-            m1[2].markdown(f"<div class='metric-card'><div class='metric-value'>{is_deep}</div><div class='metric-label'>Deep Distress</div></div>", unsafe_allow_html=True)
-            
-            m2 = st.columns(3)
-            m2[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%</div><div class='metric-label'>Poverty</div></div>", unsafe_allow_html=True)
-            m2[1].markdown(f"<div class='metric-card'><div class='metric-value'>${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}</div><div class='metric-label'>MFI</div></div>", unsafe_allow_html=True)
-            m2[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%</div><div class='metric-label'>Unemployment</div></div>", unsafe_allow_html=True)
-            
-            m3 = st.columns(3)
-            m3[0].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 18 to 24', 0)):,}</div><div class='metric-label'>Pop 18-24</div></div>", unsafe_allow_html=True)
-            m3[1].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_int(row.get('Population 65 years and over', 0)):,}</div><div class='metric-label'>Pop 65+</div></div>", unsafe_allow_html=True)
-            m3[2].markdown(f"<div class='metric-card'><div class='metric-value'>{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%</div><div class='metric-label'>Broadband</div></div>", unsafe_allow_html=True)
-            
-            rec_cat = st.selectbox("Recommendation Category", ["Housing Development", "Business Development", "Technology & Research", "Healthcare & Community Services"], key="recommendation_category")
-            justification = st.text_area("Strategic Justification", height=120, key="tract_justification")
-            if st.button("Add to Recommendation Report", use_container_width=True, type="primary"):
-                new_entry = {"username": st.session_state["username"], "Tract": curr, "Parish": row['Parish'], "Category": rec_cat, "Justification": justification, "Population": safe_int(row.get('Estimate!!Total!!Population for whom poverty status is determined', 0)), "Poverty": f"{safe_float(row.get('Estimate!!Percent below poverty level!!Population for whom poverty status is determined', 0)):.1f}%", "MFI": f"${safe_float(row.get('Estimate!!Median family income in the past 12 months (in 2024 inflation-adjusted dollars)', 0)):,.0f}", "Broadband": f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%"}
-                save_rec_to_cloud(new_entry); st.session_state["session_recs"] = load_user_recs(st.session_state["username"]); st.toast(f"Tract {curr} added!"); st.rerun()
+        chips = ""
+        if nom:
+            if nom.get("category"):
+                chips += f"<span class='oz-chip'>{esc(nom['category'])}</span>"
+            chips += f"<span class='oz-chip'><i style='background:#4ADE80'></i>Nominated with {esc(region)}</span>"
+        else:
+            chips += "<span class='oz-chip'>Not nominated</span>"
 
-        with d_col2:
-            st.markdown("<p style='color:#4ade80; font-weight:900; font-size:0.75rem; letter-spacing:0.15em; margin-bottom:15px;'>NEARBY ANCHORS & ANNOUNCEMENTS</p>", unsafe_allow_html=True)
-            selected_asset_type = st.selectbox("Anchor Type Filter", ["All Assets"] + sorted(anchors_df['Type'].unique().tolist()), key="anch_filt_v2")
-            if curr in tract_centers:
-                lon, lat = tract_centers[curr]
-                working = anchors_df.copy()
-                if selected_asset_type != "All Assets": working = working[working['Type'] == selected_asset_type]
-                working['dist'] = working.apply(lambda r: haversine(lon, lat, r['Lon'], r['Lat']), axis=1)
-                list_html = ""
-                for _, a in working.sort_values('dist').head(15).iterrows():
-                    link_btn = ""
-                    # Enhanced string check to ensure links render even with minor CSV trail spaces
-                    if 'Link' in a and pd.notna(a['Link']) and str(a['Link']).strip() != "" and str(a['Link']).strip().lower() != "nan":
-                        link_btn = f"<a href='{str(a['Link']).strip()}' target='_blank' class='view-site-btn'>VISIT SITE ↗</a>"
-                    list_html += f"<div class='anchor-card'><div style='color:#4ade80; font-size:0.7rem; font-weight:900; text-transform:uppercase;'>{str(a['Type'])}</div><div style='color:white; font-weight:800; font-size:1.1rem; line-height:1.2;'>{str(a['Name'])}</div><div style='color:#94a3b8; font-size:0.85rem;'>{a['dist']:.1f} miles</div>{link_btn}</div>"
-                components.html(f"<style>body {{ background: transparent; font-family: 'Inter', sans-serif; margin:0; padding:0; }} .anchor-card {{ background:#111827; border:1px solid #1e293b; padding:15px; border-radius:10px; margin-bottom:12px; }} .view-site-btn {{ display: block; background-color: #4ade80; color: #0b0f19; padding: 8px 0; border-radius: 4px; text-decoration: none; font-size: 0.7rem; font-weight: 900; text-align: center; margin-top: 8px; border: 1px solid #4ade80; }} .view-site-btn:hover {{ background-color: #22c55e; }}</style>{list_html}", height=440, scrolling=True)
+        if nom and str(nom.get("justification", "")).strip():
+            just_inner = para_html(nom["justification"]) + f"<div class='by'>Submitted by {esc(region)}</div>"
+        elif nom:
+            just_inner = "<p>The regional partner has not added a justification for this tract yet.</p>"
+        else:
+            just_inner = "<p>This tract has not been nominated.</p>"
 
-    # --- SECTION 6: REPORT ---
-    st.markdown("<div id='section-6'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='content-section'>
-        <div class='section-num'>SECTION 6</div>
-        <div class='section-title'>Recommendation Report Summary</div>
+        # header strip: parish, GEOID, population
+        render(
+            f"""
+            <div class="oz-th">
+              <div>
+                <div class="oz-kicker acc">Selected tract</div>
+                <div role="heading" aria-level="3" class="oz-h3">{esc(parish)} Parish</div>
+                <div class="oz-rsub" style="margin-top:12px">GEOID {esc(gid)}</div>
+              </div>
+              <div class="oz-pop"><b>{esc(f'{pop:,}')}</b><span>Population</span></div>
+            </div>
+            """
+        )
+        spacer(64)
+
+        col_l, _gap, col_r = st.columns([12, 1, 8])
+
+        with col_l:
+            render(
+                f"""
+                <div class="oz-kicker acc">Tract demographics</div>
+                <div class="oz-mgrid">
+                  <div class="oz-m"><b>{esc(row.get(METRO_COL, 'N/A'))}</b><span>Metro status</span></div>
+                  <div class="oz-m"><b>{'Yes' if nmtc_yes else 'No'}</b><span>NMTC eligible</span></div>
+                  <div class="oz-m"><b>{'Yes' if deep_yes else 'No'}</b><span>Deep distress</span></div>
+                  <div class="oz-m"><b>{esc(f"{safe_float(row.get(POV_COL, 0)):.1f}%")}</b><span>Poverty</span></div>
+                  <div class="oz-m"><b>{esc(f"${safe_float(row.get(MFI_COL, 0)):,.0f}")}</b><span>Median family income</span></div>
+                  <div class="oz-m"><b>{esc(f"{safe_float(row.get('Unemployment Rate (%)', 0)):.1f}%")}</b><span>Unemployment</span></div>
+                  <div class="oz-m"><b>{esc(f"{safe_int(row.get('Population 18 to 24', 0)):,}")}</b><span>Pop 18–24</span></div>
+                  <div class="oz-m"><b>{esc(f"{safe_int(row.get('Population 65 years and over', 0)):,}")}</b><span>Pop 65+</span></div>
+                  <div class="oz-m"><b>{esc(f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%")}</b><span>Broadband</span></div>
+                </div>
+                <div class="oz-kicker" style="margin-top:56px">Recommendation category</div>
+                <div class="oz-chips">{chips}</div>
+                <div class="oz-kicker" style="margin-top:48px">Regional partner’s justification</div>
+                <div class="oz-just">{just_inner}</div>
+                """
+            )
+
+            applicable = [
+                c for c in CONTENT["incentives"]
+                if any(rule_applies(i.get("rule"), row, region, parish) for i in c["items"])
+            ]
+            chips_inc = "".join(
+                f"<span class='oz-chip'><i style='background:{esc(c['color'])}'></i>{esc(c['label'])}</span>" for c in applicable
+            )
+            spacer(40)
+            render(
+                f"<div class='oz-chips'><span class='oz-kicker' style='margin:0 12px 0 0'>Incentives that apply</span>{chips_inc}</div>"
+            )
+            spacer(32)
+            if nom:
+                if gid in st.session_state["shortlist"]:
+                    render("<div class='oz-rsub'>On your shortlist ✓</div>")
+                else:
+                    st.button("Add to shortlist", type="primary", key=f"add_{gid}", on_click=add_to_shortlist, args=(gid,))
+
+        with col_r:
+            render("<div class='oz-kicker acc'>Nearby anchors &amp; announcements</div>")
+            anchor_pick = st.selectbox("Anchor type filter", ["All assets"] + ANCHOR_TYPES, key="anch_filt")
+            spacer(24)
+            rows = ""
+            if gid in tract_centers:
+                lon, lat = tract_centers[gid]
+                near = nearest_anchors(lon, lat, [] if anchor_pick == "All assets" else [anchor_pick], n=6)
+                for _, a in near.iterrows():
+                    color = ANCHOR_COLORS.get(a["Type"], "#CBD5E1")
+                    url = safe_url(a.get("Link", ""))
+                    link = (
+                        f"<a class='oz-tlink' href='{esc(url)}' target='_blank' rel='noopener'>Visit site <em>↗</em></a>"
+                        if url
+                        else ""
+                    )
+                    rows += (
+                        "<div class='oz-arow'>"
+                        f"<div class='oz-akind' style='color:{esc(color)}'><i style='background:{esc(color)}'></i>{esc(a['Type'])}</div>"
+                        f"<div class='oz-aname2'>{esc(a['Name'])}</div>"
+                        f"<div class='oz-arow-foot'><span class='oz-rsub'>{a['dist']:.1f} miles</span>{link}</div></div>"
+                    )
+            render(
+                f"""<div class="oz-arows">{rows if rows else "<div class='oz-rsub'>No anchor assets of this type were found.</div>"}</div>"""
+            )
+
+    # shortlist
+    spacer(112)
+    render("<div style='border-top:1px solid #172033'></div>")
+    spacer(40)
+    st.session_state["shortlist"] = [g for g in st.session_state["shortlist"] if g in nominated_ids]
+    s1, s2 = st.columns([8, 4])
+    with s1:
+        st.multiselect(
+            "Shortlist", sorted(nominated_ids), key="shortlist",
+            format_func=lambda g: f"{g} · {parish_by_gid.get(g, '')}",
+        )
+    with s2:
+        sl = st.session_state["shortlist"]
+        export = nominated[nominated["geoid_str"].isin(sl)][["geoid_str", "Parish", "Region", "category"]].rename(
+            columns={"geoid_str": "Tract", "category": "Category"}
+        )
+        st.download_button("Export CSV", export.to_csv(index=False).encode("utf-8"), "shortlist.csv", "text/csv", disabled=not sl)
+        render("<div style='text-align:right;margin-top:8px'><a class='oz-tlink' href='#project'>Continue <em>→</em></a></div>")
+    spacer(40)
+    render("<div style='border-top:1px solid #172033'></div>")
+
+# --- SECTION 5: TELL US ABOUT YOUR PROJECT ---
+with section("project"):
+    render(
+        f"""
+        <div id="project">
+          <div class="oz-label"><b>05</b> &nbsp;/&nbsp; Connect with the region</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Tell us about your project.</div>
+          <div class="g" style="margin-bottom:112px"><div class="oz-intro" style="grid-column:1 / span 5">{esc(CONTENT['project_intro'])}</div></div>
+        </div>
+        """
+    )
+    left, _g, right = st.columns([5, 1, 6])
+    with left:
+        render(
+            "".join(
+                f"<div class='oz-pstep'><div class='n'>{i + 1:02d}</div><div><div class='t'>{esc(s['title'])}</div><div class='d'>{esc(s['text'])}</div></div></div>"
+                for i, s in enumerate(CONTENT["project_steps"])
+            )
+        )
+    with right:
+        shortlist_now = st.session_state["shortlist"]
+        with st.form("intro_form", clear_on_submit=False):
+            c1, c2 = st.columns(2)
+            name = c1.text_input("Your name", placeholder="Full name")
+            firm = c2.text_input("Firm or fund", placeholder="Organization")
+            c3, c4 = st.columns(2)
+            email = c3.text_input("Work email", placeholder="name@company.com")
+            ptype = c4.selectbox("Project type", CATEGORIES)
+            st.text_input(
+                "Tracts of interest",
+                value=", ".join(shortlist_now) if shortlist_now else "",
+                placeholder="Tracts from your shortlist appear here",
+                disabled=True,
+            )
+            summary = st.text_area("Project summary", placeholder="Capital range, timeline and what you need from the region.", height=120)
+            spacer(24)
+            submitted = st.form_submit_button("Send to regional partner", type="primary")
+        render(f"<div class='oz-rsub' style='margin-top:16px'>{esc(CONTENT['privacy_line'])}</div>")
+
+        if submitted:
+            if not name.strip() or not firm.strip():
+                st.error("Please add your name and firm.")
+            elif not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email.strip()):
+                st.error("Please enter a valid work email address.")
+            else:
+                regions_hit = sorted({nominated_by_id[g]["Region"] for g in shortlist_now if g in nominated_by_id})
+                partners = [r for r in region_table if r["region"] in regions_hit]
+                row = {
+                    "Timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "Name": name.strip(), "Firm": firm.strip(), "Email": email.strip(),
+                    "Project type": ptype, "Tracts": ", ".join(shortlist_now),
+                    "Regions": ", ".join(regions_hit),
+                    "Routed to": ", ".join(p["partner"] for p in partners),
+                    "Routed emails": ", ".join(p["email"] for p in partners if p["email"]),
+                    "Summary": summary.strip(),
+                }
+                try:
+                    save_introduction(row)
+                    where = ", ".join(p["partner"] for p in partners) or "the regional partners"
+                    st.success(f"Thank you. Your request was sent to {where}.")
+                except Exception as exc:
+                    st.error(f"We could not save your request. Please try again. ({exc})")
+
+# --- FOOTER + PARTNER TOOLS ---
+render(
+    f"""
+    <div class="oz-footer">
+      <div>© Louisiana Opportunity Zones 2.0 · {esc(CONTENT['agency'])}</div>
+      <nav><a href="#process">Methodology</a><a href="#regions">Contact a partner</a><a href="#project">Your project</a></nav>
     </div>
-    """, unsafe_allow_html=True)
+    """
+)
+
+with st.expander("Partner sign-in"):
+    partner = st.session_state["partner"]
+    if not partner:
+        partner_login_form("partner_login")
+    else:
+        st.caption(f"Signed in as {partner['username']}")
+        active = st.session_state["active_tract"]
+        match = master_df[master_df["geoid_str"] == str(active)] if active else master_df.iloc[0:0]
+        if match.empty:
+            st.write("Select a tract on the map to add or update its justification.")
+        else:
+            prow = match.iloc[0]
+            scope_ok = (
+                partner["role"].lower().endswith("admin")
+                or partner["assigned_type"].lower() == "all"
+                or str(prow["Region"]).strip().lower() == partner["assigned_value"].strip().lower()
+                or partner["assigned_value"].strip().lower() in ("", "all")
+            )
+            st.write(f"**{prow['Parish']}** · {active}")
+            if not scope_ok:
+                st.warning("This tract is outside your assigned region.")
+            else:
+                existing = nominated_by_id.get(str(active), {})
+                cat = st.selectbox(
+                    "Category", CATEGORIES,
+                    index=CATEGORIES.index(existing["category"]) if existing.get("category") in CATEGORIES else 0,
+                    key="pt_cat",
+                )
+                text = st.text_area("Justification", value=existing.get("justification", ""), height=200, key=f"pt_just_{active}")
+                if st.button("Save justification", key="pt_save"):
+                    try:
+                        save_recommendation(
+                            {
+                                "username": partner["username"], "Tract": str(active), "Parish": prow["Parish"],
+                                "Category": cat, "Justification": text,
+                                "Population": safe_int(prow.get(POP_COL, 0)),
+                                "Poverty": f"{safe_float(prow.get(POV_COL, 0)):.1f}%",
+                                "MFI": f"${safe_float(prow.get(MFI_COL, 0)):,.0f}",
+                                "Broadband": f"{safe_float(prow.get('Broadband Internet (%)', 0)):.1f}%",
+                                "Status": "Submitted",
+                            }
+                        )
+                        st.success("Saved. It appears publicly once its Status is set to Published in the sheet.")
+                    except Exception as exc:
+                        st.error(f"Cloud save failed: {exc}")
+        if st.button("Sign out", key="pt_out"):
+            st.session_state["partner"] = None
+            st.rerun()
