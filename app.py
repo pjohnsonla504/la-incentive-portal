@@ -385,6 +385,19 @@ gj, master_df, anchors_df, tract_centers = load_assets()
 ANCHOR_TYPES = sorted(anchors_df["Type"].unique().tolist())
 _BOLD = px.colors.qualitative.Bold
 ANCHOR_COLORS = {t: _BOLD[i % len(_BOLD)] for i, t in enumerate(ANCHOR_TYPES)}
+
+
+def _lighten(rgb, amount=0.55):
+    """Mix a 'rgb(r, g, b)' color with white so it stays readable on the dark page."""
+    m = re.match(r"rgb\((\d+),\s*(\d+),\s*(\d+)\)", rgb)
+    if not m:
+        return rgb
+    r, g, b = (int(v) for v in m.groups())
+    return "rgb({}, {}, {})".format(*(round(c + (255 - c) * amount) for c in (r, g, b)))
+
+
+# Map markers use the Bold colors on the light basemap; labels and dots on the dark page use lighter tints.
+ANCHOR_UI_COLORS = {t: _lighten(c) for t, c in ANCHOR_COLORS.items()}
 ID_KEY = "GEOID"
 if gj and gj.get("features"):
     ID_KEY = "GEOID" if "GEOID" in gj["features"][0]["properties"] else "GEOID20"
@@ -793,14 +806,12 @@ def get_zoom_center(geoids):
 
 
 def render_map(df, active):
-    """Same look as the original portal map: light carto-positron basemap, grey tracts, green for
-    nominated tracts, orange for the selected tract, and the in-map 'Toggle Anchor Assets' legend."""
+    """Light carto-positron basemap, hairline tract outlines, translucent grey/green fills (green =
+    nominated), a navy-outlined selected tract, and the in-map 'Toggle Anchor Assets' legend."""
     map_df = df[["geoid_str", "Parish"]].copy().reset_index(drop=True)
     sel = str(active) if active else None
 
     def tract_cat(g):
-        if sel and g == sel:
-            return 2
         return 1 if g in nominated_ids else 0
 
     map_df["Color_Category"] = map_df["geoid_str"].map(tract_cat)
@@ -814,16 +825,31 @@ def render_map(df, active):
     revision_key = sel if in_view else f"{len(focus)}-{min(focus) if focus else ''}"
 
     fig = go.Figure()
+    # Fills are translucent so the light basemap stays visible; one hairline outline for every tract.
     fig.add_trace(
         go.Choroplethmap(
             geojson=gj, locations=map_df["geoid_str"], z=map_df["Color_Category"],
             featureidkey=f"properties.{ID_KEY}",
-            colorscale=[[0, "#e2e8f0"], [0.5, "#4ade80"], [1, "#f97316"]], zmin=0, zmax=2,
-            showscale=False, marker=dict(opacity=0.6, line=dict(width=1.2, color="black")),
-            selected=dict(marker=dict(opacity=0.6)), unselected=dict(marker=dict(opacity=0.6)),
+            colorscale=[[0, "rgba(226,232,240,0.30)"], [1, "rgba(74,222,128,0.55)"]],
+            zmin=0, zmax=1, showscale=False,
+            marker=dict(opacity=1, line=dict(width=0.7, color="rgba(51,65,85,0.85)")),
+            selected=dict(marker=dict(opacity=1)), unselected=dict(marker=dict(opacity=1)),
             hovertext=map_df["hover"], hoverinfo="text", name="Census Tracts",
         )
     )
+    if in_view:
+        # selected tract: deeper fill (green if nominated, neutral otherwise) and a navy outline
+        fill = "rgba(21,128,61,0.45)" if sel in nominated_ids else "rgba(15,23,42,0.22)"
+        feats = [f for f in gj["features"] if f["properties"].get(ID_KEY) == sel]
+        fig.add_trace(
+            go.Choroplethmap(
+                geojson={"type": "FeatureCollection", "features": feats}, locations=[sel], z=[1],
+                featureidkey=f"properties.{ID_KEY}",
+                colorscale=[[0, fill], [1, fill]], showscale=False,
+                marker=dict(opacity=1, line=dict(width=2.2, color="#06090F")),
+                hoverinfo="skip", name="Selected tract",
+            )
+        )
     for a_type in ANCHOR_TYPES:
         type_data = anchors_df[anchors_df["Type"] == a_type]
         fig.add_trace(
@@ -837,11 +863,12 @@ def render_map(df, active):
         map=dict(style="carto-positron", zoom=zoom, center=center),
         margin={"r": 0, "t": 0, "l": 0, "b": 0}, paper_bgcolor="rgba(0,0,0,0)", height=700,
         clickmode="event+select", uirevision=revision_key,
+        hoverlabel=dict(bgcolor="#06090F", bordercolor="#26344E", font=dict(family="Inter, sans-serif", size=12, color="#EEF2F7")),
         legend=dict(
-            title=dict(text="<b>Toggle Anchor Assets</b>", font=dict(size=12)),
-            yanchor="top", y=0.98, xanchor="left", x=0.02,
-            bgcolor="rgba(255, 255, 255, 0.9)", font=dict(size=11, color="#1e293b"),
-            bordercolor="#cbd5e1", borderwidth=1,
+            title=dict(text="TOGGLE ANCHOR ASSETS", font=dict(size=10, color="#475569", family="Inter, sans-serif")),
+            yanchor="top", y=0.97, xanchor="left", x=0.02, itemsizing="constant",
+            bgcolor="rgba(255,255,255,0.94)", font=dict(size=11, color="#0F172A", family="Inter, sans-serif"),
+            bordercolor="#CBD5E1", borderwidth=1,
         ),
     )
     return fig
@@ -937,9 +964,9 @@ with section("map"):
             render(
                 """
                 <div class="oz-key">
-                  <span><i style="background:#ECEFF4;border:1px solid #cbd5e1"></i>Other tracts</span>
-                  <span><i style="background:#90E9B1"></i>Nominated</span>
-                  <span><i style="background:#F9A971"></i>Selected</span>
+                  <span><i style="background:#F3F5F9;border:1px solid #94A3B8"></i>Other tracts</span>
+                  <span><i style="background:#A5EFC0;border:1px solid #475569"></i>Nominated</span>
+                  <span><i style="background:#96C6A8;border:2px solid #06090F"></i>Selected</span>
                   <span style="color:#8B98AE">Use the map legend to show anchor assets</span>
                 </div>
                 """
@@ -1047,7 +1074,7 @@ with section("map"):
                 lon, lat = tract_centers[gid]
                 near = nearest_anchors(lon, lat, [] if anchor_pick == "All assets" else [anchor_pick], n=6)
                 for _, a in near.iterrows():
-                    color = ANCHOR_COLORS.get(a["Type"], "#CBD5E1")
+                    color = ANCHOR_UI_COLORS.get(a["Type"], "#CBD5E1")
                     url = safe_url(a.get("Link", ""))
                     link = (
                         f"<a class='oz-tlink' href='{esc(url)}' target='_blank' rel='noopener'>Visit site <em>↗</em></a>"
