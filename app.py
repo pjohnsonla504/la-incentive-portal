@@ -18,7 +18,7 @@ DATA SOURCES
   Google Sheet "Regions" (optional): Region, Partner, OZ_URL, Contact_Email
   Google Sheet "Introductions" (create it): receives every introduction request
   Google Sheet "Users" (optional): only used for partner sign-in
-  CSV "Crosswalk - Towns Cities Parish RLMA and Region.csv" (repo root): towns and cities with their parish, RLMA and
+  CSV "Towns Cities Parish RLMA and Region.csv" (repo root): towns and cities with their parish, RLMA and
         region. Drives the full parish list on each partner row and the parish-or-city search.
 
 SECRETS (optional, .streamlit/secrets.toml)
@@ -78,7 +78,7 @@ ANCHOR_COLORS = {}  # filled after the anchors load, using the same Bold palette
 
 # Crosswalk of towns and cities to parish, RLMA (regional labor market area) and region.
 # Column headers are matched loosely (case, spaces and punctuation are ignored). If your headers differ, add them here.
-CROSSWALK_FILE = "Crosswalk - Towns Cities Parish RLMA and Region.csv"
+CROSSWALK_FILE = "Towns Cities Parish RLMA and Region.csv"
 CROSSWALK_COLUMNS = {
     "town": ["City-Town", "Town", "City", "Town/City", "Town or City", "Towns and Cities", "Towns & Cities", "Municipality", "Place"],
     "parish": ["Parish", "Parish Name"],
