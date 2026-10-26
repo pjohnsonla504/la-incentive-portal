@@ -18,6 +18,8 @@ DATA SOURCES
   Google Sheet "Regions" (optional): Region, Partner, OZ_URL, Contact_Email
   Google Sheet "Introductions" (create it): receives every introduction request
   Google Sheet "Users" (optional): only used for partner sign-in
+  CSV "Crosswalk - Towns Cities Parish RLMA and Region.csv" (repo root): towns and cities with their parish, RLMA and
+        region. Drives the full parish list on each partner row and the parish-or-city search.
 
 SECRETS (optional, .streamlit/secrets.toml)
   require_login = true     -> put the whole site behind partner sign-in (default: public)
@@ -74,23 +76,35 @@ CATEGORIES = [
 
 ANCHOR_COLORS = {}  # filled after the anchors load, using the same Bold palette as the original map
 
+# Crosswalk of towns and cities to parish, RLMA (regional labor market area) and region.
+# Column headers are matched loosely (case, spaces and punctuation are ignored). If your headers differ, add them here.
+CROSSWALK_FILE = "Crosswalk - Towns Cities Parish RLMA and Region.csv"
+CROSSWALK_COLUMNS = {
+    "town": ["City-Town", "Town", "City", "Town/City", "Town or City", "Towns and Cities", "Towns & Cities", "Municipality", "Place"],
+    "parish": ["Parish", "Parish Name"],
+    "rlma": ["RLMA", "Regional Labor Market Area"],
+    "region": ["Region", "REDO", "Regional Economic Development Organization", "LED Region"],
+}
+
 # Official figures from Louisiana Economic Development: display name, tracts nominated, OZ page.
 # "aliases" are the other spellings the data may use for the same organization; names are compared
-# ignoring case, spaces and punctuation. A link in the "Regions" sheet overrides oz_url here.
+# ignoring case, spaces and punctuation. The master data names Louisiana's geographic regions (Southeast, Northwest,
+# Capital, ...); each is listed as an alias so it merges into its REDO instead of showing as a second row.
+# A link in the "Regions" sheet overrides oz_url here.
 REDO_FACTS = [
     {"name": "GNO, Inc.", "nominated": 48, "oz_url": "https://gnoinc.org/",
-     "aliases": ["GNO, Inc.", "GNO", "Greater New Orleans"]},
+     "aliases": ["GNO, Inc.", "GNO", "Greater New Orleans", "Southeast", "Southeast Louisiana", "Southeast Region"]},
     {"name": "NLEP", "nominated": 23, "oz_url": "https://nlep.org/",
-     "aliases": ["NLEP", "North Louisiana Economic Partnership"]},
-    {"name": "One Acadiana", "nominated": 22, "oz_url": "https://www.oneacadiana.org/", "aliases": ["One Acadiana"]},
+     "aliases": ["NLEP", "North Louisiana Economic Partnership", "Northwest", "Northwest Louisiana", "Northwest Region"]},
+    {"name": "One Acadiana", "nominated": 22, "oz_url": "https://www.oneacadiana.org/", "aliases": ["One Acadiana", "Acadiana", "Acadiana Region"]},
     {"name": "GBREP", "nominated": 21, "oz_url": "https://greaterbatonrouge.org/",
-     "aliases": ["GBREP", "Greater Baton Rouge Economic Partnership", "Greater Baton Rouge"]},
+     "aliases": ["GBREP", "Greater Baton Rouge Economic Partnership", "Greater Baton Rouge", "Capital", "Capital Region"]},
     {"name": "Louisiana Central", "nominated": 13, "oz_url": "https://www.louisiana-central.com/home",
-     "aliases": ["Louisiana Central", "Lousiana Central", "LA Central"]},
-    {"name": "Grow NELA", "nominated": 12, "oz_url": "https://grownela.com/", "aliases": ["Grow NELA", "GrowNELA"]},
+     "aliases": ["Louisiana Central", "Lousiana Central", "LA Central", "Central", "Central Louisiana", "Central Region"]},
+    {"name": "Grow NELA", "nominated": 12, "oz_url": "https://grownela.com/", "aliases": ["Grow NELA", "GrowNELA", "Northeast", "Northeast Louisiana", "Northeast Region"]},
     {"name": "Chamber SWLA", "nominated": 9, "oz_url": "https://allianceswla.org/",
-     "aliases": ["Chamber SWLA", "SWLA", "Southwest Economic Development Alliance", "SWLA Alliance"]},
-    {"name": "COLAB", "nominated": 8, "oz_url": "https://www.bayouregion.com/", "aliases": ["COLAB", "Bayou Region"]},
+     "aliases": ["Chamber SWLA", "SWLA", "Southwest Economic Development Alliance", "SWLA Alliance", "Southwest", "Southwest Louisiana", "Southwest Region"]},
+    {"name": "COLAB", "nominated": 8, "oz_url": "https://www.bayouregion.com/", "aliases": ["COLAB", "Bayou Region", "Bayou"]},
 ]
 
 # Headline figure (Louisiana submitted this many tracts for OZ 2.0)
@@ -139,22 +153,44 @@ CONTENT = {
         {
             "label": "Site readiness", "question": "Get the site ready.", "color": "#16A34A", "text_color": "#0B7A43",
             "items": [
-                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
-                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+                {"name": "Certified Business Site Program",
+                 "text": "Certifies development-ready business sites of 10 to 25 acres after a third-party engineering review, with a 75% state match for site due diligence.",
+                 "eligibility": "Sites of at least 10 and under 25 contiguous, buildable acres",
+                 "url": "https://www.opportunitylouisiana.gov/why-louisiana/certified-sites/certified-business-sites", "rule": None},
+                {"name": "Louisiana FastSites Program",
+                 "text": "A $150 million state fund that invests in land and infrastructure to make sites project-ready, structured to be repaid as development occurs.",
+                 "eligibility": "Economic development organizations, cities and towns and other public entities; some private sites qualify",
+                 "url": "https://www.opportunitylouisiana.gov/fastsites", "rule": None},
             ],
         },
         {
             "label": "Workforce", "question": "Find and train the people.", "color": "#3B82F6", "text_color": "#1D4ED8",
             "items": [
-                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
-                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+                {"name": "FastStart Program",
+                 "text": "Customized recruiting, screening and training for new or expanding companies, at no cost to the company.",
+                 "eligibility": "Eligible new or expanding companies aligned with Louisiana’s economic development targets",
+                 "url": "https://www.opportunitylouisiana.gov/incentive/led-faststart", "rule": None},
             ],
         },
         {
             "label": "Business costs", "question": "Lower the cost of doing business.", "color": "#D97706", "text_color": "#B45309",
             "items": [
-                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
-                {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
+                {"name": "Industrial Tax Exemption Program",
+                 "text": "An 80% property tax abatement for up to 10 years on a manufacturer’s new investment.",
+                 "eligibility": "Manufacturers, new to Louisiana or investing in an existing facility",
+                 "url": "https://www.opportunitylouisiana.gov/incentive/industrial-tax-exemption", "rule": None},
+                {"name": "Digital Interactive Media and Software Program",
+                 "text": "Refundable tax credits of 18% on qualified production costs, rising to 25% on payroll for Louisiana residents, with no cap and no minimum spend.",
+                 "eligibility": "Companies developing digital media or software products in Louisiana",
+                 "url": "https://www.louisianaentertainment.gov/interactive/digital-interactive-media-and-software-program", "rule": None},
+                {"name": "Restoration Tax Abatement Program",
+                 "text": "Abates property taxes on the added value from renovating existing buildings in qualifying areas, including Opportunity Zones.",
+                 "eligibility": "Existing structures in Opportunity Zones and in downtown, historic and economic development districts",
+                 "url": "https://www.opportunitylouisiana.gov/incentive/restoration-tax-abatement", "rule": None},
+                {"name": "High-Impact Jobs Program",
+                 "text": "Reimbursable grants of 18% to 22% of wages for new jobs that pay well above the parish average.",
+                 "eligibility": "New full-time jobs paying at least 125% of the parish average wage; a lower threshold applies in distressed areas",
+                 "url": "https://www.opportunitylouisiana.gov/incentive/high-impact-jobs", "rule": None},
             ],
         },
     ],
@@ -180,7 +216,7 @@ for _k, _v in {
     "shortlist": [],
     "partner": None,
     "_last_search": None,
-    "find_parish": "Select a parish",
+    "find_place": "Search a parish or city",
 }.items():
     if _k not in st.session_state:
         st.session_state[_k] = _v
@@ -480,6 +516,66 @@ def _fact_for(region):
     return None
 
 
+def _clean_parish(value):
+    return re.sub(r"\s+parish$", "", str(value or "").strip(), flags=re.I).strip()
+
+
+def _detect_crosswalk_columns(df):
+    """Map our four fields to the CSV's headers, ignoring case and punctuation. Order matters: RLMA is claimed
+    before region so a header such as 'Regional Labor Market Area' is not mistaken for the region."""
+    headers = {c: _norm_name(c) for c in df.columns}
+    found = {}
+
+    def pick(key, contains):
+        exact = {_norm_name(x) for x in CROSSWALK_COLUMNS[key]}
+        for c, n in headers.items():
+            if c not in found.values() and n in exact:
+                found[key] = c
+                return
+        for c, n in headers.items():
+            if c not in found.values() and any(x in n for x in contains):
+                found[key] = c
+                return
+
+    pick("parish", ["parish"])
+    pick("rlma", ["rlma", "labormarket"])
+    pick("region", ["region", "redo"])
+    pick("town", ["town", "city", "municipal", "place"])
+    return found
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_crosswalk():
+    """Returns (normalized DataFrame or None, detected columns). Columns: town, parish, rlma, region."""
+    if not os.path.exists(CROSSWALK_FILE):
+        return None, {}
+    raw = None
+    for enc in ["utf-8-sig", "utf-8", "latin1", "cp1252"]:
+        try:
+            raw = pd.read_csv(CROSSWALK_FILE, encoding=enc, dtype=str)
+            break
+        except Exception:
+            continue
+    if raw is None or raw.empty:
+        return None, {}
+    raw.columns = [str(c).strip() for c in raw.columns]
+    cols = _detect_crosswalk_columns(raw)
+    if "parish" not in cols or "region" not in cols:
+        return None, cols
+    out = pd.DataFrame(
+        {
+            "town": raw[cols["town"]] if "town" in cols else "",
+            "parish": raw[cols["parish"]].map(_clean_parish),
+            "rlma": raw[cols["rlma"]] if "rlma" in cols else "",
+            "region": raw[cols["region"]],
+        }
+    ).fillna("")
+    for c in out.columns:
+        out[c] = out[c].astype(str).str.strip()
+    out = out[(out["parish"] != "") & (out["region"] != "")].reset_index(drop=True)
+    return out, cols
+
+
 def build_region_table():
     """One row per REDO. Names, nominated counts and OZ pages come from REDO_FACTS; parishes come from the
     master data; the optional Regions sheet can override the partner name, link and contact email."""
@@ -504,8 +600,16 @@ def build_region_table():
         else:
             extras.append(region)
 
+    cw, _cw_cols = load_crosswalk()
+    cw_parishes = {}
+    if cw is not None:
+        for rec in cw.to_dict("records"):
+            f_ = _fact_for(rec["region"])
+            if f_:
+                cw_parishes.setdefault(f_["name"], set()).add(rec["parish"])
+
     def parishes_of(regions):
-        return sorted(master_df.loc[master_df["Region"].isin(regions), "Parish"].dropna().astype(str).unique().tolist())
+        return sorted(master_df.loc[master_df["Region"].isin(regions), "Parish"].dropna().astype(str).map(_clean_parish).unique().tolist())
 
     table = []
     for f in REDO_FACTS:
@@ -515,23 +619,26 @@ def build_region_table():
             {
                 "region": regions[0] if regions else f["name"],
                 "regions": regions,
+                "name": f["name"],
                 "partner": clean(info.get("partner")) or f["name"],
-                "parishes": parishes_of(regions),
+                "parishes": sorted(cw_parishes[f["name"]]) if f["name"] in cw_parishes else parishes_of(regions),
                 "url": safe_url(clean(info.get("oz_url"))) or safe_url(f["oz_url"]),
                 "email": clean(info.get("contact_email")),
                 "count": f["nominated"],
+                "mapped": sum(int(computed.get(x, 0)) for x in regions),
             }
         )
     for region in extras:  # a region in the data that is not one of the official REDOs: show it with computed numbers
         info = sheet_by_name.get(_norm_name(region), {})
         table.append(
             {
-                "region": region, "regions": [region],
+                "region": region, "regions": [region], "name": region,
                 "partner": clean(info.get("partner")) or region,
                 "parishes": parishes_of([region]),
                 "url": safe_url(clean(info.get("oz_url"))),
                 "email": clean(info.get("contact_email")),
                 "count": int(computed.get(region, 0)),
+                "mapped": int(computed.get(region, 0)),
             }
         )
     table.sort(key=lambda r: (-r["count"], r["partner"]))
@@ -539,6 +646,40 @@ def build_region_table():
 
 
 region_table = build_region_table()
+
+
+def build_place_index():
+    """Every searchable place: label -> {kind, town, parish, rlma, names (the partners that serve it)}."""
+    cw, _ = load_crosswalk()
+    parish_names, index = {}, {}
+    if cw is not None:
+        for rec in cw.to_dict("records"):
+            f_ = _fact_for(rec["region"])
+            nm = f_["name"] if f_ else rec["region"]
+            parish_names.setdefault(rec["parish"], set()).add(nm)
+    for _, m in master_df.dropna(subset=["Parish", "Region"]).drop_duplicates(["Parish", "Region"]).iterrows():
+        p = _clean_parish(m["Parish"])
+        if p not in parish_names:  # the crosswalk wins; the master data only fills gaps
+            f_ = _fact_for(m["Region"])
+            parish_names.setdefault(p, set()).add(f_["name"] if f_ else str(m["Region"]))
+    for p, names in parish_names.items():
+        index[f"{p} Parish"] = {"kind": "parish", "town": "", "parish": p, "rlma": "", "names": sorted(names)}
+    if cw is not None:
+        for rec in cw.to_dict("records"):
+            if not rec["town"]:
+                continue
+            f_ = _fact_for(rec["region"])
+            nm = f_["name"] if f_ else rec["region"]
+            label = f"{rec['town']} · {rec['parish']} Parish"
+            item = index.setdefault(label, {"kind": "town", "town": rec["town"], "parish": rec["parish"], "rlma": "", "names": []})
+            if nm not in item["names"]:
+                item["names"].append(nm)
+            if rec["rlma"] and not item["rlma"]:
+                item["rlma"] = rec["rlma"]
+    return index
+
+
+place_index = build_place_index()
 parish_to_region = (
     master_df.dropna(subset=["Parish", "Region"]).drop_duplicates("Parish").set_index("Parish")["Region"].to_dict()
 )
@@ -694,6 +835,10 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .oz-rstat.now{color:#0B7A43;font-weight:600}
 .oz-rstat i{width:8px;height:8px;border-radius:50%;background:#16A34A}
 
+.oz-iname a{color:#0B1220 !important;text-decoration:none !important}
+.oz-iname a:hover{text-decoration:underline !important;text-underline-offset:5px}
+.oz-iname em{color:#0B7A43;font-style:normal;margin-left:6px}
+
 /* widgets */
 [data-testid="stWidgetLabel"] p,label[data-testid="stWidgetLabel"] p{font-size:12px !important;font-weight:500 !important;letter-spacing:.18em !important;text-transform:uppercase !important;color:#5B6678 !important}
 div[data-baseweb="select"]>div{background:transparent !important;border:none !important;border-bottom:1px solid #CBD3DF !important;border-radius:0 !important;min-height:52px;box-shadow:none !important}
@@ -836,29 +981,30 @@ with section("regions"):
     c_intro, _gap, c_find = st.columns([5, 2, 5])
     with c_intro:
         render(f"<div class='oz-intro'>{esc(CONTENT['partners_intro'])}</div>")
-    highlight_region = None
+    highlight_names = set()
     with c_find:
-        parish_options = ["Select a parish"] + sorted(parish_to_region.keys())
-        chosen_parish = st.selectbox("Find your region by parish", parish_options, key="find_parish")
-        if chosen_parish != "Select a parish":
-            highlight_region = parish_to_region.get(chosen_parish)
-            if highlight_region:
-                render(
-                    f"<div class='oz-rsub' style='margin-top:12px'>{esc(chosen_parish)} is served by "
-                    f"<span style='color:#0B7A43'>{esc((_fact_for(highlight_region) or {}).get('name', highlight_region))}</span>.</div>"
-                )
+        PLACE_PLACEHOLDER = "Search a parish or city"
+        options = [PLACE_PLACEHOLDER] + sorted(place_index.keys(), key=lambda x: x.lower())
+        choice = st.selectbox("Search by parish or city", options, key="find_place")
+        if choice != PLACE_PLACEHOLDER and choice in place_index:
+            info = place_index[choice]
+            highlight_names = set(info["names"])
+            where = f"{info['town']}, {info['parish']} Parish" if info["town"] else f"{info['parish']} Parish"
+            served = " and ".join(f"<span style='color:#0B7A43'>{esc(n)}</span>" for n in info["names"])
+            rl = info["rlma"]
+            rlma = (f" · RLMA {esc(rl)}" if rl.isdigit() else f" · RLMA: {esc(rl)}") if rl else ""
+            render(f"<div class='oz-rsub' style='margin-top:12px'>{esc(where)} is served by {served}{rlma}.</div>")
     spacer(64)
 
     rows_html = ""
     for r in region_table:
-        parishes = r["parishes"]
-        shown = ", ".join(parishes[:5]) + (f" +{len(parishes) - 5} more" if len(parishes) > 5 else "")
+        shown = ", ".join(r["parishes"])  # the full list of parishes in the region
         link = (
             f"<a class='oz-tlink' href='{esc(r['url'])}' target='_blank' rel='noopener' style='grid-column:11 / span 2;justify-self:end'>OZ page <em>↗</em></a>"
             if r["url"]
             else "<span class='oz-rsub' style='grid-column:11 / span 2;justify-self:end'>OZ page soon</span>"
         )
-        hl = " hl" if highlight_region and highlight_region in r["regions"] else ""
+        hl = " hl" if r["name"] in highlight_names else ""
         rows_html += (
             f"<div class='g oz-row{hl}'>"
             f"<div class='oz-rname' style='grid-column:1 / span 4'>{esc(r['partner'])}</div>"
@@ -873,15 +1019,21 @@ with section("regions"):
 with section("incentives"):
     bands_html = ""
     for cat in CONTENT["incentives"]:
+        def _name(it):
+            u = safe_url(it.get("url", ""))
+            if u:
+                return f"<a href='{esc(u)}' target='_blank' rel='noopener'>{esc(it['name'])} <em>↗</em></a>"
+            return esc(it["name"])
+
         items = "".join(
-            f"<div><div class='oz-iname'>{esc(it['name'])}</div><div class='oz-itext'>{esc(it['text'])}</div>"
+            f"<div><div class='oz-iname'>{_name(it)}</div><div class='oz-itext'>{esc(it['text'])}</div>"
             f"<div class='oz-ielig'>Eligibility · {esc(it['eligibility'])}</div></div>"
             for it in cat["items"]
         )
         bands_html += (
             f"<div class='g oz-band'>"
             f"<div style='grid-column:1 / span 4'><div class='oz-bhead' style='color:{esc(cat['text_color'])}'>"
-            f"<i style='background:{esc(cat['color'])};box-shadow:0 0 12px {esc(cat['color'])}'></i>{esc(cat['label'])}</div>"
+            f"<i style='background:{esc(cat['color'])}'></i>{esc(cat['label'])}</div>"
             f"<div class='oz-bq'>{esc(cat['question'])}</div></div>"
             f"<div class='oz-items' style='grid-column:5 / span 8'>{items}</div></div>"
         )
@@ -1083,7 +1235,14 @@ with section("map"):
             st.rerun()
     with f4:
         scope = selected_parish if selected_parish != "All in region" else (selected_region if selected_region != "All Louisiana" else "Louisiana")
-        render(f"<div class='oz-count'><b>{len(nom_in_view)}</b>nominated in {esc(scope)}</div>")
+        # Official numbers for the state and for a region; a single parish can only be counted from the sheet.
+        if selected_parish != "All in region":
+            shown = len(nom_in_view)
+        elif selected_region != "All Louisiana":
+            shown = (_fact_for(selected_region) or {}).get("nominated", len(nom_in_view))
+        else:
+            shown = OZ2_SUBMITTED
+        render(f"<div class='oz-count'><b>{shown}</b>nominated in {esc(scope)}</div>")
 
     spacer(24)
 
@@ -1341,6 +1500,47 @@ with st.expander("Partner sign-in"):
         partner_login_form("partner_login")
     else:
         st.caption(f"Signed in as {partner['username']}")
+        st.markdown("**Data check: crosswalk**")
+        with st.container():
+            cw_df, cw_found = load_crosswalk()
+            if cw_df is None:
+                st.info(
+                    f"The file \"{CROSSWALK_FILE}\" was not found, is empty, or its columns were not recognized "
+                    f"(detected: {cw_found or 'none'}). Parishes come from the master data instead."
+                )
+            else:
+                st.write(
+                    f"{len(cw_df)} rows · columns detected: "
+                    + ", ".join(f"{k} = {v}" for k, v in cw_found.items())
+                )
+                unmatched = sorted({x for x in cw_df["region"].unique() if not _fact_for(x)})
+                if unmatched:
+                    st.warning("These regions in the crosswalk do not match any partner: " + ", ".join(unmatched))
+                else:
+                    st.success("Every region in the crosswalk matches a partner.")
+                st.dataframe(
+                    pd.DataFrame([{"Partner": r["partner"], "Parishes": len(r["parishes"])} for r in region_table]),
+                    hide_index=True,
+                )
+        st.markdown("**Data check: nominated tracts on the map**")
+        with st.container():
+            check = pd.DataFrame(
+                [
+                    {"Partner": r["partner"], "Official": r["count"], "On the map": r["mapped"],
+                     "Missing": max(r["count"] - r["mapped"], 0)}
+                    for r in region_table
+                ]
+            )
+            st.dataframe(check, hide_index=True)
+            total_official = int(check["Official"].sum())
+            total_mapped = int(check["On the map"].sum())
+            if total_mapped < total_official:
+                st.warning(
+                    f"{total_mapped} of {total_official} nominated tracts have a record in the Recommendations sheet, "
+                    f"so {total_official - total_mapped} are not shown on the map yet."
+                )
+            else:
+                st.success("Every nominated tract has a record in the Recommendations sheet.")
         active = st.session_state["active_tract"]
         match = master_df[master_df["geoid_str"] == str(active)] if active else master_df.iloc[0:0]
         if match.empty:
