@@ -983,10 +983,37 @@ with section("regions"):
         render(f"<div class='oz-intro'>{esc(CONTENT['partners_intro'])}</div>")
     highlight_names = set()
     with c_find:
-        PLACE_PLACEHOLDER = "Search a parish or city"
-        options = [PLACE_PLACEHOLDER] + sorted(place_index.keys(), key=lambda x: x.lower())
-        choice = st.selectbox("Search by parish or city", options, key="find_place")
-        if choice != PLACE_PLACEHOLDER and choice in place_index:
+        # True text search across BOTH City-Town and Parish values from the crosswalk.
+        # The old implementation relied on Streamlit's selectbox type-ahead behavior,
+        # which can make a long statewide list feel as though it is not searchable.
+        query = st.text_input(
+            "Search by parish or city",
+            placeholder="Type a city, town, or parish (for example: Abbeville or Vermilion)",
+            key="place_query",
+        ).strip()
+
+        choice = None
+        if query:
+            q = query.casefold()
+            # Search the actual City-Town and Parish fields, not just the display label.
+            # This guarantees that a user can enter either a city/town name or a parish name.
+            matches = []
+            for label, item in sorted(place_index.items(), key=lambda kv: kv[0].lower()):
+                town = str(item.get("town", "")).casefold()
+                parish = str(item.get("parish", "")).casefold()
+                if q in town or q in parish:
+                    matches.append(label)
+            if matches:
+                choice = st.selectbox(
+                    "Matching locations",
+                    matches,
+                    key="place_match",
+                    label_visibility="collapsed",
+                )
+            else:
+                st.caption("No matching city, town, or parish was found in the crosswalk.")
+
+        if choice and choice in place_index:
             info = place_index[choice]
             highlight_names = set(info["names"])
             where = f"{info['town']}, {info['parish']} Parish" if info["town"] else f"{info['parish']} Parish"
