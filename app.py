@@ -207,28 +207,29 @@ CONTENT = {
     "agency": "[Sponsoring agency]",
 }
 
-# Basemap. "retina" = CARTO Positron drawn from high-resolution (@2x) tiles, so labels and roads stay crisp on
-# high-DPI screens. "plain" = Plotly's built-in carto-positron (standard-resolution tiles; softer). Flip this
-# if the map ever fails to load.
-BASEMAP = "retina"
+# Basemap.
+#   "plain":  Plotly's built-in light map (carto-positron). Needs no key, but it is drawn from standard-resolution
+#             picture tiles, so the roads, water and labels look soft when zoomed in.
+#   "vector": OpenFreeMap Positron, a free light style with no API key. It is vector data, so it stays sharp at any
+#             zoom and screen, and it adds streets and place names as you zoom in.
+# CARTO's own tile service now stamps "API KEY REQUIRED" on every tile unless you have a (free) key, so it is not used here.
+# To compare the two without redeploying, add ?map=vector or ?map=plain to the end of the app's web address.
+BASEMAP = "plain"
+BASEMAP_STYLES = {
+    "plain": "carto-positron",
+    "vector": "https://tiles.openfreemap.org/styles/positron",
+}
 
 
 def _basemap_style():
-    if BASEMAP == "plain":
-        return "carto-positron"
-    return {
-        "version": 8,
-        "sources": {
-            "carto": {
-                "type": "raster",
-                "tiles": ["https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"],
-                "tileSize": 256,
-                "maxzoom": 20,
-                "attribution": "© OpenStreetMap contributors © CARTO",
-            }
-        },
-        "layers": [{"id": "carto", "type": "raster", "source": "carto"}],
-    }
+    choice = BASEMAP
+    try:
+        q = str(st.query_params.get("map", "")).strip().lower()
+        if q in BASEMAP_STYLES:
+            choice = q
+    except Exception:
+        pass
+    return BASEMAP_STYLES.get(choice, BASEMAP_STYLES["plain"])
 
 
 # Master-data column names
