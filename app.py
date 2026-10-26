@@ -79,6 +79,9 @@ ANCHOR_COLORS = {}  # filled after the anchors load, using the same Bold palette
 # Crosswalk of towns and cities to parish, RLMA (regional labor market area) and region.
 # Column headers are matched loosely (case, spaces and punctuation are ignored). If your headers differ, add them here.
 CROSSWALK_FILE = "Crosswalk - Towns Cities Parish RLMA and Region.csv"
+# Also accepted, in case the file was uploaded without the "Crosswalk - " prefix. The older
+# city-parish-region-crosswalk.csv is never read.
+CROSSWALK_ALT_NAMES = ["Towns Cities Parish RLMA and Region.csv", "Town Cities Parish RLMA and Region.csv"]
 CROSSWALK_COLUMNS = {
     "town": ["City-Town", "Town", "City", "Town/City", "Town or City", "Towns and Cities", "Towns & Cities", "Municipality", "Place"],
     "parish": ["Parish", "Parish Name"],
@@ -203,6 +206,30 @@ CONTENT = {
     "privacy_line": "[Privacy and consent line.]",
     "agency": "[Sponsoring agency]",
 }
+
+# Basemap. "retina" = CARTO Positron drawn from high-resolution (@2x) tiles, so labels and roads stay crisp on
+# high-DPI screens. "plain" = Plotly's built-in carto-positron (standard-resolution tiles; softer). Flip this
+# if the map ever fails to load.
+BASEMAP = "retina"
+
+
+def _basemap_style():
+    if BASEMAP == "plain":
+        return "carto-positron"
+    return {
+        "version": 8,
+        "sources": {
+            "carto": {
+                "type": "raster",
+                "tiles": ["https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"],
+                "tileSize": 256,
+                "maxzoom": 20,
+                "attribution": "© OpenStreetMap contributors © CARTO",
+            }
+        },
+        "layers": [{"id": "carto", "type": "raster", "source": "carto"}],
+    }
+
 
 # Master-data column names
 POP_COL = "Estimate!!Total!!Population for whom poverty status is determined"
@@ -545,19 +572,28 @@ def _detect_crosswalk_columns(df):
 
 
 def _find_crosswalk_file():
-    """The exact file name first. Otherwise the closest crosswalk CSV in the repo root, so a small difference in
-    spacing, capitalization or a browser's "(1)" suffix does not hide the file. The older
-    city-parish-region-crosswalk.csv is deliberately not used."""
-    if os.path.exists(CROSSWALK_FILE):
-        return CROSSWALK_FILE
-    want = _norm_name(CROSSWALK_FILE.rsplit(".", 1)[0])
+    """The towns/cities crosswalk. Exact names first, then the same name ignoring case, spacing and a leading
+    "Crosswalk - ", then any CSV that is clearly the towns/cities/RLMA file. The older
+    city-parish-region-crosswalk.csv is deliberately never used."""
+    names = [CROSSWALK_FILE] + CROSSWALK_ALT_NAMES
+    for nm in names:
+        if os.path.exists(nm):
+            return nm
+
+    def core(name):
+        n = _norm_name(name.rsplit(".", 1)[0])
+        return n[len("crosswalk"):] if n.startswith("crosswalk") else n
+
+    wanted = {core(n) for n in names}
     files = sorted(f for f in os.listdir(".") if f.lower().endswith(".csv"))
     for f in files:
-        if _norm_name(f.rsplit(".", 1)[0]) == want:
+        if core(f) in wanted:
             return f
     for f in files:
         n = _norm_name(f.rsplit(".", 1)[0])
-        if n.startswith("crosswalk") and ("town" in n or "rlma" in n):
+        if n == "cityparishregioncrosswalk":
+            continue
+        if "rlma" in n or ("town" in n and "cit" in n):
             return f
     return None
 
@@ -589,6 +625,12 @@ def _read_crosswalk(path, mtime):
         return None, {}
     raw.columns = [str(c).strip() for c in raw.columns]
     cols = _detect_crosswalk_columns(raw)
+    # Layout of the file: column A = city/town, B = parish, C = region, D = RLMA. Used for any column whose header
+    # was not recognized, so the file still works if a header is worded differently.
+    order = list(raw.columns)
+    for key, idx in {"town": 0, "parish": 1, "region": 2, "rlma": 3}.items():
+        if key not in cols and idx < len(order) and order[idx] not in cols.values():
+            cols[key] = order[idx]
     if "parish" not in cols or "region" not in cols:
         return None, cols
     out = pd.DataFrame(
@@ -893,6 +935,8 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .oz-iname a{color:#0B1220 !important;text-decoration:none !important}
 .oz-iname a:hover{text-decoration:underline !important;text-underline-offset:5px}
 .oz-iname em{color:#0B7A43;font-style:normal;margin-left:6px}
+
+[data-testid="stPlotlyChart"] .maplibregl-canvas,[data-testid="stPlotlyChart"] .maplibregl-canvas-container,[data-testid="stPlotlyChart"] .maplibregl-canvas-container.maplibregl-interactive,[data-testid="stPlotlyChart"] .maplibregl-canvas-container.maplibregl-interactive:active,[data-testid="stPlotlyChart"] .maplibregl-canvas-container.maplibregl-track-pointer,[data-testid="stPlotlyChart"] .nsewdrag,[data-testid="stPlotlyChart"] [class*="cursor-"]{cursor:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Ccircle cx='9' cy='9' r='5' fill='%230B1220' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 9 9,crosshair !important}
 
 /* widgets */
 [data-testid="stWidgetLabel"] p,label[data-testid="stWidgetLabel"] p{font-size:12px !important;font-weight:500 !important;letter-spacing:.18em !important;text-transform:uppercase !important;color:#5B6678 !important}
@@ -1221,7 +1265,7 @@ def render_map(df, active):
             )
         )
     fig.update_layout(
-        map=dict(style="carto-positron", zoom=zoom, center=center),
+        map=dict(style=_basemap_style(), zoom=zoom, center=center),
         margin={"r": 0, "t": 0, "l": 0, "b": 0}, paper_bgcolor="#FFFFFF", height=620,
         clickmode="event+select", uirevision=revision_key,
         hoverlabel=dict(bgcolor="#0B1220", bordercolor="#0B1220", font=dict(family="Inter, sans-serif", size=12, color="#FFFFFF")),
