@@ -30,7 +30,7 @@ import re
 import ssl
 import json
 import os
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import numpy as np
 import pandas as pd
@@ -74,49 +74,91 @@ CATEGORIES = [
 
 ANCHOR_COLORS = {}  # filled after the anchors load, using the same Bold palette as the original map
 
-# Fallback OZ page links by region name (the "Regions" sheet overrides these).
-REGION_OZ_URLS = {
-    # "GBREP": "https://example.org/oz",
-}
+# Official figures from Louisiana Economic Development: display name, tracts nominated, OZ page.
+# "aliases" are the other spellings the data may use for the same organization; names are compared
+# ignoring case, spaces and punctuation. A link in the "Regions" sheet overrides oz_url here.
+REDO_FACTS = [
+    {"name": "GNO, Inc.", "nominated": 48, "oz_url": "https://gnoinc.org/",
+     "aliases": ["GNO, Inc.", "GNO", "Greater New Orleans"]},
+    {"name": "NLEP", "nominated": 23, "oz_url": "https://nlep.org/",
+     "aliases": ["NLEP", "North Louisiana Economic Partnership"]},
+    {"name": "One Acadiana", "nominated": 22, "oz_url": "https://www.oneacadiana.org/", "aliases": ["One Acadiana"]},
+    {"name": "GBREP", "nominated": 21, "oz_url": "https://greaterbatonrouge.org/",
+     "aliases": ["GBREP", "Greater Baton Rouge Economic Partnership", "Greater Baton Rouge"]},
+    {"name": "Louisiana Central", "nominated": 13, "oz_url": "https://www.louisiana-central.com/home",
+     "aliases": ["Louisiana Central", "Lousiana Central", "LA Central"]},
+    {"name": "Grow NELA", "nominated": 12, "oz_url": "https://grownela.com/", "aliases": ["Grow NELA", "GrowNELA"]},
+    {"name": "Chamber SWLA", "nominated": 9, "oz_url": "https://allianceswla.org/",
+     "aliases": ["Chamber SWLA", "SWLA", "Southwest Economic Development Alliance", "SWLA Alliance"]},
+    {"name": "COLAB", "nominated": 8, "oz_url": "https://www.bayouregion.com/", "aliases": ["COLAB", "Bayou Region"]},
+]
+
+# Headline figure (Louisiana submitted this many tracts for OZ 2.0)
+OZ2_SUBMITTED = 156
 
 # --- PAGE COPY (replace the bracketed placeholders) ---
 CONTENT = {
-    "process_intro": "[One or two sentences describing the Louisiana nomination process.]",
-    "process_steps": [
-        {"title": "Regions recommend", "text": "[One line on how regions identified tracts.]", "date": "[Date]"},
-        {"title": "Tracts are documented", "text": "[One line on the case behind each tract.]", "date": "[Date]"},
-        {"title": "The state nominates", "text": "[One line on the nomination step.]", "date": "[Date]"},
-        {"title": "Developers connect", "text": "[One line on how developers connect.]", "date": "We are here", "now": True},
+    # Official figures and wording (Louisiana Economic Development). Update here if they change.
+    "process_lede": "Final designations are expected by the end of 2026.",
+    "approach": [
+        "For both rounds of Opportunity Zone nominations, Louisiana utilized a regionally focused approach, incorporating feedback and recommendations from Regional Economic Development Organizations (REDOs); local, state, and federal elected officials; business and industry leaders; site developers; nonprofits; and other community stakeholders.",
+        "This collaborative process helped identify census tracts with the strongest potential to attract private investment and advance economic development priorities unique to each region.",
     ],
-    "partners_intro": "[One line on who these organizations are.]",
-    "incentives_intro": "[One line on how state and local incentives layer with the federal OZ benefits.]",
+    "rounds": [
+        {
+            "name": "Opportunity Zones 1.0", "tag": "2017", "figure": "150", "acc": False,
+            "unit": "Census tracts designated, in every region",
+            "paras": [
+                "In 2017, 150 census tracts spanning every region of Louisiana qualified and were designated as Opportunity Zones. Program benefits associated with these census tracts will sunset on December 31, 2028.",
+            ],
+        },
+        {
+            "name": "Opportunity Zones 2.0", "tag": "Designations expected by end of 2026", "figure": "156", "acc": True,
+            "unit": "Census tracts submitted for federal consideration",
+            "paras": [
+                "For OZ 2.0, Louisiana was eligible to nominate up to 25% of qualifying census tracts for Opportunity Zone designation. Working with regional and local partners, Louisiana submitted 156 census tracts for federal consideration.",
+                "Final Opportunity Zone 2.0 designations are anticipated by the end of 2026, with new federal incentives taking effect January 1, 2027.",
+            ],
+        },
+    ],
+    # Official Opportunity Zone 2.0 timeline. "end" decides when a step counts as complete; the first step
+    # that is not complete is marked "We are here". Nothing else needs editing as the dates pass.
+    "process_steps": [
+        {"title": "Determination of eligible tracts", "when": "Jan 29 – Feb 20, 2026", "end": "2026-02-20"},
+        {"title": "REDO recommendation short list", "when": "Jun 1 – Jun 12, 2026", "end": "2026-06-12"},
+        {"title": "Governor’s submission deadline", "when": "Wed, Oct 28, 2026", "end": "2026-10-28"},
+        {"title": "Final designations", "when": "By end of 2026", "end": "2026-12-31"},
+        {"title": "New federal incentives", "when": "Jan 1, 2027", "end": "2027-01-01"},
+    ],
+    "partners_intro": "Each partner recommended its tracts, wrote the case for them, and can introduce you to the people on the ground.",
+    "incentives_intro": "State and local incentives sit on top of the federal Opportunity Zone tax benefit, and they target the site, the workforce and the cost of doing business.",
     # "rule" decides which tracts an incentive applies to. None = every tract.
     # Supported keys: nmtc (bool), deep_distress (bool), metro ("Metropolitan" / "Rural"),
     #                 regions (list of region names), parishes (list of parish names)
     "incentives": [
         {
-            "label": "Site readiness", "question": "Is the site ready to build?", "color": "#4ADE80", "text_color": "#4ADE80",
+            "label": "Site readiness", "question": "Get the site ready.", "color": "#16A34A", "text_color": "#0B7A43",
             "items": [
                 {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
                 {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
             ],
         },
         {
-            "label": "Workforce", "question": "Can I hire and train?", "color": "#60A5FA", "text_color": "#93C5FD",
+            "label": "Workforce", "question": "Find and train the people.", "color": "#3B82F6", "text_color": "#1D4ED8",
             "items": [
                 {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
                 {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
             ],
         },
         {
-            "label": "Business costs", "question": "Will the numbers work?", "color": "#FBBF24", "text_color": "#FCD34D",
+            "label": "Business costs", "question": "Lower the cost of doing business.", "color": "#D97706", "text_color": "#B45309",
             "items": [
                 {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
                 {"name": "[Incentive name]", "text": "[What it does, in one line.]", "eligibility": "[Who qualifies]", "rule": None},
             ],
         },
     ],
-    "project_intro": "Your request goes to the regional partner for the tracts you select. [Add expected response time.]",
+    "project_intro": "Your request goes to the regional partner for the tracts you chose, and a person replies. [Add expected response time.]",
     "project_steps": [
         {"title": "Routed to the right region", "text": "[One line.]"},
         {"title": "A partner reaches out", "text": "[One line.]"},
@@ -189,6 +231,24 @@ def render(markup):
 
 def spacer(px):
     render(f"<div style='height:{int(px)}px'></div>")
+
+
+def _today():
+    """Today's date in Louisiana (Central time), so the timeline flips at local midnight."""
+    try:
+        from zoneinfo import ZoneInfo
+
+        return datetime.now(ZoneInfo("America/Chicago")).date()
+    except Exception:
+        return date.today()
+
+
+def next_chapter(label, href):
+    render(
+        f"""
+        <div class="oz-next"><span>Next</span><a href="{href}">{esc(label)} <em>→</em></a></div>
+        """
+    )
 
 
 def section(name):
@@ -387,17 +447,17 @@ _BOLD = px.colors.qualitative.Bold
 ANCHOR_COLORS = {t: _BOLD[i % len(_BOLD)] for i, t in enumerate(ANCHOR_TYPES)}
 
 
-def _lighten(rgb, amount=0.55):
-    """Mix a 'rgb(r, g, b)' color with white so it stays readable on the dark page."""
+def _darken(rgb, amount=0.35):
+    """Mix a 'rgb(r, g, b)' color with black so labels stay readable on the light page."""
     m = re.match(r"rgb\((\d+),\s*(\d+),\s*(\d+)\)", rgb)
     if not m:
         return rgb
     r, g, b = (int(v) for v in m.groups())
-    return "rgb({}, {}, {})".format(*(round(c + (255 - c) * amount) for c in (r, g, b)))
+    return "rgb({}, {}, {})".format(*(round(c * (1 - amount)) for c in (r, g, b)))
 
 
-# Map markers use the Bold colors on the light basemap; labels and dots on the dark page use lighter tints.
-ANCHOR_UI_COLORS = {t: _lighten(c) for t, c in ANCHOR_COLORS.items()}
+# Map markers use the Bold colors; labels and dots on the page use darker tints.
+ANCHOR_UI_COLORS = {t: _darken(c) for t, c in ANCHOR_COLORS.items()}
 ID_KEY = "GEOID"
 if gj and gj.get("features"):
     ID_KEY = "GEOID" if "GEOID" in gj["features"][0]["properties"] else "GEOID20"
@@ -408,31 +468,73 @@ nominated_ids = set(nominated["geoid_str"])
 nominated_by_id = {r["geoid_str"]: r for r in nominated.to_dict("records")}
 
 
+def _norm_name(value):
+    return re.sub(r"[^a-z0-9]", "", str(value).lower())
+
+
+def _fact_for(region):
+    key = _norm_name(region)
+    for f in REDO_FACTS:
+        if key in {_norm_name(x) for x in f["aliases"] + [f["name"]]}:
+            return f
+    return None
+
+
 def build_region_table():
+    """One row per REDO. Names, nominated counts and OZ pages come from REDO_FACTS; parishes come from the
+    master data; the optional Regions sheet can override the partner name, link and contact email."""
     sheet = load_regions_sheet()
-    sheet_by_region = {}
+    sheet_by_name = {}
     for rec in sheet.to_dict("records"):
-        key = str(rec.get("region", "")).strip().lower()
+        key = _norm_name(rec.get("region", ""))
         if key and key != "nan":
-            sheet_by_region[key] = rec
-    counts = nominated.groupby("Region").size().to_dict()
+            sheet_by_name[key] = rec
+
+    def clean(v):
+        v = str(v or "").strip()
+        return "" if v.lower() == "nan" else v
+
+    master_regions = sorted(master_df["Region"].dropna().astype(str).unique().tolist())
+    computed = nominated.groupby("Region").size().to_dict()
+    grouped, extras = {}, []
+    for region in master_regions:
+        f = _fact_for(region)
+        if f:
+            grouped.setdefault(f["name"], []).append(region)
+        else:
+            extras.append(region)
+
+    def parishes_of(regions):
+        return sorted(master_df.loc[master_df["Region"].isin(regions), "Parish"].dropna().astype(str).unique().tolist())
+
     table = []
-    for region in sorted(master_df["Region"].dropna().astype(str).unique().tolist()):
-        info = sheet_by_region.get(region.strip().lower(), {})
-        parishes = sorted(master_df.loc[master_df["Region"] == region, "Parish"].dropna().astype(str).unique().tolist())
-        partner = str(info.get("partner", "") or "").strip()
-        url = str(info.get("oz_url", "") or "").strip()
-        email = str(info.get("contact_email", "") or "").strip()
+    for f in REDO_FACTS:
+        regions = grouped.get(f["name"], [])
+        info = next((sheet_by_name[_norm_name(x)] for x in f["aliases"] + [f["name"]] if _norm_name(x) in sheet_by_name), {})
         table.append(
             {
-                "region": region,
-                "partner": "" if partner.lower() == "nan" else partner or region,
-                "parishes": parishes,
-                "url": safe_url(url if url.lower() != "nan" else REGION_OZ_URLS.get(region, "")),
-                "email": "" if email.lower() == "nan" else email,
-                "count": int(counts.get(region, 0)),
+                "region": regions[0] if regions else f["name"],
+                "regions": regions,
+                "partner": clean(info.get("partner")) or f["name"],
+                "parishes": parishes_of(regions),
+                "url": safe_url(clean(info.get("oz_url"))) or safe_url(f["oz_url"]),
+                "email": clean(info.get("contact_email")),
+                "count": f["nominated"],
             }
         )
+    for region in extras:  # a region in the data that is not one of the official REDOs: show it with computed numbers
+        info = sheet_by_name.get(_norm_name(region), {})
+        table.append(
+            {
+                "region": region, "regions": [region],
+                "partner": clean(info.get("partner")) or region,
+                "parishes": parishes_of([region]),
+                "url": safe_url(clean(info.get("oz_url"))),
+                "email": clean(info.get("contact_email")),
+                "count": int(computed.get(region, 0)),
+            }
+        )
+    table.sort(key=lambda r: (-r["count"], r["partner"]))
     return table
 
 
@@ -446,17 +548,17 @@ parish_to_region = (
 CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
-:root{--bg:#06090F;--bg2:#090E18;--panel:#0C1322;--line:#172033;--line2:#26344E;--text:#EEF2F7;--muted:#8B98AE;--soft:#B6C1D3;--accent:#4ADE80}
-html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"]{background:#06090F !important;color:#EEF2F7;font-family:'Inter',system-ui,sans-serif !important;scroll-behavior:smooth;overflow-x:hidden}
+:root{color-scheme:light;--bg:#FFFFFF;--bg2:#F4F6F9;--panel:#FFFFFF;--line:#E3E7EE;--line2:#CBD3DF;--text:#0B1220;--muted:#5B6678;--soft:#3B4658;--accent:#0B7A43}
+html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"]{background:#FFFFFF !important;color:#0B1220;font-family:'Inter',system-ui,sans-serif !important;scroll-behavior:smooth;overflow-x:hidden}
 header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],#MainMenu,footer{display:none !important}
 [data-testid="stMainBlockContainer"],.block-container{max-width:1280px !important;padding:0 40px !important}
 [data-testid="stVerticalBlock"]{gap:0 !important}
 [data-testid="stHorizontalBlock"]{gap:24px !important;align-items:flex-end}
 [data-testid="stElementContainer"]{width:100%}
-[id]{scroll-margin-top:96px}
+[id]{scroll-margin-top:56px}
 .g{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}
 @media (max-width:900px){
-.g{grid-template-columns:minmax(0,1fr);row-gap:32px}
+.g{grid-template-columns:minmax(0,1fr);row-gap:20px}
 .g>*{grid-column:1 / -1 !important;justify-self:start !important}
 [data-testid="stMainBlockContainer"],.block-container{padding:0 24px !important}
 .oz-nav nav{display:none}
@@ -465,144 +567,161 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 }
 
 /* full-bleed section bands */
-.st-key-sec-process,.st-key-sec-incentives,.st-key-sec-project{background:#06090F;box-shadow:0 0 0 100vmax #06090F;clip-path:inset(0 -100vmax)}
-.st-key-sec-regions,.st-key-sec-map{background:#090E18;box-shadow:0 0 0 100vmax #090E18;clip-path:inset(0 -100vmax)}
-.st-key-sec-process,.st-key-sec-regions,.st-key-sec-incentives,.st-key-sec-map,.st-key-sec-project{position:relative;padding:clamp(88px,11vw,160px) 0}
-.st-key-sec-process{padding-top:clamp(120px,14vw,200px)}
-.st-key-sec-regions::before,.st-key-sec-incentives::before,.st-key-sec-map::before,.st-key-sec-project::before{content:'';position:absolute;top:0;left:-100vmax;right:-100vmax;border-top:1px solid #172033}
+.st-key-sec-process,.st-key-sec-incentives,.st-key-sec-project{background:#FFFFFF;box-shadow:0 0 0 100vmax #FFFFFF;clip-path:inset(0 -100vmax)}
+.st-key-sec-regions,.st-key-sec-map{background:#F4F6F9;box-shadow:0 0 0 100vmax #F4F6F9;clip-path:inset(0 -100vmax)}
+.st-key-sec-process,.st-key-sec-regions,.st-key-sec-incentives,.st-key-sec-map,.st-key-sec-project{position:relative;padding:clamp(56px,6.9vw,100px) 0}
+.st-key-sec-process{padding-top:clamp(72px,8.3vw,120px)}
+.st-key-sec-regions::before,.st-key-sec-incentives::before,.st-key-sec-map::before,.st-key-sec-project::before{content:'';position:absolute;top:0;left:-100vmax;right:-100vmax;border-top:1px solid #E3E7EE}
 
 /* nav */
-.oz-nav{position:fixed;top:0;left:0;right:0;height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 max(40px,calc((100vw - 1200px)/2));background:rgba(6,9,15,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid #172033;z-index:999999}
-.oz-brand{display:flex;align-items:center;gap:14px;color:#EEF2F7 !important;text-decoration:none !important;font-size:13px;font-weight:500;letter-spacing:.24em;text-transform:uppercase}
-.oz-brand i{width:10px;height:10px;border-radius:50%;background:#4ADE80;box-shadow:0 0 16px rgba(74,222,128,.7)}
-.oz-nav nav{display:flex;gap:48px}
-.oz-nav nav a{color:#B6C1D3 !important;text-decoration:none !important;font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase}
-.oz-nav nav a:hover{color:#4ADE80 !important}
-.oz-navcta{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 28px;border-radius:999px;border:1px solid #4ADE80;color:#4ADE80 !important;text-decoration:none !important;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.oz-nav{position:fixed;top:0;left:0;right:0;height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 max(40px,calc((100vw - 1200px)/2));background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid #E3E7EE;z-index:999999}
+.oz-brand{display:flex;align-items:center;gap:14px;color:#0B1220 !important;text-decoration:none !important;font-size:13px;font-weight:500;letter-spacing:.24em;text-transform:uppercase}
+.oz-brand i{width:10px;height:10px;border-radius:50%;background:#16A34A;box-shadow:none}
+.oz-nav nav{display:flex;gap:28px}
+.oz-nav nav a{color:#3B4658 !important;text-decoration:none !important;font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase}
+.oz-nav nav a:hover{color:#0B7A43 !important}
+.oz-navcta{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 28px;border-radius:999px;border:1px solid #0B7A43;color:#0B7A43 !important;text-decoration:none !important;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
 
 /* type */
-.oz-label{font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#8B98AE;margin-bottom:40px}
-.oz-label b{color:#4ADE80;font-weight:500}
-.oz-h1{font-size:clamp(52px,7.8vw,112px) !important;line-height:1 !important;font-weight:200 !important;letter-spacing:-.055em !important;color:#EEF2F7;margin:0 0 80px !important;padding:0 !important}
-.oz-h2{font-size:clamp(40px,5.6vw,80px) !important;line-height:1.02 !important;font-weight:200 !important;letter-spacing:-.05em !important;color:#EEF2F7;margin:0 0 48px !important;padding:0 !important}
-.oz-h3{font-size:clamp(32px,3.9vw,56px) !important;line-height:1.05 !important;font-weight:200 !important;letter-spacing:-.045em !important;color:#EEF2F7;margin:0 !important;padding:0 !important}
-.oz-intro{font-size:18px;line-height:1.75;font-weight:300;color:#8B98AE}
+.oz-label{font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#5B6678;margin-bottom:24px}
+.oz-label b{color:#0B7A43;font-weight:500}
+.oz-h1{font-size:clamp(44px,6.1vw,88px) !important;line-height:1 !important;font-weight:200 !important;letter-spacing:-.055em !important;color:#0B1220;margin:0 0 48px !important;padding:0 !important}
+.oz-h2{font-size:clamp(34px,3.9vw,56px) !important;line-height:1.02 !important;font-weight:200 !important;letter-spacing:-.05em !important;color:#0B1220;margin:0 0 28px !important;padding:0 !important}
+.oz-h3{font-size:clamp(28px,3vw,44px) !important;line-height:1.05 !important;font-weight:200 !important;letter-spacing:-.045em !important;color:#0B1220;margin:0 !important;padding:0 !important}
+.oz-intro{font-size:18px;line-height:1.75;font-weight:300;color:#5B6678}
 .oz-intro.lg{font-size:20px}
-.oz-btn{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 40px;border-radius:999px;background:#4ADE80;color:#06090F !important;text-decoration:none !important;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;box-shadow:0 0 56px rgba(74,222,128,.28)}
-.oz-tlink{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:#EEF2F7 !important;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none !important}
-.oz-tlink:hover{text-decoration:underline !important;text-underline-offset:6px}
-.oz-tlink em{color:#4ADE80;font-style:normal}
+.oz-btn{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 40px;border-radius:999px;background:#4ADE80;color:#06090F !important;text-decoration:none !important;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;box-shadow:none}
 
 /* timeline + stats */
-.oz-step{position:relative;padding-top:32px;border-top:1px solid #26344E}
-.oz-step i{position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:#26344E}
-.oz-step.now{border-top-color:#4ADE80}
-.oz-step.now i{background:#4ADE80;box-shadow:0 0 16px rgba(74,222,128,.8)}
-.oz-step-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:24px}
-.oz-num{font-size:12px;font-weight:500;letter-spacing:.22em;color:#4ADE80}
-.oz-date{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
-.oz-step.now .oz-date{color:#4ADE80;font-weight:600}
-.oz-step-title{font-size:24px;font-weight:300;letter-spacing:-.02em;color:#EEF2F7;margin-bottom:16px}
-.oz-step-text{font-size:15px;line-height:1.75;font-weight:300;color:#8B98AE}
-.oz-stat b{display:block;font-size:clamp(64px,8.9vw,128px);font-weight:200;letter-spacing:-.06em;line-height:1;color:#EEF2F7}
-.oz-stat.acc b{color:#4ADE80}
-.oz-stat span{display:block;margin-top:24px;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#8B98AE}
+.oz-stat b{display:block;font-size:clamp(52px,6.7vw,96px);font-weight:200;letter-spacing:-.06em;line-height:1;color:#0B1220}
+.oz-stat.acc b{color:#0B7A43}
+.oz-stat span{display:block;margin-top:24px;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#5B6678}
 
 /* rows */
-.oz-row{padding:40px 0;border-top:1px solid #172033;align-items:center}
-.oz-rows>.oz-row:last-child{border-bottom:1px solid #172033}
-.oz-rname{font-size:clamp(28px,2.8vw,40px);font-weight:200;letter-spacing:-.035em;color:#EEF2F7}
-.oz-row.hl .oz-rname{color:#4ADE80}
-.oz-rsub{font-size:14px;font-weight:300;color:#8B98AE}
+.oz-row{padding:24px 0;border-top:1px solid #E3E7EE;align-items:center}
+.oz-rows>.oz-row:last-child{border-bottom:1px solid #E3E7EE}
+.oz-rname{font-size:clamp(24px,2.2vw,32px);font-weight:200;letter-spacing:-.035em;color:#0B1220}
+.oz-row.hl .oz-rname{color:#0B7A43}
+.oz-rsub{font-size:14px;font-weight:300;color:#5B6678}
 .oz-rcount{display:flex;align-items:baseline;gap:10px}
-.oz-rcount b{font-size:clamp(36px,3.9vw,56px);font-weight:200;letter-spacing:-.04em;color:#4ADE80;line-height:1}
-.oz-rcount span{font-size:12px;color:#8B98AE}
+.oz-rcount b{font-size:clamp(30px,3vw,44px);font-weight:200;letter-spacing:-.04em;color:#0B7A43;line-height:1}
+.oz-rcount span{font-size:12px;color:#5B6678}
 .oz-akind{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase}
 .oz-akind i{width:8px;height:8px;border-radius:50%}
-.oz-aname{font-size:clamp(24px,2.5vw,36px);font-weight:200;letter-spacing:-.035em;color:#EEF2F7}
+.oz-aname{font-size:clamp(22px,2vw,28px);font-weight:200;letter-spacing:-.035em;color:#0B1220}
 
 /* incentives */
-.oz-band{padding:72px 0;border-top:1px solid #172033;align-items:start}
-.oz-bands>.oz-band:last-child{border-bottom:1px solid #172033}
+.oz-band{padding:44px 0;border-top:1px solid #E3E7EE;align-items:start}
+.oz-bands>.oz-band:last-child{border-bottom:1px solid #E3E7EE}
 .oz-bhead{display:flex;align-items:center;gap:12px;margin-bottom:24px;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase}
 .oz-bhead i{width:8px;height:8px;border-radius:50%}
-.oz-bq{font-size:clamp(26px,2.5vw,36px);line-height:1.15;font-weight:200;letter-spacing:-.035em;color:#EEF2F7}
-.oz-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 24px}
-.oz-iname{font-size:18px;font-weight:500;color:#EEF2F7}
-.oz-itext{margin:12px 0 16px;font-size:15px;line-height:1.75;font-weight:300;color:#8B98AE}
-.oz-ielig{font-size:12px;letter-spacing:.06em;color:#8B98AE}
+.oz-bq{font-size:clamp(22px,2vw,28px);line-height:1.15;font-weight:200;letter-spacing:-.035em;color:#0B1220}
+.oz-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 24px}
+.oz-iname{font-size:18px;font-weight:500;color:#0B1220}
+.oz-itext{margin:12px 0 16px;font-size:15px;line-height:1.75;font-weight:300;color:#5B6678}
+.oz-ielig{font-size:12px;letter-spacing:.06em;color:#5B6678}
 
 /* selected tract */
-.oz-kicker{font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#8B98AE;margin-bottom:20px}
-.oz-kicker.acc{color:#4ADE80}
-.oz-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;border:1px solid #26344E;font-size:12px;color:#EEF2F7}
+.oz-kicker{font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#5B6678;margin-bottom:20px}
+.oz-kicker.acc{color:#0B7A43}
+.oz-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;border:1px solid #CBD3DF;font-size:12px;color:#0B1220}
 .oz-chip i{width:6px;height:6px;border-radius:50%}
 .oz-chips{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-.oz-ks{display:flex;gap:24px;margin-top:56px;padding:32px 0;border-top:1px solid #172033;border-bottom:1px solid #172033}
+.oz-ks{display:flex;gap:24px;margin-top:32px;padding:20px 0;border-top:1px solid #E3E7EE;border-bottom:1px solid #E3E7EE}
 .oz-ks div{flex:1;min-width:0}
-.oz-ks b{display:block;font-size:clamp(26px,2.5vw,36px);font-weight:200;letter-spacing:-.04em;line-height:1;color:#EEF2F7}
-.oz-ks span{display:block;margin-top:12px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
+.oz-ks b{display:block;font-size:clamp(22px,2vw,28px);font-weight:200;letter-spacing:-.04em;line-height:1;color:#0B1220}
+.oz-ks span{display:block;margin-top:12px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#5B6678}
 .oz-kvs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px}
-.oz-kv{display:flex;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid #172033;font-size:14px;color:#EEF2F7}
-.oz-kv span{color:#8B98AE;font-weight:300}
-.oz-just{padding:48px;border-radius:24px;background:#0C1322;border:1px solid #172033;display:flex;flex-direction:column;gap:24px}
-.oz-just p{margin:0 !important;font-size:17px;line-height:1.85;font-weight:300;color:#D5DCE8}
-.oz-just .by{padding-top:24px;border-top:1px solid #172033;font-size:13px;font-weight:300;color:#8B98AE}
-.oz-key{display:flex;flex-wrap:wrap;gap:12px 28px;font-size:12px;color:#B6C1D3;padding-bottom:14px}
+.oz-kv{display:flex;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid #E3E7EE;font-size:14px;color:#0B1220}
+.oz-kv span{color:#5B6678;font-weight:300}
+.oz-just{padding:28px;border-radius:24px;background:#FFFFFF;border:1px solid #E3E7EE;display:flex;flex-direction:column;gap:24px}
+.oz-just p{margin:0 !important;font-size:17px;line-height:1.85;font-weight:300;color:#1F2937}
+.oz-just .by{padding-top:24px;border-top:1px solid #E3E7EE;font-size:13px;font-weight:300;color:#5B6678}
+.oz-key{display:flex;flex-wrap:wrap;gap:12px 28px;font-size:12px;color:#3B4658;padding-bottom:14px}
 .oz-key span{display:inline-flex;align-items:center;gap:8px}
 .oz-key i{width:14px;height:14px;border-radius:3px;display:inline-block}
-.oz-empty{padding:64px 0;border-top:1px solid #172033;border-bottom:1px solid #172033;font-size:18px;font-weight:300;color:#8B98AE}
-.oz-count{text-align:right;font-size:13px;font-weight:300;color:#8B98AE;padding-bottom:12px}
-.oz-count b{display:block;font-size:40px;font-weight:200;letter-spacing:-.04em;line-height:1;color:#4ADE80;margin-bottom:8px}
-.oz-pstep{display:flex;gap:24px;padding-top:32px;border-top:1px solid #172033;margin-bottom:48px}
-.oz-pstep .n{flex:none;font-size:12px;font-weight:500;letter-spacing:.2em;color:#4ADE80;padding-top:5px}
-.oz-pstep .t{font-size:20px;font-weight:300;letter-spacing:-.01em;color:#EEF2F7;margin-bottom:10px}
-.oz-pstep .d{font-size:15px;line-height:1.75;font-weight:300;color:#8B98AE}
-.oz-footer{padding:56px 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 40px;color:#8B98AE;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.oz-empty{padding:40px 0;border-top:1px solid #E3E7EE;border-bottom:1px solid #E3E7EE;font-size:18px;font-weight:300;color:#5B6678}
+.oz-count{text-align:right;font-size:13px;font-weight:300;color:#5B6678;padding-bottom:12px}
+.oz-count b{display:block;font-size:40px;font-weight:200;letter-spacing:-.04em;line-height:1;color:#0B7A43;margin-bottom:8px}
+.oz-pstep{display:flex;gap:24px;padding-top:20px;border-top:1px solid #E3E7EE;margin-bottom:28px}
+.oz-pstep .n{flex:none;font-size:12px;font-weight:500;letter-spacing:.2em;color:#0B7A43;padding-top:5px}
+.oz-pstep .t{font-size:20px;font-weight:300;letter-spacing:-.01em;color:#0B1220;margin-bottom:10px}
+.oz-pstep .d{font-size:15px;line-height:1.75;font-weight:300;color:#5B6678}
+.oz-footer{padding:32px 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 40px;color:#5B6678;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 .oz-footer nav{display:flex;flex-wrap:wrap;gap:0 36px}
-.oz-footer a{color:#B6C1D3 !important;text-decoration:none !important;font-weight:500;letter-spacing:.16em;padding:14px 0}
+.oz-footer a{color:#3B4658 !important;text-decoration:none !important;font-weight:500;letter-spacing:.16em;padding:14px 0}
 
-.oz-th{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:40px 0;border-top:1px solid #172033;border-bottom:1px solid #172033}
+.oz-th{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:24px 0;border-top:1px solid #E3E7EE;border-bottom:1px solid #E3E7EE}
 .oz-pop{text-align:right}
-.oz-pop b{display:block;font-size:clamp(32px,3.9vw,56px);font-weight:200;letter-spacing:-.045em;line-height:1;color:#EEF2F7}
-.oz-pop span{display:block;margin-top:10px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
-.oz-mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:24px;border-top:1px solid #172033;margin-top:4px}
-.oz-m{padding:28px 0;border-bottom:1px solid #172033}
-.oz-m b{display:block;font-size:clamp(22px,2.2vw,32px);font-weight:200;letter-spacing:-.035em;line-height:1.1;color:#EEF2F7}
-.oz-m span{display:block;margin-top:12px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#8B98AE}
-.oz-arows>.oz-arow:last-child{border-bottom:1px solid #172033}
-.oz-arow{padding:24px 0;border-top:1px solid #172033}
-.oz-aname2{font-size:22px;font-weight:200;letter-spacing:-.025em;margin:12px 0 8px;color:#EEF2F7}
+.oz-pop b{display:block;font-size:clamp(28px,3vw,44px);font-weight:200;letter-spacing:-.045em;line-height:1;color:#0B1220}
+.oz-pop span{display:block;margin-top:10px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#5B6678}
+.oz-mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:24px;border-top:1px solid #E3E7EE;margin-top:4px}
+.oz-m{padding:28px 0;border-bottom:1px solid #E3E7EE}
+.oz-m b{display:block;font-size:clamp(20px,1.8vw,26px);font-weight:200;letter-spacing:-.035em;line-height:1.1;color:#0B1220}
+.oz-m span{display:block;margin-top:12px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#5B6678}
+.oz-arows>.oz-arow:last-child{border-bottom:1px solid #E3E7EE}
+.oz-arow{padding:24px 0;border-top:1px solid #E3E7EE}
+.oz-aname2{font-size:22px;font-weight:200;letter-spacing:-.025em;margin:12px 0 8px;color:#0B1220}
 .oz-arow-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
 
+.oz-h1 .acc{color:#0B7A43}
+.oz-kick2{font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#5B6678;padding-top:6px}
+.oz-approach{align-items:start;padding-top:20px;border-top:1px solid #E3E7EE}
+.oz-lead{font-size:20px;line-height:1.7;font-weight:300;color:#5B6678}
+.oz-lead.dark{color:#0B1220}
+.oz-round{padding-top:20px;border-top:1px solid #CBD3DF}
+.oz-round.acc{border-top-color:#0B7A43}
+.oz-roundlbl{font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#5B6678}
+.oz-roundlbl.acc{color:#0B7A43}
+.oz-bignum{margin-top:28px;font-size:clamp(52px,6.7vw,96px);font-weight:200;letter-spacing:-.06em;line-height:1;color:#0B1220}
+.oz-bignum.acc{color:#0B7A43}
+.oz-unit{margin-top:16px;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#5B6678}
+.oz-rtext{margin-top:20px;font-size:16px;line-height:1.75;font-weight:300;color:#5B6678;max-width:520px}
+.oz-rtext:first-of-type{margin-top:28px}
+.oz-next{margin-top:32px;padding-top:20px;border-top:1px solid #E3E7EE;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.oz-next span{font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#5B6678}
+.oz-next a{display:inline-flex;align-items:center;gap:14px;min-height:48px;font-size:clamp(20px,1.8vw,26px);font-weight:200;letter-spacing:-.02em;color:#0B1220 !important;text-decoration:none !important}
+.oz-next em{color:#0B7A43;font-style:normal}
+
+
+.oz-tlink{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:#0B1220 !important;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none !important}
+.oz-tlink:hover{text-decoration:underline !important;text-underline-offset:6px}
+.oz-tlink em{color:#0B7A43;font-style:normal}
+.oz-rwhen{font-size:14px;font-weight:400;letter-spacing:.02em;color:#5B6678}
+.oz-row.done .oz-rname{color:#5B6678}
+.oz-row.now .oz-rname{color:#0B7A43}
+.oz-rstat{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:#5B6678}
+.oz-rstat.now{color:#0B7A43;font-weight:600}
+.oz-rstat i{width:8px;height:8px;border-radius:50%;background:#16A34A}
+
 /* widgets */
-[data-testid="stWidgetLabel"] p,label[data-testid="stWidgetLabel"] p{font-size:12px !important;font-weight:500 !important;letter-spacing:.18em !important;text-transform:uppercase !important;color:#8B98AE !important}
-div[data-baseweb="select"]>div{background:transparent !important;border:none !important;border-bottom:1px solid #26344E !important;border-radius:0 !important;min-height:52px;box-shadow:none !important}
-div[data-baseweb="select"] *{color:#EEF2F7 !important;font-family:'Inter',sans-serif !important;font-size:16px !important;font-weight:300 !important}
-div[data-baseweb="select"] svg{fill:#8B98AE !important}
-div[data-baseweb="popover"]>div,div[data-baseweb="popover"] ul,ul[role="listbox"]{background:#0C1322 !important;border-radius:12px}
-li[role="option"]{background:#0C1322 !important;color:#EEF2F7 !important}
-li[role="option"]:hover,li[aria-selected="true"]{background:#16233B !important}
-span[data-baseweb="tag"]{background:transparent !important;border:1px solid #26344E !important;border-radius:999px !important;height:40px;padding-left:16px}
-span[data-baseweb="tag"] span{color:#EEF2F7 !important;font-size:13px !important;font-weight:400 !important}
-span[data-baseweb="tag"] svg{fill:#8B98AE !important}
-div[data-baseweb="input"],div[data-baseweb="base-input"],div[data-baseweb="textarea"]{background:transparent !important;border:none !important;border-bottom:1px solid #26344E !important;border-radius:0 !important}
+[data-testid="stWidgetLabel"] p,label[data-testid="stWidgetLabel"] p{font-size:12px !important;font-weight:500 !important;letter-spacing:.18em !important;text-transform:uppercase !important;color:#5B6678 !important}
+div[data-baseweb="select"]>div{background:transparent !important;border:none !important;border-bottom:1px solid #CBD3DF !important;border-radius:0 !important;min-height:52px;box-shadow:none !important}
+div[data-baseweb="select"] *{color:#0B1220 !important;font-family:'Inter',sans-serif !important;font-size:16px !important;font-weight:300 !important}
+div[data-baseweb="select"] svg{fill:#5B6678 !important}
+div[data-baseweb="popover"]>div,div[data-baseweb="popover"] ul,ul[role="listbox"]{background:#FFFFFF !important;border-radius:12px}
+li[role="option"]{background:#FFFFFF !important;color:#0B1220 !important}
+li[role="option"]:hover,li[aria-selected="true"]{background:#F1F4F8 !important}
+span[data-baseweb="tag"]{background:transparent !important;border:1px solid #CBD3DF !important;border-radius:999px !important;height:40px;padding-left:16px}
+span[data-baseweb="tag"] span{color:#0B1220 !important;font-size:13px !important;font-weight:400 !important}
+span[data-baseweb="tag"] svg{fill:#5B6678 !important}
+div[data-baseweb="input"],div[data-baseweb="base-input"],div[data-baseweb="textarea"]{background:transparent !important;border:none !important;border-bottom:1px solid #CBD3DF !important;border-radius:0 !important}
 div[data-baseweb="input"]>div,div[data-baseweb="base-input"]>div{background:transparent !important}
-div[data-baseweb="input"] input,div[data-baseweb="base-input"] input,div[data-baseweb="textarea"] textarea,textarea{background:transparent !important;color:#EEF2F7 !important;font-family:'Inter',sans-serif !important;font-size:17px !important;font-weight:300 !important;padding-left:0 !important;-webkit-text-fill-color:#EEF2F7}
-input::placeholder,textarea::placeholder{color:#8B98AE !important;-webkit-text-fill-color:#8B98AE}
-input:disabled{-webkit-text-fill-color:#B6C1D3 !important;opacity:1 !important}
-.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button{border-radius:999px !important;min-height:56px;padding:0 36px !important;font-family:'Inter',sans-serif !important;background:transparent !important;color:#EEF2F7 !important;border:1px solid #26344E !important;box-shadow:none !important}
+div[data-baseweb="input"] input,div[data-baseweb="base-input"] input,div[data-baseweb="textarea"] textarea,textarea{background:transparent !important;color:#0B1220 !important;font-family:'Inter',sans-serif !important;font-size:17px !important;font-weight:300 !important;padding-left:0 !important;-webkit-text-fill-color:#0B1220}
+input::placeholder,textarea::placeholder{color:#5B6678 !important;-webkit-text-fill-color:#5B6678}
+input:disabled{-webkit-text-fill-color:#3B4658 !important;opacity:1 !important}
+.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button{border-radius:999px !important;min-height:56px;padding:0 36px !important;font-family:'Inter',sans-serif !important;background:transparent !important;color:#0B1220 !important;border:1px solid #CBD3DF !important;box-shadow:none !important}
 .stButton>button *,.stFormSubmitButton>button *,.stDownloadButton>button *{color:inherit !important;font-size:12px !important;font-weight:600 !important;letter-spacing:.14em !important;text-transform:uppercase !important}
-.stButton>button:hover,.stDownloadButton>button:hover{border-color:#4ADE80 !important;color:#4ADE80 !important}
-.stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"],button[data-testid="stBaseButton-primary"],button[data-testid="stBaseButton-primaryFormSubmit"]{background:#4ADE80 !important;color:#06090F !important;border:none !important;box-shadow:0 0 48px rgba(74,222,128,.25) !important}
+.stButton>button:hover,.stDownloadButton>button:hover{border-color:#0B7A43 !important;color:#0B7A43 !important}
+.stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"],button[data-testid="stBaseButton-primary"],button[data-testid="stBaseButton-primaryFormSubmit"]{background:#4ADE80 !important;color:#06090F !important;border:none !important;box-shadow:none !important}
 .stButton>button[kind="primary"]:hover{color:#06090F !important}
 .stButton{display:flex;justify-content:flex-start}
 [data-testid="stForm"]{border:none !important;padding:0 !important}
-[data-testid="stPlotlyChart"]{border-radius:24px;overflow:hidden;border:1px solid #172033;background:#E5E7EB}
-[data-testid="stExpander"]{border:1px solid #172033 !important;border-radius:16px !important;background:transparent !important}
-[data-testid="stExpander"] summary p{color:#B6C1D3 !important;font-size:12px !important;letter-spacing:.16em;text-transform:uppercase}
-[data-testid="stAlert"]{background:#0C1322 !important;border:1px solid #26344E !important;border-radius:16px !important}
-[data-testid="stAlert"] *{color:#EEF2F7 !important}
+[data-testid="stPlotlyChart"]{border-radius:24px;overflow:hidden;border:1px solid #E3E7EE;background:#EEF1F5}
+[data-testid="stExpander"]{border:1px solid #E3E7EE !important;border-radius:16px !important;background:transparent !important}
+[data-testid="stExpander"] summary p{color:#3B4658 !important;font-size:12px !important;letter-spacing:.16em;text-transform:uppercase}
+[data-testid="stAlert"]{background:#FFFFFF !important;border:1px solid #CBD3DF !important;border-radius:16px !important}
+[data-testid="stAlert"] *{color:#0B1220 !important}
 @media (max-width:900px){.oz-mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 """
@@ -634,7 +753,7 @@ if REQUIRE_LOGIN and not st.session_state["partner"]:
         render(
             """
             <div class="oz-label"><b>Secure access</b></div>
-            <div class="oz-h3" style="margin-bottom:48px !important">Louisiana OZ 2.0 Portal</div>
+            <div class="oz-h3" style="margin-bottom:28px !important">Louisiana OZ 2.0 Portal</div>
             """
         )
         partner_login_form("gate_login")
@@ -647,7 +766,7 @@ render(
     <div class="oz-nav">
       <a class="oz-brand" href="#process"><i></i>Louisiana OZ 2.0</a>
       <nav>
-        <a href="#process">Process</a><a href="#regions">Partners</a><a href="#incentives">Incentives</a><a href="#map">Asset map</a>
+        <a href="#process">How</a><a href="#regions">Who</a><a href="#incentives">What</a><a href="#map">Where</a>
       </nav>
       <a class="oz-navcta" href="#project">Your project</a>
     </div>
@@ -656,41 +775,61 @@ render(
 
 # --- SECTION 1: NOMINATION PROCESS ---
 with section("process"):
+    today = _today()
+    done_flags = [today > date.fromisoformat(st_["end"]) for st_ in CONTENT["process_steps"]]
+    now_idx = next((i for i, d in enumerate(done_flags) if not d), None)
     steps_html = ""
-    for i, s in enumerate(CONTENT["process_steps"]):
-        now = " now" if s.get("now") else ""
+    for i, st_ in enumerate(CONTENT["process_steps"]):
+        state = "done" if done_flags[i] else ("now" if i == now_idx else "todo")
+        if state == "now":
+            status = "<span class='oz-rstat now'><i></i>We are here</span>"
+        else:
+            status = f"<span class='oz-rstat'>{'Complete' if state == 'done' else 'Upcoming'}</span>"
         steps_html += (
-            f"<div class='oz-step{now}' style='grid-column:span 3'><i></i>"
-            f"<div class='oz-step-top'><span class='oz-num'>{i + 1:02d}</span><span class='oz-date'>{esc(s.get('date', ''))}</span></div>"
-            f"<div class='oz-step-title'>{esc(s['title'])}</div><div class='oz-step-text'>{esc(s['text'])}</div></div>"
+            f"<div class='g oz-row {state}'>"
+            f"<div class='oz-rwhen' style='grid-column:1 / span 3'>{esc(st_['when'])}</div>"
+            f"<div class='oz-rname' style='grid-column:4 / span 6'>{esc(st_['title'])}</div>"
+            f"<div style='grid-column:10 / span 3;justify-self:end'>{status}</div></div>"
         )
-    parishes_with = int(nominated["Parish"].nunique()) if len(nominated) else 0
+    rounds_html = ""
+    for r in CONTENT["rounds"]:
+        acc = " acc" if r.get("acc") else ""
+        paras = "".join(f"<div class='oz-rtext'>{esc(p)}</div>" for p in r["paras"])
+        rounds_html += (
+            f"<div class='oz-round{acc}' style='grid-column:span 6'>"
+            f"<div class='oz-roundlbl{acc}'>{esc(r['name'])} &nbsp;·&nbsp; {esc(r['tag'])}</div>"
+            f"<div class='oz-bignum{acc}'>{esc(r['figure'])}</div><div class='oz-unit'>{esc(r['unit'])}</div>{paras}</div>"
+        )
+    approach = CONTENT["approach"]
+    approach_html = f"<div class='oz-lead dark'>{esc(approach[0])}</div><div class='oz-lead'>{esc(approach[1])}</div>"
     render(
         f"""
         <div id="process">
           <div class="g">
-            <div class="oz-label" style="grid-column:1 / span 12"><b>01</b> &nbsp;/&nbsp; Louisiana nomination process</div>
-            <div role="heading" aria-level="1" class="oz-h1" style="grid-column:1 / span 11">How Louisiana nominated its Opportunity Zone 2.0 tracts.</div>
-            <div class="oz-intro lg" style="grid-column:1 / span 5">{esc(CONTENT['process_intro'])}</div>
+            <div class="oz-label" style="grid-column:1 / span 12"><b>01</b> &nbsp;/&nbsp; How it happened</div>
+            <div role="heading" aria-level="1" class="oz-h1" style="grid-column:1 / span 11">Louisiana nominated <span class="acc">{OZ2_SUBMITTED}</span> tracts for Opportunity Zone 2.0.</div>
+            <div class="oz-intro lg" style="grid-column:1 / span 6">{esc(CONTENT['process_lede'])}</div>
             <div style="grid-column:8 / span 5;align-self:end;display:flex;justify-content:flex-end"><a class="oz-btn" href="#map">Explore the asset map</a></div>
           </div>
-          <div class="g" style="margin-top:clamp(96px,12vw,176px)">{steps_html}</div>
-          <div class="g" style="margin-top:clamp(80px,10vw,144px)">
-            <div class="oz-stat" style="grid-column:span 4"><b>{len(region_table)}</b><span>Regional partners</span></div>
-            <div class="oz-stat" style="grid-column:span 4"><b>{parishes_with}</b><span>Parishes with nominations</span></div>
-            <div class="oz-stat acc" style="grid-column:span 4"><b>{len(nominated)}</b><span>Nominated tracts</span></div>
+          <div class="g oz-approach" style="margin-top:clamp(56px,6.7vw,96px)">
+            <div class="oz-kick2" style="grid-column:1 / span 3">Our approach</div>
+            <div style="grid-column:4 / span 7;display:flex;flex-direction:column;gap:20px">{approach_html}</div>
           </div>
+          <div class="g" style="margin-top:clamp(56px,6.7vw,96px);align-items:start">{rounds_html}</div>
+          <div class="oz-kick2" style="margin:clamp(56px,6.7vw,96px) 0 28px">Opportunity Zones 2.0 timeline</div>
+          <div class="oz-rows">{steps_html}</div>
         </div>
         """
     )
+    next_chapter("Who stands behind it", "#regions")
 
 # --- SECTION 2: REGIONAL PARTNERS ---
 with section("regions"):
     render(
         """
         <div id="regions">
-          <div class="oz-label"><b>02</b> &nbsp;/&nbsp; Regional partners</div>
-          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Start with the partner in your region.</div>
+          <div class="oz-label"><b>02</b> &nbsp;/&nbsp; Who stands behind it</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Regional partners stand behind every nomination.</div>
         </div>
         """
     )
@@ -706,9 +845,9 @@ with section("regions"):
             if highlight_region:
                 render(
                     f"<div class='oz-rsub' style='margin-top:12px'>{esc(chosen_parish)} is served by "
-                    f"<span style='color:#4ADE80'>{esc(highlight_region)}</span>.</div>"
+                    f"<span style='color:#0B7A43'>{esc((_fact_for(highlight_region) or {}).get('name', highlight_region))}</span>.</div>"
                 )
-    spacer(112)
+    spacer(64)
 
     rows_html = ""
     for r in region_table:
@@ -719,7 +858,7 @@ with section("regions"):
             if r["url"]
             else "<span class='oz-rsub' style='grid-column:11 / span 2;justify-self:end'>OZ page soon</span>"
         )
-        hl = " hl" if highlight_region and r["region"] == highlight_region else ""
+        hl = " hl" if highlight_region and highlight_region in r["regions"] else ""
         rows_html += (
             f"<div class='g oz-row{hl}'>"
             f"<div class='oz-rname' style='grid-column:1 / span 4'>{esc(r['partner'])}</div>"
@@ -728,6 +867,7 @@ with section("regions"):
             f"{link}</div>"
         )
     render(f"<div class='oz-rows'>{rows_html}</div>")
+    next_chapter("What makes it investable", "#incentives")
 
 # --- SECTION 3: INCENTIVES ---
 with section("incentives"):
@@ -748,14 +888,17 @@ with section("incentives"):
     render(
         f"""
         <div id="incentives">
-          <div class="oz-label"><b>03</b> &nbsp;/&nbsp; Development incentives</div>
-          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Incentives that de-risk the investment.</div>
-          <div class="g" style="margin-bottom:112px"><div class="oz-intro" style="grid-column:1 / span 5">{esc(CONTENT['incentives_intro'])}</div></div>
+          <div class="oz-label"><b>03</b> &nbsp;/&nbsp; What makes it investable</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Three kinds of risk. Three kinds of help.</div>
+          <div class="g" style="margin-bottom:64px"><div class="oz-intro" style="grid-column:1 / span 5">{esc(CONTENT['incentives_intro'])}</div></div>
           <div class="oz-bands">{bands_html}</div>
-          <div style="margin-top:64px"><a class="oz-tlink" href="#map">See which incentives apply to each tract <em>→</em></a></div>
+          <div style="margin-top:40px"><a class="oz-tlink" href="#map">Find the tracts these apply to <em>→</em></a></div>
         </div>
         """
     )
+
+
+    next_chapter("Where it is", "#map")
 
 
 def rule_applies(rule, row, region, parish):
@@ -806,47 +949,52 @@ def get_zoom_center(geoids):
 
 
 def render_map(df, active):
-    """Light carto-positron basemap, hairline tract outlines, translucent grey/green fills (green =
-    nominated), a navy-outlined selected tract, and the in-map 'Toggle Anchor Assets' legend."""
+    """Light map on CARTO Positron vector tiles (built into Plotly, no API token). The basemap adds
+    highways, streets, water and place names by itself as the visitor zooms in, from the whole state
+    down to single streets. Tracts sit on top with translucent fills so that detail always shows through."""
     map_df = df[["geoid_str", "Parish"]].copy().reset_index(drop=True)
     sel = str(active) if active else None
-
-    def tract_cat(g):
-        return 1 if g in nominated_ids else 0
-
-    map_df["Color_Category"] = map_df["geoid_str"].map(tract_cat)
-    map_df["hover"] = (
-        map_df["Parish"].astype(str) + " · " + map_df["geoid_str"]
-        + np.where(map_df["geoid_str"].isin(nominated_ids), " · Nominated", "")
-    )
-    in_view = sel is not None and sel in set(map_df["geoid_str"])
-    focus = {sel} if in_view else set(map_df["geoid_str"])
+    view_ids = set(map_df["geoid_str"])
+    is_nom = map_df["geoid_str"].isin(nominated_ids)
+    other_df, nom_df = map_df[~is_nom], map_df[is_nom]
+    in_view = sel is not None and sel in view_ids
+    focus = {sel} if in_view else view_ids
     center, zoom = get_zoom_center(focus)
     revision_key = sel if in_view else f"{len(focus)}-{min(focus) if focus else ''}"
+    fid = f"properties.{ID_KEY}"
+    keep_opacity = dict(selected=dict(marker=dict(opacity=1)), unselected=dict(marker=dict(opacity=1)))
 
     fig = go.Figure()
-    # Fills are translucent so the light basemap stays visible; one hairline outline for every tract.
-    fig.add_trace(
-        go.Choroplethmap(
-            geojson=gj, locations=map_df["geoid_str"], z=map_df["Color_Category"],
-            featureidkey=f"properties.{ID_KEY}",
-            colorscale=[[0, "rgba(226,232,240,0.30)"], [1, "rgba(74,222,128,0.55)"]],
-            zmin=0, zmax=1, showscale=False,
-            marker=dict(opacity=1, line=dict(width=0.7, color="rgba(51,65,85,0.85)")),
-            selected=dict(marker=dict(opacity=1)), unselected=dict(marker=dict(opacity=1)),
-            hovertext=map_df["hover"], hoverinfo="text", name="Census Tracts",
-        )
-    )
-    if in_view:
-        # selected tract: deeper fill (green if nominated, neutral otherwise) and a navy outline
-        fill = "rgba(21,128,61,0.45)" if sel in nominated_ids else "rgba(15,23,42,0.22)"
-        feats = [f for f in gj["features"] if f["properties"].get(ID_KEY) == sel]
+    if len(other_df):
+        # almost-transparent fill (still clickable) with a hairline outline
         fig.add_trace(
             go.Choroplethmap(
-                geojson={"type": "FeatureCollection", "features": feats}, locations=[sel], z=[1],
-                featureidkey=f"properties.{ID_KEY}",
-                colorscale=[[0, fill], [1, fill]], showscale=False,
-                marker=dict(opacity=1, line=dict(width=2.2, color="#06090F")),
+                geojson=gj, locations=other_df["geoid_str"], z=[0] * len(other_df), featureidkey=fid,
+                colorscale=[[0, "rgba(100,116,139,0.06)"], [1, "rgba(100,116,139,0.06)"]], showscale=False,
+                marker=dict(opacity=1, line=dict(width=0.6, color="rgba(71,85,105,0.6)")),
+                hovertext=other_df["Parish"].astype(str) + " · " + other_df["geoid_str"], hoverinfo="text",
+                name="Other tracts", **keep_opacity,
+            )
+        )
+    if len(nom_df):
+        ids = set(nom_df["geoid_str"])
+        nom_geo = {"type": "FeatureCollection", "features": [f for f in gj["features"] if f["properties"].get(ID_KEY) in ids]}
+        fig.add_trace(
+            go.Choroplethmap(
+                geojson=nom_geo, locations=nom_df["geoid_str"], z=[1] * len(nom_df), featureidkey=fid,
+                colorscale=[[0, "rgba(34,197,94,0.45)"], [1, "rgba(34,197,94,0.45)"]], showscale=False,
+                marker=dict(opacity=1, line=dict(width=1.2, color="#15803D")),
+                hovertext=nom_df["Parish"].astype(str) + " · " + nom_df["geoid_str"] + " · Nominated", hoverinfo="text",
+                name="Nominated", **keep_opacity,
+            )
+        )
+    if in_view:
+        sel_geo = {"type": "FeatureCollection", "features": [f for f in gj["features"] if f["properties"].get(ID_KEY) == sel]}
+        fig.add_trace(
+            go.Choroplethmap(
+                geojson=sel_geo, locations=[sel], z=[1], featureidkey=fid,
+                colorscale=[[0, "rgba(11,18,32,0.22)"], [1, "rgba(11,18,32,0.22)"]], showscale=False,
+                marker=dict(opacity=1, line=dict(width=2.4, color="#0B1220")),
                 hoverinfo="skip", name="Selected tract",
             )
         )
@@ -861,14 +1009,14 @@ def render_map(df, active):
         )
     fig.update_layout(
         map=dict(style="carto-positron", zoom=zoom, center=center),
-        margin={"r": 0, "t": 0, "l": 0, "b": 0}, paper_bgcolor="rgba(0,0,0,0)", height=700,
+        margin={"r": 0, "t": 0, "l": 0, "b": 0}, paper_bgcolor="#FFFFFF", height=620,
         clickmode="event+select", uirevision=revision_key,
-        hoverlabel=dict(bgcolor="#06090F", bordercolor="#26344E", font=dict(family="Inter, sans-serif", size=12, color="#EEF2F7")),
+        hoverlabel=dict(bgcolor="#0B1220", bordercolor="#0B1220", font=dict(family="Inter, sans-serif", size=12, color="#FFFFFF")),
         legend=dict(
-            title=dict(text="TOGGLE ANCHOR ASSETS", font=dict(size=10, color="#475569", family="Inter, sans-serif")),
+            title=dict(text="TOGGLE ANCHOR ASSETS", font=dict(size=10, color="#5B6678", family="Inter, sans-serif")),
             yanchor="top", y=0.97, xanchor="left", x=0.02, itemsizing="constant",
-            bgcolor="rgba(255,255,255,0.94)", font=dict(size=11, color="#0F172A", family="Inter, sans-serif"),
-            bordercolor="#CBD5E1", borderwidth=1,
+            bgcolor="rgba(255,255,255,0.94)", font=dict(size=11, color="#0B1220", family="Inter, sans-serif"),
+            bordercolor="#CBD3DF", borderwidth=1,
         ),
     )
     return fig
@@ -900,9 +1048,9 @@ with section("map"):
     render(
         """
         <div id="map">
-          <div class="oz-label"><b>04</b> &nbsp;/&nbsp; Asset map</div>
-          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Nominated tracts and the assets around them.</div>
-          <div class="g" style="margin-bottom:96px"><div class="oz-intro" style="grid-column:1 / span 5">Select a tract to read the regional partner’s case and see what’s nearby.</div></div>
+          <div class="oz-label"><b>04</b> &nbsp;/&nbsp; Where it is</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">See each tract, and everything around it.</div>
+          <div class="g" style="margin-bottom:56px"><div class="oz-intro" style="grid-column:1 / span 5">Select a tract to read the partner’s case. Zoom in and the streets, sites and clinics around it appear.</div></div>
         </div>
         """
     )
@@ -937,7 +1085,7 @@ with section("map"):
         scope = selected_parish if selected_parish != "All in region" else (selected_region if selected_region != "All Louisiana" else "Louisiana")
         render(f"<div class='oz-count'><b>{len(nom_in_view)}</b>nominated in {esc(scope)}</div>")
 
-    spacer(40)
+    spacer(24)
 
     if gj is None:
         st.warning("The tract boundary file (tl_2025_22_tract.json) was not found, so the map cannot be drawn.")
@@ -946,7 +1094,7 @@ with section("map"):
 
         event = plot(
             render_map(filtered_df, active), on_select="rerun", key="oz_map",
-            config={"scrollZoom": True},
+            config={"scrollZoom": True, "displayModeBar": False},
         )
         try:
             points = event["selection"]["points"]
@@ -958,16 +1106,15 @@ with section("map"):
                 st.session_state["active_tract"] = str(loc)
                 st.rerun()
 
-        spacer(32)
+        spacer(20)
         k1, k3 = st.columns([10, 2])
         with k1:
             render(
                 """
                 <div class="oz-key">
-                  <span><i style="background:#F3F5F9;border:1px solid #94A3B8"></i>Other tracts</span>
-                  <span><i style="background:#A5EFC0;border:1px solid #475569"></i>Nominated</span>
-                  <span><i style="background:#96C6A8;border:2px solid #06090F"></i>Selected</span>
-                  <span style="color:#8B98AE">Use the map legend to show anchor assets</span>
+                  <span><i style="background:rgba(100,116,139,0.10);border:1px solid #64748B"></i>Other tracts</span>
+                  <span><i style="background:rgba(34,197,94,0.45);border:1px solid #15803D"></i>Nominated</span>
+                  <span><i style="background:rgba(11,18,32,0.22);border:2px solid #0B1220"></i>Selected</span>
                 </div>
                 """
             )
@@ -976,7 +1123,7 @@ with section("map"):
 
     # selected tract: header strip, then metrics + justification (left) and nearby anchors (right),
     # the same orientation as the original portal
-    spacer(96)
+    spacer(56)
     active = st.session_state["active_tract"]
     match = master_df[master_df["geoid_str"] == str(active)] if active else master_df.iloc[0:0]
     if match.empty:
@@ -988,6 +1135,7 @@ with section("map"):
         row = match.iloc[0]
         gid = str(active)
         parish, region = str(row["Parish"]), str(row["Region"])
+        redo_name = (_fact_for(region) or {}).get("name", region)
         nom = nominated_by_id.get(gid)
         pop = safe_int(row.get(POP_COL, 0))
         nmtc_yes = row["NMTC_Calculated"] in ("Eligible", "Deep Distress")
@@ -997,12 +1145,12 @@ with section("map"):
         if nom:
             if nom.get("category"):
                 chips += f"<span class='oz-chip'>{esc(nom['category'])}</span>"
-            chips += f"<span class='oz-chip'><i style='background:#4ADE80'></i>Nominated with {esc(region)}</span>"
+            chips += f"<span class='oz-chip'><i style='background:#16A34A'></i>Nominated with {esc(redo_name)}</span>"
         else:
             chips += "<span class='oz-chip'>Not nominated</span>"
 
         if nom and str(nom.get("justification", "")).strip():
-            just_inner = para_html(nom["justification"]) + f"<div class='by'>Submitted by {esc(region)}</div>"
+            just_inner = para_html(nom["justification"]) + f"<div class='by'>Submitted by {esc(redo_name)}</div>"
         elif nom:
             just_inner = "<p>The regional partner has not added a justification for this tract yet.</p>"
         else:
@@ -1021,7 +1169,7 @@ with section("map"):
             </div>
             """
         )
-        spacer(64)
+        spacer(40)
 
         col_l, _gap, col_r = st.columns([12, 1, 8])
 
@@ -1040,9 +1188,9 @@ with section("map"):
                   <div class="oz-m"><b>{esc(f"{safe_int(row.get('Population 65 years and over', 0)):,}")}</b><span>Pop 65+</span></div>
                   <div class="oz-m"><b>{esc(f"{safe_float(row.get('Broadband Internet (%)', 0)):.1f}%")}</b><span>Broadband</span></div>
                 </div>
-                <div class="oz-kicker" style="margin-top:56px">Recommendation category</div>
+                <div class="oz-kicker" style="margin-top:32px">Recommendation category</div>
                 <div class="oz-chips">{chips}</div>
-                <div class="oz-kicker" style="margin-top:48px">Regional partner’s justification</div>
+                <div class="oz-kicker" style="margin-top:28px">Regional partner’s justification</div>
                 <div class="oz-just">{just_inner}</div>
                 """
             )
@@ -1054,11 +1202,11 @@ with section("map"):
             chips_inc = "".join(
                 f"<span class='oz-chip'><i style='background:{esc(c['color'])}'></i>{esc(c['label'])}</span>" for c in applicable
             )
-            spacer(40)
+            spacer(24)
             render(
                 f"<div class='oz-chips'><span class='oz-kicker' style='margin:0 12px 0 0'>Incentives that apply</span>{chips_inc}</div>"
             )
-            spacer(32)
+            spacer(20)
             if nom:
                 if gid in st.session_state["shortlist"]:
                     render("<div class='oz-rsub'>On your shortlist ✓</div>")
@@ -1092,9 +1240,9 @@ with section("map"):
             )
 
     # shortlist
-    spacer(112)
-    render("<div style='border-top:1px solid #172033'></div>")
-    spacer(40)
+    spacer(64)
+    render("<div style='border-top:1px solid #E3E7EE'></div>")
+    spacer(24)
     st.session_state["shortlist"] = [g for g in st.session_state["shortlist"] if g in nominated_ids]
     s1, s2 = st.columns([8, 4])
     with s1:
@@ -1109,17 +1257,19 @@ with section("map"):
         )
         st.download_button("Export CSV", export.to_csv(index=False).encode("utf-8"), "shortlist.csv", "text/csv", disabled=not sl)
         render("<div style='text-align:right;margin-top:8px'><a class='oz-tlink' href='#project'>Continue <em>→</em></a></div>")
-    spacer(40)
-    render("<div style='border-top:1px solid #172033'></div>")
+    spacer(24)
+    render("<div style='border-top:1px solid #E3E7EE'></div>")
+
+    next_chapter("What happens next", "#project")
 
 # --- SECTION 5: TELL US ABOUT YOUR PROJECT ---
 with section("project"):
     render(
         f"""
         <div id="project">
-          <div class="oz-label"><b>05</b> &nbsp;/&nbsp; Connect with the region</div>
-          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Tell us about your project.</div>
-          <div class="g" style="margin-bottom:112px"><div class="oz-intro" style="grid-column:1 / span 5">{esc(CONTENT['project_intro'])}</div></div>
+          <div class="oz-label"><b>05</b> &nbsp;/&nbsp; What happens next</div>
+          <div role="heading" aria-level="2" class="oz-h2" style="max-width:83%">Ready to build? Tell us about your project.</div>
+          <div class="g" style="margin-bottom:64px"><div class="oz-intro" style="grid-column:1 / span 5">{esc(CONTENT['project_intro'])}</div></div>
         </div>
         """
     )
@@ -1158,7 +1308,7 @@ with section("project"):
                 st.error("Please enter a valid work email address.")
             else:
                 regions_hit = sorted({nominated_by_id[g]["Region"] for g in shortlist_now if g in nominated_by_id})
-                partners = [r for r in region_table if r["region"] in regions_hit]
+                partners = [r for r in region_table if any(x in regions_hit for x in r["regions"])]
                 row = {
                     "Timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     "Name": name.strip(), "Firm": firm.strip(), "Email": email.strip(),
