@@ -18,7 +18,7 @@ DATA SOURCES
   Google Sheet "Regions" (optional): Region, Partner, OZ_URL, Contact_Email
   Google Sheet "Introductions" (create it): receives every introduction request
   Google Sheet "Users" (optional): only used for partner sign-in
-  CSV "Towns Cities Parish RLMA and Region.csv" (repo root): towns and cities with their parish, RLMA and
+  CSV "Crosswalk - Towns Cities Parish RLMA and Region.csv" (repo root): towns and cities with their parish, RLMA and
         region. Drives the full parish list on each partner row and the parish-or-city search.
 
 SECRETS (optional, .streamlit/secrets.toml)
@@ -78,7 +78,7 @@ ANCHOR_COLORS = {}  # filled after the anchors load, using the same Bold palette
 
 # Crosswalk of towns and cities to parish, RLMA (regional labor market area) and region.
 # Column headers are matched loosely (case, spaces and punctuation are ignored). If your headers differ, add them here.
-CROSSWALK_FILE = "Towns Cities Parish RLMA and Region.csv"
+CROSSWALK_FILE = "Crosswalk - Towns Cities Parish RLMA and Region.csv"
 CROSSWALK_COLUMNS = {
     "town": ["City-Town", "Town", "City", "Town/City", "Town or City", "Towns and Cities", "Towns & Cities", "Municipality", "Place"],
     "parish": ["Parish", "Parish Name"],
@@ -544,15 +544,44 @@ def _detect_crosswalk_columns(df):
     return found
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+def _find_crosswalk_file():
+    """The exact file name first. Otherwise the closest crosswalk CSV in the repo root, so a small difference in
+    spacing, capitalization or a browser's "(1)" suffix does not hide the file. The older
+    city-parish-region-crosswalk.csv is deliberately not used."""
+    if os.path.exists(CROSSWALK_FILE):
+        return CROSSWALK_FILE
+    want = _norm_name(CROSSWALK_FILE.rsplit(".", 1)[0])
+    files = sorted(f for f in os.listdir(".") if f.lower().endswith(".csv"))
+    for f in files:
+        if _norm_name(f.rsplit(".", 1)[0]) == want:
+            return f
+    for f in files:
+        n = _norm_name(f.rsplit(".", 1)[0])
+        if n.startswith("crosswalk") and ("town" in n or "rlma" in n):
+            return f
+    return None
+
+
 def load_crosswalk():
     """Returns (normalized DataFrame or None, detected columns). Columns: town, parish, rlma, region."""
-    if not os.path.exists(CROSSWALK_FILE):
+    path = _find_crosswalk_file()
+    if not path:
         return None, {}
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        mtime = 0
+    return _read_crosswalk(path, mtime)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _read_crosswalk(path, mtime):
+    """Reads and normalizes the file. The file's modified time is part of the cache key, so a replaced file is
+    picked up right away and a failed read is never cached against a newer file."""
     raw = None
     for enc in ["utf-8-sig", "utf-8", "latin1", "cp1252"]:
         try:
-            raw = pd.read_csv(CROSSWALK_FILE, encoding=enc, dtype=str)
+            raw = pd.read_csv(path, encoding=enc, dtype=str)
             break
         except Exception:
             continue
@@ -680,6 +709,32 @@ def build_place_index():
 
 
 place_index = build_place_index()
+
+
+def render_crosswalk_check():
+    """Plain-language report on the crosswalk. Open the app with ?check=1 on the end of the address to see it.
+    It shows file names and column names only, nothing sensitive."""
+    path = _find_crosswalk_file()
+    csvs = sorted(f for f in os.listdir(".") if f.lower().endswith(".csv"))
+    cw, found = load_crosswalk()
+    towns = int((cw["town"] != "").sum()) if cw is not None else 0
+    with st.container():
+        st.markdown("**Crosswalk check**")
+        st.write(f"CSV files in the repo: {', '.join(csvs) if csvs else 'none'}")
+        if not path:
+            st.error(f'No crosswalk file found. Expected "{CROSSWALK_FILE}" in the same folder as app.py.')
+        else:
+            st.write(f"File used: {path}")
+            if cw is None:
+                st.error(f"The file was found but could not be used. Columns recognized: {found or 'none'}. It needs at least a parish and a region column.")
+            else:
+                st.write(f"{len(cw)} rows · {towns} with a city or town · columns: " + ", ".join(f"{k} = {v}" for k, v in found.items()))
+                if "town" not in found:
+                    st.warning("No city or town column was recognized, so only parish search is available.")
+                bad = sorted({x for x in cw["region"].unique() if not _fact_for(x)})
+                if bad:
+                    st.warning("Regions that do not match a partner: " + ", ".join(bad))
+        st.write(f"Search options available: {len(place_index)} ({sum(1 for v in place_index.values() if v['kind'] == 'town')} cities and towns)")
 parish_to_region = (
     master_df.dropna(subset=["Parish", "Region"]).drop_duplicates("Parish").set_index("Parish")["Region"].to_dict()
 )
@@ -983,37 +1038,10 @@ with section("regions"):
         render(f"<div class='oz-intro'>{esc(CONTENT['partners_intro'])}</div>")
     highlight_names = set()
     with c_find:
-        # True text search across BOTH City-Town and Parish values from the crosswalk.
-        # The old implementation relied on Streamlit's selectbox type-ahead behavior,
-        # which can make a long statewide list feel as though it is not searchable.
-        query = st.text_input(
-            "Search by parish or city",
-            placeholder="Type a city, town, or parish (for example: Abbeville or Vermilion)",
-            key="place_query",
-        ).strip()
-
-        choice = None
-        if query:
-            q = query.casefold()
-            # Search the actual City-Town and Parish fields, not just the display label.
-            # This guarantees that a user can enter either a city/town name or a parish name.
-            matches = []
-            for label, item in sorted(place_index.items(), key=lambda kv: kv[0].lower()):
-                town = str(item.get("town", "")).casefold()
-                parish = str(item.get("parish", "")).casefold()
-                if q in town or q in parish:
-                    matches.append(label)
-            if matches:
-                choice = st.selectbox(
-                    "Matching locations",
-                    matches,
-                    key="place_match",
-                    label_visibility="collapsed",
-                )
-            else:
-                st.caption("No matching city, town, or parish was found in the crosswalk.")
-
-        if choice and choice in place_index:
+        PLACE_PLACEHOLDER = "Search a parish or city"
+        options = [PLACE_PLACEHOLDER] + sorted(place_index.keys(), key=lambda x: x.lower())
+        choice = st.selectbox("Search by parish or city", options, key="find_place")
+        if choice != PLACE_PLACEHOLDER and choice in place_index:
             info = place_index[choice]
             highlight_names = set(info["names"])
             where = f"{info['town']}, {info['parish']} Parish" if info["town"] else f"{info['parish']} Parish"
@@ -1021,6 +1049,12 @@ with section("regions"):
             rl = info["rlma"]
             rlma = (f" · RLMA {esc(rl)}" if rl.isdigit() else f" · RLMA: {esc(rl)}") if rl else ""
             render(f"<div class='oz-rsub' style='margin-top:12px'>{esc(where)} is served by {served}{rlma}.</div>")
+    try:
+        check_mode = str(st.query_params.get("check", "")).strip().lower() in ("1", "true", "yes")
+    except Exception:
+        check_mode = False
+    if check_mode:
+        render_crosswalk_check()
     spacer(64)
 
     rows_html = ""
@@ -1532,7 +1566,7 @@ with st.expander("Partner sign-in"):
             cw_df, cw_found = load_crosswalk()
             if cw_df is None:
                 st.info(
-                    f"The file \"{CROSSWALK_FILE}\" was not found, is empty, or its columns were not recognized "
+                    f"The crosswalk file (expected: \"{CROSSWALK_FILE}\") was not found, is empty, or its columns were not recognized "
                     f"(detected: {cw_found or 'none'}). Parishes come from the master data instead."
                 )
             else:
