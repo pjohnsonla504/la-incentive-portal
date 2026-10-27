@@ -9,17 +9,25 @@ Five sections, in order:
   4. Asset map                      (map, selected-tract details + partner justification, anchors, shortlist)
   5. Tell us about your project     (introduction request routed by region)
 
-DATA SOURCES
-  CSV / JSON in the repo   : master data file, la_anchors.csv, tl_2025_22_tract.json
-  Google Sheet "Recommendations" : the nominated tracts and each partner's justification
-        - optional column "Status": only rows that are blank, "Published", "Nominated" or
-          "Approved" appear publicly (see VISIBLE_STATUSES). Without a Status column every row appears.
-        - if a tract appears more than once, the newest row with text wins.
-  Google Sheet "Regions" (optional): Region, Partner, OZ_URL, Contact_Email
-  Google Sheet "Introductions" (create it): receives every introduction request
-  Google Sheet "Users" (optional): only used for partner sign-in
-  CSV "Crosswalk - Towns Cities Parish RLMA and Region.csv" (repo root): towns and cities with their parish, RLMA and
-        region. Drives the full parish list on each partner row and the parish-or-city search.
+DATA SOURCES (every file sits next to app.py in the repo)
+  Opportunity Zones 2.0 - Master Data File.csv : every tract's demographics, region and flags (including "OZ 1.0 tract")
+  tl_2025_22_tract.json                        : tract boundaries for the map
+  la_anchors.csv                               : asset points shown on the map
+  Towns Cities Parish RLMA and Region.csv      : city/town -> parish, RLMA and region (parish-or-city search, full parish lists)
+  OZ 2.0 Nominated Tracts (see OFFICIAL_NOMINATED_NAMES) : the official 156 nominated tracts. It decides WHICH tracts are
+        nominated. Without it the nominated tracts come from the Google Sheet alone.
+  OZ_1_0_Tracts.csv (optional)                 : the original 150 zones mapped to today's tract IDs. Without it the master
+        data's "OZ 1.0 tract" column is used.
+  Google Sheet "Recommendations"               : each nominated tract's category and the partner's justification
+        - optional column "Status": only rows that are blank, "Published", "Nominated" or "Approved" appear publicly
+          (see VISIBLE_STATUSES). If a tract appears more than once, the newest row with text wins.
+  Google Sheet "Regions" (optional)            : Region, Partner, OZ_URL, Contact_Email (overrides the built-in partner links)
+  Google Sheet "Introductions" (create it)     : receives every introduction request
+  Google Sheet "Users" (optional)              : only used for partner sign-in
+
+ADDRESS OPTIONS (add to the end of the app's web address)
+  ?check=1            shows what the app loaded: crosswalk, official list, OZ 1.0 layer, search options
+  ?map=vector|plain   try the other basemap without redeploying (see BASEMAP)
 
 SECRETS (optional, .streamlit/secrets.toml)
   require_login = true     -> put the whole site behind partner sign-in (default: public)
@@ -526,7 +534,64 @@ ID_KEY = "GEOID"
 if gj and gj.get("features"):
     ID_KEY = "GEOID" if "GEOID" in gj["features"][0]["properties"] else "GEOID20"
 
+# ---------- Official nominated tracts (the 156) ----------
+# "OZ 2.0 Nominated Tracts" file: one row per nominated tract, with at least a GEOID column. When it is present it decides
+# WHICH tracts are nominated; the Google Sheet only supplies each tract's category and the partner's justification.
+# Without the file the app falls back to the Sheet alone, as before.
+OFFICIAL_NOMINATED_NAMES = [
+    "OZ 2.0 Nominated Tracts.csv",
+    "OZ_2_0_Nominated_Tracts.csv",
+    "OZ_2_0_Nominated_Tracts_cleaned.csv",
+]
+
+
+def _find_official_nominated_file():
+    def n(x):
+        return re.sub(r"[^a-z0-9]", "", str(x).lower())
+
+    for nm in OFFICIAL_NOMINATED_NAMES:
+        if os.path.exists(nm):
+            return nm
+    files = [f for f in os.listdir(".") if f.lower().endswith(".csv")]
+    hits = [f for f in files if n(f).startswith(("oz20nominatedtracts", "oz20recommendedcensustracts"))]
+    if not hits:
+        return None
+    cleaned = [f for f in hits if "cleaned" in n(f)]
+    pool = cleaned or hits
+    return max(pool, key=lambda f: os.path.getmtime(f))
+
+
+def load_official_nominated():
+    """Returns (ordered list of 11-digit tract IDs, file name) or ([], None)."""
+    path = _find_official_nominated_file()
+    if not path:
+        return [], None
+    df = None
+    for enc in ["utf-8-sig", "utf-8", "latin1", "cp1252"]:
+        try:
+            df = pd.read_csv(path, dtype=str, keep_default_na=False, encoding=enc)
+            break
+        except Exception:
+            continue
+    if df is None or df.empty:
+        return [], path
+    col = next((c for c in df.columns if re.sub(r"[^a-z0-9]", "", str(c).lower()) in ("geoid", "11digitfip", "tractid")), df.columns[0])
+    ids = []
+    for v in df[col].astype(str):
+        for g in re.findall(r"\b\d{11}\b", v):
+            if g not in ids:
+                ids.append(g)
+    return ids, path
+
+
+official_ids, official_source = load_official_nominated()
 nominations = load_nominations()
+if official_ids:
+    nominations = (
+        pd.DataFrame({"geoid_str": official_ids})
+        .merge(nominations, on="geoid_str", how="left")
+        .fillna("")
+    )
 nominated = nominations.merge(master_df[["geoid_str", "Parish", "Region"]], on="geoid_str", how="inner")
 nominated_ids = set(nominated["geoid_str"])
 nominated_by_id = {r["geoid_str"]: r for r in nominated.to_dict("records")}
@@ -753,6 +818,69 @@ def build_place_index():
 
 place_index = build_place_index()
 
+# ---------- OZ 1.0 zones (2018) ----------
+# The 150 original zones were drawn on the 2010 tract map; some tracts have since split or been renumbered, so the
+# layer uses today's tract IDs. Source 1: "OZ 1.0 Tracts.csv" (its "Current Tract IDs (2020 map)" column).
+# Source 2: the master data's "OZ 1.0 tract" column. The file wins if both exist.
+OZ1_FILES = ["OZ 1.0 Tracts.csv", "OZ_1_0_Tracts.csv"]
+
+
+def _find_oz1_file():
+    for nm in OZ1_FILES:
+        if os.path.exists(nm):
+            return nm
+    want = {_norm_name(n.rsplit(".", 1)[0]) for n in OZ1_FILES}
+    for f in sorted(x for x in os.listdir(".") if x.lower().endswith(".csv")):
+        if _norm_name(f.rsplit(".", 1)[0]) in want:
+            return f
+    return None
+
+
+def load_oz1_ids():
+    """Returns (set of tract IDs that exist on the map, label of where they came from)."""
+    valid = {f["properties"].get(ID_KEY) for f in gj["features"]} if gj else set()
+    path = _find_oz1_file()
+    if path:
+        try:
+            df = pd.read_csv(path, dtype=str, keep_default_na=False)
+            col = next((c for c in df.columns if "current" in _norm_name(c) and "tract" in _norm_name(c)), None) or next(
+                (c for c in df.columns if _norm_name(c) in ("geoid", "tractid")), None
+            )
+            if col:
+                ids = set(re.findall(r"\b\d{11}\b", " ".join(df[col].astype(str))))
+                return ids & valid, path
+        except Exception:
+            pass
+    col = next((c for c in master_df.columns if _norm_name(c) == "oz10tract"), None)
+    if col:
+        flagged = master_df.loc[master_df[col].astype(str).str.strip().str.lower().isin(["yes", "y", "true", "1"]), "geoid_str"]
+        return set(flagged) & valid, "master data (OZ 1.0 tract column)"
+    return set(), "none"
+
+
+oz1_ids, oz1_source = load_oz1_ids()
+
+
+@st.cache_data(show_spinner=False)
+def oz1_outline(ids, _features):
+    """Outlines of the OZ 1.0 tracts as lat/lon lists, one ring after another separated by None, for a single
+    filled line trace. Only each polygon's outer ring is used."""
+    wanted = set(ids)
+    lats, lons = [], []
+    for f in _features:
+        if f["properties"].get(ID_KEY) not in wanted:
+            continue
+        geom = f["geometry"]
+        polys = geom["coordinates"] if geom["type"] == "MultiPolygon" else [geom["coordinates"]]
+        for poly in polys:
+            for lon, lat in poly[0]:
+                lons.append(lon)
+                lats.append(lat)
+            lons.append(None)
+            lats.append(None)
+    return lats, lons
+
+
 
 def render_crosswalk_check():
     """Plain-language report on the crosswalk. Open the app with ?check=1 on the end of the address to see it.
@@ -777,10 +905,15 @@ def render_crosswalk_check():
                 bad = sorted({x for x in cw["region"].unique() if not _fact_for(x)})
                 if bad:
                     st.warning("Regions that do not match a partner: " + ", ".join(bad))
+        if official_source:
+            on_map = len(set(official_ids) & set(master_df["geoid_str"]))
+            st.write(f"Official nominated list: {len(official_ids)} tracts from {official_source} ({on_map} found in the master data)")
+            if len(official_ids) != OZ2_SUBMITTED:
+                st.warning(f"The headline says {OZ2_SUBMITTED} tracts, but the official list has {len(official_ids)}.")
+        else:
+            st.write("Official nominated list: not found. Nominated tracts come from the Google Sheet only.")
+        st.write(f"OZ 1.0 layer: {len(oz1_ids)} tracts from {oz1_source}")
         st.write(f"Search options available: {len(place_index)} ({sum(1 for v in place_index.values() if v['kind'] == 'town')} cities and towns)")
-parish_to_region = (
-    master_df.dropna(subset=["Parish", "Region"]).drop_duplicates("Parish").set_index("Parish")["Region"].to_dict()
-)
 
 
 # --- 2. STYLES ---
@@ -1246,6 +1379,15 @@ def render_map(df, active):
                 name="Nominated", **keep_opacity,
             )
         )
+    if oz1_ids:
+        oz_lat, oz_lon = oz1_outline(tuple(sorted(oz1_ids)), gj["features"])
+        fig.add_trace(
+            go.Scattermap(
+                lat=oz_lat, lon=oz_lon, mode="lines", fill="toself", fillcolor="rgba(79,70,229,0.16)",
+                line=dict(width=1.8, color="#4F46E5"), hoverinfo="skip",
+                name="OZ 1.0 zones (2018)", legendgroup="oz1", showlegend=True, visible="legendonly",
+            )
+        )
     if in_view:
         sel_geo = {"type": "FeatureCollection", "features": [f for f in gj["features"] if f["properties"].get(ID_KEY) == sel]}
         fig.add_trace(
@@ -1271,7 +1413,7 @@ def render_map(df, active):
         clickmode="event+select", uirevision=revision_key,
         hoverlabel=dict(bgcolor="#0B1220", bordercolor="#0B1220", font=dict(family="Inter, sans-serif", size=12, color="#FFFFFF")),
         legend=dict(
-            title=dict(text="TOGGLE ANCHOR ASSETS", font=dict(size=10, color="#5B6678", family="Inter, sans-serif")),
+            title=dict(text="TOGGLE LAYERS", font=dict(size=10, color="#5B6678", family="Inter, sans-serif")),
             yanchor="top", y=0.97, xanchor="left", x=0.02, itemsizing="constant",
             bgcolor="rgba(255,255,255,0.94)", font=dict(size=11, color="#0B1220", family="Inter, sans-serif"),
             bordercolor="#CBD3DF", borderwidth=1,
@@ -1374,15 +1516,26 @@ with section("map"):
         spacer(20)
         k1, k3 = st.columns([10, 2])
         with k1:
+            oz1_span = (
+                '<span><i style="background:rgba(79,70,229,0.16);border:2px solid #4F46E5"></i>OZ 1.0 zone (toggle in the map legend)</span>'
+                if oz1_ids
+                else ""
+            )
             render(
-                """
+                f"""
                 <div class="oz-key">
                   <span><i style="background:rgba(100,116,139,0.10);border:1px solid #64748B"></i>Other tracts</span>
                   <span><i style="background:rgba(34,197,94,0.45);border:1px solid #15803D"></i>Nominated</span>
                   <span><i style="background:rgba(11,18,32,0.22);border:2px solid #0B1220"></i>Selected</span>
+                  {oz1_span}
                 </div>
                 """
             )
+            if oz1_ids:
+                render(
+                    "<div class='oz-rsub' style='margin-top:8px'>OZ 1.0 zones are drawn on today’s tract map. "
+                    "Tracts that split or were renumbered since 2018 appear as their current tracts.</div>"
+                )
         with k3:
             st.button("Reset", key="reset_view", on_click=reset_view)
 
@@ -1413,13 +1566,17 @@ with section("map"):
             chips += f"<span class='oz-chip'><i style='background:#16A34A'></i>Nominated with {esc(redo_name)}</span>"
         else:
             chips += "<span class='oz-chip'>Not nominated</span>"
+        if gid in oz1_ids:
+            chips += "<span class='oz-chip'><i style='background:#4F46E5'></i>OZ 1.0 zone · benefits sunset Dec 31, 2028</span>"
 
         if nom and str(nom.get("justification", "")).strip():
             just_inner = para_html(nom["justification"]) + f"<div class='by'>Submitted by {esc(redo_name)}</div>"
         elif nom:
             just_inner = "<p>The regional partner has not added a justification for this tract yet.</p>"
         else:
-            just_inner = "<p>This tract has not been nominated.</p>"
+            just_inner = "<p>This tract has not been nominated.</p>" + (
+                "<p>It is an existing OZ 1.0 zone.</p>" if gid in oz1_ids else ""
+            )
 
         # header strip: parish, GEOID, population
         render(
@@ -1640,13 +1797,16 @@ with st.expander("Partner sign-in"):
             st.dataframe(check, hide_index=True)
             total_official = int(check["Official"].sum())
             total_mapped = int(check["On the map"].sum())
+            source_note = "official list" if official_ids else "Recommendations sheet"
             if total_mapped < total_official:
                 st.warning(
-                    f"{total_mapped} of {total_official} nominated tracts have a record in the Recommendations sheet, "
-                    f"so {total_official - total_mapped} are not shown on the map yet."
+                    f"{total_mapped} of {total_official} nominated tracts are on the map (from the {source_note}), "
+                    f"so {total_official - total_mapped} are not shown yet."
                 )
             else:
-                st.success("Every nominated tract has a record in the Recommendations sheet.")
+                st.success(f"All {total_official} nominated tracts are on the map.")
+            with_text = int(nominated["justification"].astype(str).str.strip().ne("").sum()) if len(nominated) else 0
+            st.write(f"{with_text} of {len(nominated)} nominated tracts have a partner justification.")
         active = st.session_state["active_tract"]
         match = master_df[master_df["geoid_str"] == str(active)] if active else master_df.iloc[0:0]
         if match.empty:
