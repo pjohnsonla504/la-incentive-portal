@@ -126,6 +126,9 @@ REDO_FACTS = [
 # Headline figure (Louisiana submitted this many tracts for OZ 2.0)
 OZ2_SUBMITTED = 156
 
+# How quickly a regional partner replies to an introduction request (shown in the project section and after sending the form)
+RESPONSE_DAYS = 10
+
 # --- PAGE COPY (replace the bracketed placeholders) ---
 CONTENT = {
     # Official figures and wording (Louisiana Economic Development). Update here if they change.
@@ -210,11 +213,11 @@ CONTENT = {
             ],
         },
     ],
-    "project_intro": "Your request goes to the regional partner for the tracts you chose, and a person replies. [Add expected response time.]",
+    "project_intro": f"Your request goes to the regional partner for the tracts you chose, and a person replies within {RESPONSE_DAYS} days.",
     "project_steps": [
-        {"title": "Routed to the right region", "text": "[One line.]"},
-        {"title": "A partner reaches out", "text": "[One line.]"},
-        {"title": "Incentives are mapped to your project", "text": "[One line.]"},
+        {"title": "Routed to the right region", "text": ""},
+        {"title": "A partner reaches out", "text": ""},
+        {"title": "Incentives are mapped to your project", "text": ""},
     ],
     # Where visitors can search every available site and building (LED maintains it, so we do not have to).
     "property_search": {
@@ -222,8 +225,6 @@ CONTENT = {
         "label": "Search LED’s Site Selection Center",
         "url": "https://louisianasiteselection.com/led",
     },
-    "privacy_line": "[Privacy and consent line.]",
-    "agency": "[Sponsoring agency]",
 }
 
 # Basemap.
@@ -1877,7 +1878,7 @@ with section("project"):
     with left:
         render(
             "".join(
-                f"<div class='oz-pstep'><div class='n'>{i + 1:02d}</div><div><div class='t'>{esc(s['title'])}</div><div class='d'>{esc(s['text'])}</div></div></div>"
+                f"<div class='oz-pstep'><div class='n'>{i + 1:02d}</div><div><div class='t'>{esc(s['title'])}</div>{"<div class='d'>" + esc(s['text']) + "</div>" if s['text'] else ""}</div></div>"
                 for i, s in enumerate(CONTENT["project_steps"])
             )
         )
@@ -1899,7 +1900,6 @@ with section("project"):
             summary = st.text_area("Project summary", placeholder="Capital range, timeline and what you need from the region.", height=120)
             spacer(24)
             submitted = st.form_submit_button("Send to regional partner", type="primary")
-        render(f"<div class='oz-rsub' style='margin-top:16px'>{esc(CONTENT['privacy_line'])}</div>")
 
         if submitted:
             if not name.strip() or not firm.strip():
@@ -1921,15 +1921,15 @@ with section("project"):
                 try:
                     save_introduction(row)
                     where = ", ".join(p["partner"] for p in partners) or "the regional partners"
-                    st.success(f"Thank you. Your request was sent to {where}.")
+                    st.success(f"Thank you. Your request has been received and routed to {where}. Expect a reply within {RESPONSE_DAYS} days.")
                 except Exception as exc:
                     st.error(f"We could not save your request. Please try again. ({exc})")
 
 # --- FOOTER + PARTNER TOOLS ---
 render(
-    f"""
+    """
     <div class="oz-footer">
-      <div>© Louisiana Opportunity Zones 2.0 · {esc(CONTENT['agency'])}</div>
+      <div>© Louisiana Opportunity Zones 2.0</div>
       <nav><a href="#process">Methodology</a><a href="#regions">Contact a partner</a><a href="#project">Your project</a></nav>
     </div>
     """
