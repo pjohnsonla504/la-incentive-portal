@@ -12,7 +12,12 @@ Five sections, in order:
 DATA SOURCES (every file sits next to app.py in the repo)
   Opportunity Zones 2.0 - Master Data File.csv : every tract's demographics, region and flags (including "OZ 1.0 tract")
   tl_2025_22_tract.json                        : tract boundaries for the map
-  la_anchors.csv                               : asset points shown on the map
+  Anchors - *.csv (one file per layer)         : asset points on the map: Certified Sites, FastSites, Rural Health Clinics,
+        Main Street, and later Innovation Partners and Business Development Wins. Each file needs Name, Lat, Lon and Type;
+        Link is optional and becomes the "View ..." link in the nearby-assets list. Extra columns (acres, parish, city...)
+        feed the hover text and the detail line. Files with "template" in the name are ignored.
+  la_anchors.csv (retired)                     : only used for a layer that has no Anchors file yet (Main Street). Land and
+        Buildings are no longer shown anywhere.
   Towns Cities Parish RLMA and Region.csv      : city/town -> parish, RLMA and region (parish-or-city search, full parish lists)
   OZ 2.0 Nominated Tracts (see OFFICIAL_NOMINATED_NAMES) : the official 156 nominated tracts. It decides WHICH tracts are
         nominated. Without it the nominated tracts come from the Google Sheet alone.
@@ -211,6 +216,12 @@ CONTENT = {
         {"title": "A partner reaches out", "text": "[One line.]"},
         {"title": "Incentives are mapped to your project", "text": "[One line.]"},
     ],
+    # Where visitors can search every available site and building (LED maintains it, so we do not have to).
+    "property_search": {
+        "text": "Looking for other available sites and buildings?",
+        "label": "Search LED’s Site Selection Center",
+        "url": "https://louisianasiteselection.com/led",
+    },
     "privacy_line": "[Privacy and consent line.]",
     "agency": "[Sponsoring agency]",
 }
@@ -347,6 +358,103 @@ def para_html(text):
 
 
 # --- 1. DATA ---
+# ---------- Anchor layers ----------
+RETIRED_ANCHOR_TYPES = {"Land", "Buildings"}      # no longer shown: not kept up to date
+LEGACY_ANCHOR_FILE = "la_anchors.csv"
+LEGACY_KEEP_TYPES = {"Main Street"}              # used from the old file only until the layer has its own Anchors file
+ANCHOR_TYPE_ALIASES = {
+    "Medical": "Rural Healthcare Facility", "Louisiana Main Street": "Main Street", "Fastsites": "FastSite",
+    "Fast Site": "FastSite", "Innovation Partners": "Innovation Partner", "Business Development Wins": "Business Development Win",
+}
+ANCHOR_ORDER = ["Certified Site", "FastSite", "Business Development Win", "Innovation Partner", "Main Street", "Rural Healthcare Facility"]
+ANCHOR_LABELS = {"Rural Healthcare Facility": "Rural Health Clinic"}
+ANCHOR_LINK_LABELS = {
+    "Certified Site": "View site page", "FastSite": "Project details", "Rural Healthcare Facility": "View on map",
+    "Main Street": "Visit site", "Innovation Partner": "Visit website", "Business Development Win": "Read announcement",
+}
+
+
+def anchor_label(t):
+    return ANCHOR_LABELS.get(t, t)
+
+
+def _anchor_file_list():
+    return sorted(
+        f for f in os.listdir(".")
+        if f.lower().startswith("anchors - ") and f.lower().endswith(".csv") and "template" not in f.lower()
+    )
+
+
+def _anchor_signature():
+    names = _anchor_file_list() + ([LEGACY_ANCHOR_FILE] if os.path.exists(LEGACY_ANCHOR_FILE) else [])
+    return tuple((f, os.path.getmtime(f)) for f in names)
+
+
+def _read_anchor_csv(path):
+    for enc in ["utf-8-sig", "utf-8", "latin1", "cp1252"]:
+        try:
+            df = pd.read_csv(path, dtype=str, keep_default_na=False, encoding=enc)
+            df.columns = [str(c).strip() for c in df.columns]
+            return df
+        except Exception:
+            continue
+    return None
+
+
+@st.cache_data(show_spinner=False)
+def load_anchors(signature):
+    """All anchor points as one table, plus a report of what was read. The signature (file names and modified times)
+    is only there so a replaced file is picked up straight away."""
+    report = {"files": [], "problems": [], "legacy_used": [], "legacy_ignored": (0, 0), "retired_dropped": 0, "bad_rows": 0}
+    frames = []
+    for f in _anchor_file_list():
+        df = _read_anchor_csv(f)
+        if df is None or df.empty:
+            report["problems"].append(f"{f}: could not be read or is empty")
+            continue
+        missing = [c for c in ("Name", "Lat", "Lon", "Type") if c not in df.columns]
+        if missing:
+            report["problems"].append(f"{f}: missing column(s) {', '.join(missing)}")
+            continue
+        df["Source file"] = f
+        frames.append(df)
+    new_types = set()
+    for df in frames:
+        new_types |= set(df["Type"].astype(str).str.strip().map(lambda t: ANCHOR_TYPE_ALIASES.get(t, t)))
+    if os.path.exists(LEGACY_ANCHOR_FILE):
+        leg = _read_anchor_csv(LEGACY_ANCHOR_FILE)
+        if leg is not None and {"Name", "Lat", "Lon", "Type"} <= set(leg.columns):
+            leg["Type"] = leg["Type"].astype(str).str.strip().map(lambda t: ANCHOR_TYPE_ALIASES.get(t, t))
+            n_leg, n_retired = len(leg), int(leg["Type"].isin(RETIRED_ANCHOR_TYPES).sum())
+            if frames:   # Anchors files exist: keep only the legacy layers that have no file of their own yet
+                leg = leg[leg["Type"].isin(LEGACY_KEEP_TYPES - new_types)]
+                report["legacy_ignored"] = (n_leg - len(leg), n_retired)   # (rows ignored, of which Land/Buildings)
+            leg["Source file"] = LEGACY_ANCHOR_FILE
+            if len(leg):
+                frames.append(leg)
+                report["legacy_used"] = sorted(leg["Type"].unique().tolist())
+    cols = ["Name", "Lat", "Lon", "Type", "Link"]
+    if not frames:
+        return pd.DataFrame(columns=cols), report
+    df = pd.concat(frames, ignore_index=True, sort=False).fillna("")
+    for c in cols:
+        if c not in df.columns:
+            df[c] = ""
+    df["Type"] = df["Type"].astype(str).str.strip().map(lambda t: ANCHOR_TYPE_ALIASES.get(t, t))
+    df["Name"] = df["Name"].astype(str).str.strip()
+    df["Lat"] = pd.to_numeric(df["Lat"], errors="coerce")
+    df["Lon"] = pd.to_numeric(df["Lon"], errors="coerce")
+    before = len(df)
+    df = df[df["Lat"].notna() & df["Lon"].notna() & (df["Name"] != "") & (df["Type"] != "")]
+    report["bad_rows"] = before - len(df)
+    retired = df["Type"].isin(RETIRED_ANCHOR_TYPES)
+    report["retired_dropped"] = int(retired.sum())
+    df = df[~retired].drop_duplicates(["Type", "Name", "Lat", "Lon"]).reset_index(drop=True)
+    for f, g in df.groupby("Source file"):
+        report["files"].append((f, len(g), sorted(g["Type"].unique().tolist())))
+    return df, report
+
+
 @st.cache_data(ttl=3600, show_spinner="Loading Louisiana data...")
 def load_assets():
     gj = None
@@ -380,26 +488,6 @@ def load_assets():
 
     master["NMTC_Calculated"] = master.apply(get_nmtc_status, axis=1)
 
-    anchors = read_csv_with_fallback("la_anchors.csv")
-    anchors["Lat"] = pd.to_numeric(anchors["Lat"], errors="coerce")
-    anchors["Lon"] = pd.to_numeric(anchors["Lon"], errors="coerce")
-    anchors = anchors.dropna(subset=["Lat", "Lon"])
-    anchors["Type"] = anchors["Type"].astype(str).str.strip()
-    type_mapping = {
-        "Rural Healthcare Facility": "Rural Healthcare Facility",
-        "Medical": "Rural Healthcare Facility",
-        "Land": "Land",
-        "Buildings": "Buildings",
-        "Louisiana Main Street": "Main Street",
-        "Main Street": "Main Street",
-        "Certified Site": "Certified Site",
-        "Fastsites": "FastSite",
-        "FastSite": "FastSite",
-        "Fast Site": "FastSite",
-    }
-    anchors["Type"] = anchors["Type"].map(type_mapping)
-    anchors = anchors.dropna(subset=["Type"]).reset_index(drop=True)
-
     centers = {}
     if gj:
         for feature in gj["features"]:
@@ -413,7 +501,7 @@ def load_assets():
                 centers[geoid] = [np.mean(pts[:, 0]), np.mean(pts[:, 1])]
             except Exception:
                 continue
-    return gj, master, anchors, centers
+    return gj, master, centers
 
 
 def _empty_nominations():
@@ -513,10 +601,15 @@ def authenticate(username, password):
 
 
 # --- LOAD ---
-gj, master_df, anchors_df, tract_centers = load_assets()
-ANCHOR_TYPES = sorted(anchors_df["Type"].unique().tolist())
+gj, master_df, tract_centers = load_assets()
+anchors_df, anchor_report = load_anchors(_anchor_signature())
+ANCHOR_TYPES = sorted(anchors_df["Type"].unique().tolist(), key=lambda t: (ANCHOR_ORDER.index(t) if t in ANCHOR_ORDER else 99, t))
 _BOLD = px.colors.qualitative.Bold
-ANCHOR_COLORS = {t: _BOLD[i % len(_BOLD)] for i, t in enumerate(ANCHOR_TYPES)}
+# Fixed colors per layer so a layer keeps its color whatever else is loaded; any new layer gets the next free Bold color.
+ANCHOR_COLORS = {"Certified Site": _BOLD[1], "FastSite": _BOLD[2], "Main Street": _BOLD[4], "Rural Healthcare Facility": _BOLD[5],
+                 "Innovation Partner": _BOLD[0], "Business Development Win": _BOLD[3]}
+for _i, _t in enumerate(t for t in ANCHOR_TYPES if t not in ANCHOR_COLORS):
+    ANCHOR_COLORS[_t] = _BOLD[(6 + _i) % len(_BOLD)]
 
 
 def _darken(rgb, amount=0.35):
@@ -913,6 +1006,25 @@ def render_crosswalk_check():
         else:
             st.write("Official nominated list: not found. Nominated tracts come from the Google Sheet only.")
         st.write(f"OZ 1.0 layer: {len(oz1_ids)} tracts from {oz1_source}")
+        for fname, n_rows, types in anchor_report["files"]:
+            per = ", ".join(
+                f"{anchor_label(t)}: {int((anchors_df['Type'] == t).sum())} ({int(((anchors_df['Type'] == t) & (anchors_df['Link'].astype(str).str.strip() != '')).sum())} with a link)"
+                for t in types
+            )
+            st.write(f"Anchors: {fname} -> {n_rows} points ({per})")
+        if anchor_report["legacy_used"]:
+            st.write(f"Anchors still taken from {LEGACY_ANCHOR_FILE}: {', '.join(anchor_report['legacy_used'])} (give these their own Anchors file, then retire {LEGACY_ANCHOR_FILE})")
+        ign, ign_lb = anchor_report["legacy_ignored"]
+        if ign:
+            st.write(f"{LEGACY_ANCHOR_FILE}: {ign} rows ignored ({ign_lb} Land/Buildings, {ign - ign_lb} from layers that now have their own file)")
+        if anchor_report["retired_dropped"]:
+            st.write(f"Land and Buildings points ignored: {anchor_report['retired_dropped']}")
+        if anchor_report["bad_rows"]:
+            st.warning(f"{anchor_report['bad_rows']} anchor rows were skipped (missing name, latitude, longitude or type).")
+        for prob in anchor_report["problems"]:
+            st.error(f"Anchors problem: {prob}")
+        if anchors_df.empty:
+            st.warning("No anchor points were loaded, so the map has no asset layers.")
         st.write(f"Search options available: {len(place_index)} ({sum(1 for v in place_index.values() if v['kind'] == 'town')} cities and towns)")
 
 
@@ -1400,11 +1512,15 @@ def render_map(df, active):
         )
     for a_type in ANCHOR_TYPES:
         type_data = anchors_df[anchors_df["Type"] == a_type]
+        hover = [
+            _html.escape(r["Name"]) + (f"<br>{_html.escape(d)}" if (d := anchor_detail(r)) else "")
+            for _, r in type_data.iterrows()
+        ]
         fig.add_trace(
             go.Scattermap(
                 lat=type_data["Lat"], lon=type_data["Lon"], mode="markers",
                 marker=go.scattermap.Marker(size=11, color=ANCHOR_COLORS[a_type]),
-                text=type_data["Name"], hoverinfo="text", name=a_type, visible="legendonly",
+                text=hover, hoverinfo="text", name=anchor_label(a_type), visible="legendonly",
             )
         )
     fig.update_layout(
@@ -1422,14 +1538,55 @@ def render_map(df, active):
     return fig
 
 
-def nearest_anchors(lon, lat, types, n=5):
+def anchor_detail(a):
+    """One short line of facts for an anchor, from whichever columns its file has."""
+    def val(k):
+        v = a.get(k, "")
+        return "" if v is None or str(v).strip().lower() in ("", "nan") else str(v).strip()
+
+    t, bits = a.get("Type", ""), []
+    if t == "Certified Site":
+        try:
+            bits.append(f"{float(val('Acres Available')):,.0f} acres")
+        except ValueError:
+            pass
+        avail = [x for x, k in (("for sale", "For Sale"), ("for lease", "For Lease")) if val(k).lower() == "yes"]
+        if avail:
+            bits.append(" or ".join(avail))
+        if val("Certification") and val("Certification") != "Certified":
+            bits.append(val("Certification").lower())
+        bits.append(val("City") or val("Parish"))
+    elif t == "Rural Healthcare Facility":
+        bits += [val("City"), val("Rurality Tier")]
+    elif t == "Innovation Partner":
+        bits += [val("Partner Type"), val("City")]
+    elif t == "Business Development Win":
+        try:
+            bits.append(f"{int(float(val('New Jobs').replace(',', ''))):,} jobs")
+        except ValueError:
+            pass
+        try:
+            bits.append(f"${float(val('Capital Investment ($)').replace(',', '')) / 1e6:,.0f}M investment")
+        except ValueError:
+            pass
+        bits.append(val("City") or val("Parish"))
+    else:
+        bits += [val("Address"), val("Parish")]
+    return " · ".join(b for b in bits if b)
+
+
+def nearest_anchors(lon, lat, types, n=6):
+    """The closest anchors, balanced across layers: every layer's nearest first, then every layer's second nearest, and so
+    on, so no single layer fills the list. With one layer selected this is simply that layer's nearest n."""
     sub = anchors_df if not types else anchors_df[anchors_df["Type"].isin(types)]
     if sub.empty:
         return sub
     lon1, lat1 = np.radians(lon), np.radians(lat)
     lon2, lat2 = np.radians(sub["Lon"].values), np.radians(sub["Lat"].values)
     h = np.sin((lat2 - lat1) / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
-    return sub.assign(dist=3956 * 2 * np.arcsin(np.sqrt(h))).sort_values("dist").head(n)
+    sub = sub.assign(dist=3956 * 2 * np.arcsin(np.sqrt(h)))
+    sub["rank_in_layer"] = sub.groupby("Type")["dist"].rank(method="first")
+    return sub.sort_values(["rank_in_layer", "dist"]).head(n)
 
 
 def add_to_shortlist(gid):
@@ -1637,7 +1794,10 @@ with section("map"):
 
         with col_r:
             render("<div class='oz-kicker acc'>Nearby anchors &amp; announcements</div>")
-            anchor_pick = st.selectbox("Anchor type filter", ["All assets"] + ANCHOR_TYPES, key="anch_filt")
+            anchor_pick = st.selectbox(
+                "Anchor type filter", ["All assets"] + ANCHOR_TYPES, key="anch_filt",
+                format_func=lambda t: t if t == "All assets" else anchor_label(t),
+            )
             spacer(24)
             rows = ""
             if gid in tract_centers:
@@ -1647,19 +1807,28 @@ with section("map"):
                     color = ANCHOR_UI_COLORS.get(a["Type"], "#CBD5E1")
                     url = safe_url(a.get("Link", ""))
                     link = (
-                        f"<a class='oz-tlink' href='{esc(url)}' target='_blank' rel='noopener'>Visit site <em>↗</em></a>"
+                        f"<a class='oz-tlink' href='{esc(url)}' target='_blank' rel='noopener'>"
+                        f"{esc(ANCHOR_LINK_LABELS.get(a['Type'], 'Visit site'))} <em>↗</em></a>"
                         if url
                         else ""
                     )
+                    detail = anchor_detail(a)
                     rows += (
                         "<div class='oz-arow'>"
-                        f"<div class='oz-akind' style='color:{esc(color)}'><i style='background:{esc(color)}'></i>{esc(a['Type'])}</div>"
+                        f"<div class='oz-akind' style='color:{esc(color)}'><i style='background:{esc(color)}'></i>{esc(anchor_label(a['Type']))}</div>"
                         f"<div class='oz-aname2'>{esc(a['Name'])}</div>"
-                        f"<div class='oz-arow-foot'><span class='oz-rsub'>{a['dist']:.1f} miles</span>{link}</div></div>"
+                        + (f"<div class='oz-rsub' style='margin:0 0 12px'>{esc(detail)}</div>" if detail else "")
+                        + f"<div class='oz-arow-foot'><span class='oz-rsub'>{a['dist']:.1f} miles</span>{link}</div></div>"
                     )
             render(
                 f"""<div class="oz-arows">{rows if rows else "<div class='oz-rsub'>No anchor assets of this type were found.</div>"}</div>"""
             )
+            ps = CONTENT["property_search"]
+            if safe_url(ps["url"]):
+                render(
+                    f"<div class='oz-rsub' style='margin-top:20px'>{esc(ps['text'])} "
+                    f"<a class='oz-tlink' href='{esc(safe_url(ps['url']))}' target='_blank' rel='noopener'>{esc(ps['label'])} <em>↗</em></a></div>"
+                )
 
     # shortlist
     spacer(64)
