@@ -638,20 +638,26 @@ OFFICIAL_NOMINATED_NAMES = [
 ]
 
 
-def _find_official_nominated_file():
+def _official_candidates():
+    """Every CSV that looks like the nominated-tracts list, newest first. The newest is chosen by the date written in the
+    file name (for example "... - 10.28.2026.csv"), because file times are unreliable once the repo is downloaded to the
+    server. If names carry no date, a "cleaned" copy wins, then the most recently modified file."""
     def n(x):
         return re.sub(r"[^a-z0-9]", "", str(x).lower())
 
-    for nm in OFFICIAL_NOMINATED_NAMES:
-        if os.path.exists(nm):
-            return nm
+    def name_date(f):
+        m = re.search(r"(\d{1,2})[._\- ](\d{1,2})[._\- ](20\d{2})", f)
+        return (int(m.group(3)), int(m.group(1)), int(m.group(2))) if m else (0, 0, 0)
+
     files = [f for f in os.listdir(".") if f.lower().endswith(".csv")]
-    hits = [f for f in files if n(f).startswith(("oz20nominatedtracts", "oz20recommendedcensustracts"))]
-    if not hits:
-        return None
-    cleaned = [f for f in hits if "cleaned" in n(f)]
-    pool = cleaned or hits
-    return max(pool, key=lambda f: os.path.getmtime(f))
+    hits = {f for f in files if n(f).startswith(("oz20nominatedtracts", "oz20recommendedcensustracts"))}
+    hits |= {nm for nm in OFFICIAL_NOMINATED_NAMES if os.path.exists(nm)}
+    return sorted(hits, key=lambda f: (name_date(f), "cleaned" in n(f), os.path.getmtime(f)), reverse=True)
+
+
+def _find_official_nominated_file():
+    found = _official_candidates()
+    return found[0] if found else None
 
 
 def load_official_nominated():
@@ -1001,6 +1007,9 @@ def render_crosswalk_check():
         if official_source:
             on_map = len(set(official_ids) & set(master_df["geoid_str"]))
             st.write(f"Official nominated list: {len(official_ids)} tracts from {official_source} ({on_map} found in the master data)")
+            others = [f for f in _official_candidates() if f != official_source]
+            if others:
+                st.write(f"Other nominated-list files in the repo, not used: {', '.join(others)}")
             if len(official_ids) != OZ2_SUBMITTED:
                 st.warning(f"The headline says {OZ2_SUBMITTED} tracts, but the official list has {len(official_ids)}.")
         else:
