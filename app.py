@@ -327,6 +327,15 @@ def _today():
         return date.today()
 
 
+def bottom_columns(spec):
+    """Columns whose contents line up along the bottom (filters, a search box beside a paragraph). Everything else is
+    top-aligned, so a short column never drops to the bottom of a tall neighbor."""
+    try:
+        return st.columns(spec, vertical_alignment="bottom")
+    except TypeError:        # Streamlit older than 1.36
+        return st.columns(spec)
+
+
 def next_chapter(label, href):
     render(
         f"""
@@ -1047,7 +1056,7 @@ html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"]{backg
 header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],#MainMenu,footer{display:none !important}
 [data-testid="stMainBlockContainer"],.block-container{max-width:1280px !important;padding:0 40px !important}
 [data-testid="stVerticalBlock"]{gap:0 !important}
-[data-testid="stHorizontalBlock"]{gap:24px !important;align-items:flex-end}
+[data-testid="stHorizontalBlock"]{gap:24px !important}
 [data-testid="stElementContainer"]{width:100%}
 [id]{scroll-margin-top:56px}
 .g{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}
@@ -1154,8 +1163,8 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .oz-m b{display:block;font-size:clamp(20px,1.8vw,26px);font-weight:200;letter-spacing:-.035em;line-height:1.1;color:#0B1220}
 .oz-m span{display:block;margin-top:12px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#5B6678}
 .oz-arows>.oz-arow:last-child{border-bottom:1px solid #E3E7EE}
-.oz-arow{padding:24px 0;border-top:1px solid #E3E7EE}
-.oz-aname2{font-size:22px;font-weight:200;letter-spacing:-.025em;margin:12px 0 8px;color:#0B1220}
+.oz-arow{padding:16px 0;border-top:1px solid #E3E7EE}
+.oz-aname2{font-size:20px;font-weight:200;letter-spacing:-.025em;margin:8px 0 6px;color:#0B1220}
 .oz-arow-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
 
 .oz-h1 .acc{color:#0B7A43}
@@ -1333,7 +1342,7 @@ with section("regions"):
         </div>
         """
     )
-    c_intro, _gap, c_find = st.columns([5, 2, 5])
+    c_intro, _gap, c_find = bottom_columns([5, 2, 5])
     with c_intro:
         render(f"<div class='oz-intro'>{esc(CONTENT['partners_intro'])}</div>")
     highlight_names = set()
@@ -1623,7 +1632,7 @@ with section("map"):
     )
 
     # filters
-    f1, f2, f3, f4 = st.columns(4)
+    f1, f2, f3, f4 = bottom_columns(4)
     with f1:
         regions_list = sorted(master_df["Region"].dropna().astype(str).unique().tolist())
         selected_region = st.selectbox("Region", ["All Louisiana"] + regions_list, key="f_region")
@@ -1681,7 +1690,7 @@ with section("map"):
                 st.rerun()
 
         spacer(20)
-        k1, k3 = st.columns([10, 2])
+        k1, k3 = bottom_columns([10, 2])
         with k1:
             oz1_span = (
                 '<span><i style="background:rgba(79,70,229,0.16);border:2px solid #4F46E5"></i>OZ 1.0 zone (toggle in the map legend)</span>'
@@ -1827,7 +1836,7 @@ with section("map"):
                         "<div class='oz-arow'>"
                         f"<div class='oz-akind' style='color:{esc(color)}'><i style='background:{esc(color)}'></i>{esc(anchor_label(a['Type']))}</div>"
                         f"<div class='oz-aname2'>{esc(a['Name'])}</div>"
-                        + (f"<div class='oz-rsub' style='margin:0 0 12px'>{esc(detail)}</div>" if detail else "")
+                        + (f"<div class='oz-rsub' style='margin:0 0 8px'>{esc(detail)}</div>" if detail else "")
                         + f"<div class='oz-arow-foot'><span class='oz-rsub'>{a['dist']:.1f} miles</span>{link}</div></div>"
                     )
             render(
@@ -1845,7 +1854,7 @@ with section("map"):
     render("<div style='border-top:1px solid #E3E7EE'></div>")
     spacer(24)
     st.session_state["shortlist"] = [g for g in st.session_state["shortlist"] if g in nominated_ids]
-    s1, s2 = st.columns([8, 4])
+    s1, s2 = bottom_columns([8, 4])
     with s1:
         st.multiselect(
             "Shortlist", sorted(nominated_ids), key="shortlist",
