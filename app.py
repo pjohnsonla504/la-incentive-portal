@@ -19,8 +19,10 @@ DATA SOURCES (every file sits next to app.py in the repo)
   la_anchors.csv (retired)                     : only used for a layer that has no Anchors file yet (Main Street). Land and
         Buildings are no longer shown anywhere.
   Towns Cities Parish RLMA and Region.csv      : city/town -> parish, RLMA and region (parish-or-city search, full parish lists)
-  OZ 2.0 Nominated Tracts (see OFFICIAL_NOMINATED_NAMES) : the official 156 nominated tracts. It decides WHICH tracts are
-        nominated. Without it the nominated tracts come from the Google Sheet alone.
+  OZ 2.0 designations / recommended tracts list : the official 156 nominated tracts (for example "Louisiana OZ 2.0 Designations
+        - 10.29.26.csv"). It decides WHICH tracts are nominated, and its "Rural/Non-Rural" column says which are rural. If several
+        versions are in the repo the one with the latest date in its file name is used. Without it the nominated tracts come from
+        the Google Sheet alone and rural status comes from the master data's Metro Status column.
   OZ_1_0_Tracts.csv (optional)                 : the original 150 zones mapped to today's tract IDs. Without it the master
         data's "OZ 1.0 tract" column is used.
   Google Sheet "Recommendations"               : each nominated tract's category and the partner's justification
@@ -656,11 +658,14 @@ def _official_candidates():
         return re.sub(r"[^a-z0-9]", "", str(x).lower())
 
     def name_date(f):
-        m = re.search(r"(\d{1,2})[._\- ](\d{1,2})[._\- ](20\d{2})", f)
-        return (int(m.group(3)), int(m.group(1)), int(m.group(2))) if m else (0, 0, 0)
+        m = re.search(r"(\d{1,2})[._\- ](\d{1,2})[._\- ](20\d{2}|\d{2})(?!\d)", f)
+        if not m:
+            return (0, 0, 0)
+        y = int(m.group(3))
+        return (y + 2000 if y < 100 else y, int(m.group(1)), int(m.group(2)))
 
     files = [f for f in os.listdir(".") if f.lower().endswith(".csv")]
-    hits = {f for f in files if n(f).startswith(("oz20nominatedtracts", "oz20recommendedcensustracts"))}
+    hits = {f for f in files if n(f).startswith(("oz20nominatedtracts", "oz20recommendedcensustracts", "oz20designations", "louisianaoz20designations"))}
     hits |= {nm for nm in OFFICIAL_NOMINATED_NAMES if os.path.exists(nm)}
     return sorted(hits, key=lambda f: (name_date(f), "cleaned" in n(f), os.path.getmtime(f)), reverse=True)
 
@@ -671,10 +676,10 @@ def _find_official_nominated_file():
 
 
 def load_official_nominated():
-    """Returns (ordered list of 11-digit tract IDs, file name) or ([], None)."""
+    """Returns (ordered list of 11-digit tract IDs, file name, {tract ID: "Rural" / "Non-rural"}) or ([], None, {})."""
     path = _find_official_nominated_file()
     if not path:
-        return [], None
+        return [], None, {}
     df = None
     for enc in ["utf-8-sig", "utf-8", "latin1", "cp1252"]:
         try:
@@ -683,17 +688,34 @@ def load_official_nominated():
         except Exception:
             continue
     if df is None or df.empty:
-        return [], path
+        return [], path, {}
     col = next((c for c in df.columns if re.sub(r"[^a-z0-9]", "", str(c).lower()) in ("geoid", "11digitfip", "tractid")), df.columns[0])
     ids = []
     for v in df[col].astype(str):
         for g in re.findall(r"\b\d{11}\b", v):
             if g not in ids:
                 ids.append(g)
-    return ids, path
+    rural_col = next((c for c in df.columns if "rural" in re.sub(r"[^a-z0-9]", "", str(c).lower())), None)
+    rural = {}
+    if rural_col:
+        for gid_raw, val in zip(df[col].astype(str), df[rural_col].astype(str)):
+            hit = re.findall(r"\b\d{11}\b", gid_raw)
+            if hit and _rural_label(val):
+                rural[hit[0]] = _rural_label(val)
+    return ids, path, rural
 
 
-official_ids, official_source = load_official_nominated()
+def _rural_label(v):
+    """'Rural', 'Non-Rural', 'Non-rural', 'Not rural' ... -> 'Rural' / 'Non-rural'; anything else -> ''."""
+    v = str(v).strip().lower()
+    if v in ("", "#n/a", "n/a", "nan"):
+        return ""
+    if v.startswith(("non", "not")):
+        return "Non-rural"
+    return "Rural" if "rural" in v else ""
+
+
+official_ids, official_source, official_rural = load_official_nominated()
 nominations = load_nominations()
 if official_ids:
     nominations = (
@@ -702,6 +724,15 @@ if official_ids:
         .fillna("")
     )
 nominated = nominations.merge(master_df[["geoid_str", "Parish", "Region"]], on="geoid_str", how="inner")
+
+# Rural status. The designations file's Rural/Non-Rural column wins; the master data's Metro Status column fills in the rest
+# (and is shown for tracts that are not nominated).
+_metro_col = next((c for c in master_df.columns if re.sub(r"[^a-z0-9]", "", str(c).lower()) == "metrostatusmetropolitanrural"), None)
+master_rural = {g: _rural_label(v) for g, v in zip(master_df["geoid_str"], master_df[_metro_col])} if _metro_col else {}
+rural_status = dict(master_rural)
+rural_status.update(official_rural)
+rural_source = (f"{official_source} (Rural/Non-Rural column)" if official_rural else "master data (Metro Status column)" if _metro_col else "none")
+rural_nominated_ids = sorted(g for g in nominated["geoid_str"] if rural_status.get(g) == "Rural")
 nominated_ids = set(nominated["geoid_str"])
 nominated_by_id = {r["geoid_str"]: r for r in nominated.to_dict("records")}
 
@@ -971,8 +1002,8 @@ oz1_ids, oz1_source = load_oz1_ids()
 
 
 @st.cache_data(show_spinner=False)
-def oz1_outline(ids, _features):
-    """Outlines of the OZ 1.0 tracts as lat/lon lists, one ring after another separated by None, for a single
+def tract_outline(ids, _features):
+    """Outlines of the given tracts as lat/lon lists, one ring after another separated by None, for a single
     filled line trace. Only each polygon's outer ring is used."""
     wanted = set(ids)
     lats, lons = [], []
@@ -1024,6 +1055,13 @@ def render_crosswalk_check():
                 st.warning(f"The headline says {OZ2_SUBMITTED} tracts, but the official list has {len(official_ids)}.")
         else:
             st.write("Official nominated list: not found. Nominated tracts come from the Google Sheet only.")
+        if rural_source != "none":
+            n_r = sum(1 for g in official_ids if rural_status.get(g) == "Rural")
+            n_n = sum(1 for g in official_ids if rural_status.get(g) == "Non-rural")
+            st.write(f"Rural status of the nominated tracts: {n_r} rural, {n_n} non-rural, {len(official_ids) - n_r - n_n} unknown (from {rural_source})")
+            clash = [g for g, v in official_rural.items() if master_rural.get(g) and master_rural[g] != v]
+            if clash:
+                st.warning(f"{len(clash)} tract(s) where the designations file and the master data disagree on rural status: {', '.join(sorted(clash)[:6])}")
         st.write(f"OZ 1.0 layer: {len(oz1_ids)} tracts from {oz1_source}")
         for fname, n_rows, types in anchor_report["files"]:
             per = ", ".join(
@@ -1145,6 +1183,7 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .oz-key i{width:14px;height:14px;border-radius:3px;display:inline-block}
 .oz-empty{padding:40px 0;border-top:1px solid #E3E7EE;border-bottom:1px solid #E3E7EE;font-size:18px;font-weight:300;color:#5B6678}
 .oz-count{text-align:right;font-size:13px;font-weight:300;color:#5B6678;padding-bottom:12px}
+.oz-count .rural{display:block;margin-top:6px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#0E7490}
 .oz-count b{display:block;font-size:40px;font-weight:200;letter-spacing:-.04em;line-height:1;color:#0B7A43;margin-bottom:8px}
 .oz-pstep{display:flex;gap:24px;padding-top:20px;border-top:1px solid #E3E7EE;margin-bottom:28px}
 .oz-pstep .n{flex:none;font-size:12px;font-weight:500;letter-spacing:.2em;color:#0B7A43;padding-top:5px}
@@ -1506,12 +1545,22 @@ def render_map(df, active):
                 geojson=nom_geo, locations=nom_df["geoid_str"], z=[1] * len(nom_df), featureidkey=fid,
                 colorscale=[[0, "rgba(34,197,94,0.45)"], [1, "rgba(34,197,94,0.45)"]], showscale=False,
                 marker=dict(opacity=1, line=dict(width=1.2, color="#15803D")),
-                hovertext=nom_df["Parish"].astype(str) + " · " + nom_df["geoid_str"] + " · Nominated", hoverinfo="text",
+                hovertext=nom_df["Parish"].astype(str) + " · " + nom_df["geoid_str"] + " · Nominated"
+                + nom_df["geoid_str"].map(lambda g: f" · {rural_status[g]}" if rural_status.get(g) else ""), hoverinfo="text",
                 name="Nominated", **keep_opacity,
             )
         )
+    if rural_nominated_ids:
+        rl_lat, rl_lon = tract_outline(tuple(rural_nominated_ids), gj["features"])
+        fig.add_trace(
+            go.Scattermap(
+                lat=rl_lat, lon=rl_lon, mode="lines", fill="toself", fillcolor="rgba(14,116,144,0.16)",
+                line=dict(width=1.8, color="#0E7490"), hoverinfo="skip",
+                name="Rural nominated tracts", legendgroup="rural", showlegend=True, visible="legendonly",
+            )
+        )
     if oz1_ids:
-        oz_lat, oz_lon = oz1_outline(tuple(sorted(oz1_ids)), gj["features"])
+        oz_lat, oz_lon = tract_outline(tuple(sorted(oz1_ids)), gj["features"])
         fig.add_trace(
             go.Scattermap(
                 lat=oz_lat, lon=oz_lon, mode="lines", fill="toself", fillcolor="rgba(79,70,229,0.16)",
@@ -1666,7 +1715,11 @@ with section("map"):
             shown = (_fact_for(selected_region) or {}).get("nominated", len(nom_in_view))
         else:
             shown = OZ2_SUBMITTED
-        render(f"<div class='oz-count'><b>{shown}</b>nominated in {esc(scope)}</div>")
+        in_view = list(nom_in_view["geoid_str"])
+        known = [g for g in in_view if rural_status.get(g)]
+        n_rural = sum(1 for g in in_view if rural_status.get(g) == "Rural")
+        rural_note = f"<span class='rural'>{n_rural} rural · {round(100 * n_rural / len(in_view))}%</span>" if in_view and known else ""
+        render(f"<div class='oz-count'><b>{shown}</b>nominated in {esc(scope)}{rural_note}</div>")
 
     spacer(24)
 
@@ -1692,6 +1745,11 @@ with section("map"):
         spacer(20)
         k1, k3 = bottom_columns([10, 2])
         with k1:
+            rural_span = (
+                '<span><i style="background:rgba(14,116,144,0.16);border:2px solid #0E7490"></i>Rural nominated tract (toggle in the map legend)</span>'
+                if rural_nominated_ids
+                else ""
+            )
             oz1_span = (
                 '<span><i style="background:rgba(79,70,229,0.16);border:2px solid #4F46E5"></i>OZ 1.0 zone (toggle in the map legend)</span>'
                 if oz1_ids
@@ -1703,6 +1761,7 @@ with section("map"):
                   <span><i style="background:rgba(100,116,139,0.10);border:1px solid #64748B"></i>Other tracts</span>
                   <span><i style="background:rgba(34,197,94,0.45);border:1px solid #15803D"></i>Nominated</span>
                   <span><i style="background:rgba(11,18,32,0.22);border:2px solid #0B1220"></i>Selected</span>
+                  {rural_span}
                   {oz1_span}
                 </div>
                 """
@@ -1744,6 +1803,10 @@ with section("map"):
             chips += "<span class='oz-chip'>Not nominated</span>"
         if gid in oz1_ids:
             chips += "<span class='oz-chip'><i style='background:#4F46E5'></i>OZ 1.0 zone · benefits sunset Dec 31, 2028</span>"
+        if rural_status.get(gid) == "Rural":
+            chips += "<span class='oz-chip'><i style='background:#0E7490'></i>Rural tract</span>"
+        elif rural_status.get(gid) == "Non-rural":
+            chips += "<span class='oz-chip'><i style='background:#94A3B8'></i>Non-rural tract</span>"
 
         if nom and str(nom.get("justification", "")).strip():
             just_inner = para_html(nom["justification"]) + f"<div class='by'>Submitted by {esc(redo_name)}</div>"
