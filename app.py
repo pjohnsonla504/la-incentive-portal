@@ -254,6 +254,12 @@ def _basemap_style():
     return BASEMAP_STYLES.get(choice, BASEMAP_STYLES["plain"])
 
 
+# How strongly the "Rural nominated tracts" layer shows when switched on: border width in pixels and tint opacity (0 to 1).
+# 3.6 / 0.40 is the current setting (clear, not harsh); 3.0 / 0.28 is softer; 1.8 / 0.16 is subtle.
+RURAL_LINE_COLOR = "#0E7490"
+RURAL_LINE_WIDTH = 3.6
+RURAL_FILL_ALPHA = 0.40
+
 # Master-data column names
 POP_COL = "Estimate!!Total!!Population for whom poverty status is determined"
 POV_COL = "Estimate!!Percent below poverty level!!Population for whom poverty status is determined"
@@ -1554,8 +1560,8 @@ def render_map(df, active):
         rl_lat, rl_lon = tract_outline(tuple(rural_nominated_ids), gj["features"])
         fig.add_trace(
             go.Scattermap(
-                lat=rl_lat, lon=rl_lon, mode="lines", fill="toself", fillcolor="rgba(14,116,144,0.16)",
-                line=dict(width=1.8, color="#0E7490"), hoverinfo="skip",
+                lat=rl_lat, lon=rl_lon, mode="lines", fill="toself", fillcolor=f"rgba(14,116,144,{RURAL_FILL_ALPHA})",
+                line=dict(width=RURAL_LINE_WIDTH, color=RURAL_LINE_COLOR), hoverinfo="skip",
                 name="Rural nominated tracts", legendgroup="rural", showlegend=True, visible="legendonly",
             )
         )
@@ -1746,7 +1752,7 @@ with section("map"):
         k1, k3 = bottom_columns([10, 2])
         with k1:
             rural_span = (
-                '<span><i style="background:rgba(14,116,144,0.16);border:2px solid #0E7490"></i>Rural nominated tract (toggle in the map legend)</span>'
+                f'<span><i style="background:rgba(14,116,144,{RURAL_FILL_ALPHA});border:3px solid {RURAL_LINE_COLOR}"></i>Rural nominated tract (toggle in the map legend)</span>'
                 if rural_nominated_ids
                 else ""
             )
