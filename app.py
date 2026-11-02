@@ -254,11 +254,11 @@ def _basemap_style():
     return BASEMAP_STYLES.get(choice, BASEMAP_STYLES["plain"])
 
 
-# How strongly the "Rural nominated tracts" layer shows when switched on: border width in pixels and tint opacity (0 to 1).
-# 3.6 / 0.40 is the current setting (clear, not harsh); 3.0 / 0.28 is softer; 1.8 / 0.16 is subtle.
-RURAL_LINE_COLOR = "#0E7490"
-RURAL_LINE_WIDTH = 3.6
-RURAL_FILL_ALPHA = 0.40
+# Colors of the nominated tracts on the map. Non-rural is green; rural is gold. The last number in each rgba() is the tint
+# opacity (0 to 1). Each group is its own entry in the map legend, so a visitor can hide either one.
+NOMINATED_FILL, NOMINATED_LINE = "rgba(34,197,94,0.45)", "#15803D"
+RURAL_FILL, RURAL_LINE_COLOR, RURAL_LINE_WIDTH = "rgba(234,179,8,0.50)", "#A16207", 1.6
+RURAL_DOT = "#CA8A04"      # the small dot beside "Rural tract" in the tract panel
 
 # Master-data column names
 POP_COL = "Estimate!!Total!!Population for whom poverty status is determined"
@@ -738,7 +738,6 @@ master_rural = {g: _rural_label(v) for g, v in zip(master_df["geoid_str"], maste
 rural_status = dict(master_rural)
 rural_status.update(official_rural)
 rural_source = (f"{official_source} (Rural/Non-Rural column)" if official_rural else "master data (Metro Status column)" if _metro_col else "none")
-rural_nominated_ids = sorted(g for g in nominated["geoid_str"] if rural_status.get(g) == "Rural")
 nominated_ids = set(nominated["geoid_str"])
 nominated_by_id = {r["geoid_str"]: r for r in nominated.to_dict("records")}
 
@@ -1189,7 +1188,7 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .oz-key i{width:14px;height:14px;border-radius:3px;display:inline-block}
 .oz-empty{padding:40px 0;border-top:1px solid #E3E7EE;border-bottom:1px solid #E3E7EE;font-size:18px;font-weight:300;color:#5B6678}
 .oz-count{text-align:right;font-size:13px;font-weight:300;color:#5B6678;padding-bottom:12px}
-.oz-count .rural{display:block;margin-top:6px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#0E7490}
+.oz-count .rural{display:block;margin-top:6px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#A16207}
 .oz-count b{display:block;font-size:40px;font-weight:200;letter-spacing:-.04em;line-height:1;color:#0B7A43;margin-bottom:8px}
 .oz-pstep{display:flex;gap:24px;padding-top:20px;border-top:1px solid #E3E7EE;margin-bottom:28px}
 .oz-pstep .n{flex:none;font-size:12px;font-weight:500;letter-spacing:.2em;color:#0B7A43;padding-top:5px}
@@ -1544,27 +1543,29 @@ def render_map(df, active):
             )
         )
     if len(nom_df):
-        ids = set(nom_df["geoid_str"])
-        nom_geo = {"type": "FeatureCollection", "features": [f for f in gj["features"] if f["properties"].get(ID_KEY) in ids]}
-        fig.add_trace(
-            go.Choroplethmap(
-                geojson=nom_geo, locations=nom_df["geoid_str"], z=[1] * len(nom_df), featureidkey=fid,
-                colorscale=[[0, "rgba(34,197,94,0.45)"], [1, "rgba(34,197,94,0.45)"]], showscale=False,
-                marker=dict(opacity=1, line=dict(width=1.2, color="#15803D")),
-                hovertext=nom_df["Parish"].astype(str) + " · " + nom_df["geoid_str"] + " · Nominated"
-                + nom_df["geoid_str"].map(lambda g: f" · {rural_status[g]}" if rural_status.get(g) else ""), hoverinfo="text",
-                name="Nominated", **keep_opacity,
+        def add_nominated(sub, name, fill, edge, width, rank):
+            ids = set(sub["geoid_str"])
+            geo = {"type": "FeatureCollection", "features": [f for f in gj["features"] if f["properties"].get(ID_KEY) in ids]}
+            fig.add_trace(
+                go.Choroplethmap(
+                    geojson=geo, locations=sub["geoid_str"], z=[1] * len(sub), featureidkey=fid,
+                    colorscale=[[0, fill], [1, fill]], showscale=False,
+                    marker=dict(opacity=1, line=dict(width=width, color=edge)),
+                    hovertext=sub["Parish"].astype(str) + " · " + sub["geoid_str"] + " · Nominated"
+                    + sub["geoid_str"].map(lambda g: f" · {rural_status[g]}" if rural_status.get(g) else ""), hoverinfo="text",
+                    name=name, showlegend=True, legendrank=rank, **keep_opacity,
+                )
             )
-        )
-    if rural_nominated_ids:
-        rl_lat, rl_lon = tract_outline(tuple(rural_nominated_ids), gj["features"])
-        fig.add_trace(
-            go.Scattermap(
-                lat=rl_lat, lon=rl_lon, mode="lines", fill="toself", fillcolor=f"rgba(14,116,144,{RURAL_FILL_ALPHA})",
-                line=dict(width=RURAL_LINE_WIDTH, color=RURAL_LINE_COLOR), hoverinfo="skip",
-                name="Rural nominated tracts", legendgroup="rural", showlegend=True, visible="legendonly",
-            )
-        )
+
+        if nom_df["geoid_str"].map(lambda g: bool(rural_status.get(g))).any():
+            # colored by type; a tract whose status is unknown is drawn with the non-rural group
+            is_rural = nom_df["geoid_str"].map(lambda g: rural_status.get(g) == "Rural")
+            if (~is_rural).any():
+                add_nominated(nom_df[~is_rural], "Nominated · non-rural", NOMINATED_FILL, NOMINATED_LINE, 1.2, 1)
+            if is_rural.any():
+                add_nominated(nom_df[is_rural], "Nominated · rural", RURAL_FILL, RURAL_LINE_COLOR, RURAL_LINE_WIDTH, 2)
+        else:
+            add_nominated(nom_df, "Nominated", NOMINATED_FILL, NOMINATED_LINE, 1.2, 1)
     if oz1_ids:
         oz_lat, oz_lon = tract_outline(tuple(sorted(oz1_ids)), gj["features"])
         fig.add_trace(
@@ -1751,9 +1752,11 @@ with section("map"):
         spacer(20)
         k1, k3 = bottom_columns([10, 2])
         with k1:
+            rural_known = any(rural_status.get(g) for g in nominated["geoid_str"])
+            nominated_label = "Nominated, non-rural" if rural_known else "Nominated"
             rural_span = (
-                f'<span><i style="background:rgba(14,116,144,{RURAL_FILL_ALPHA});border:3px solid {RURAL_LINE_COLOR}"></i>Rural nominated tract (toggle in the map legend)</span>'
-                if rural_nominated_ids
+                f'<span><i style="background:{RURAL_FILL};border:2px solid {RURAL_LINE_COLOR}"></i>Nominated, rural</span>'
+                if rural_known
                 else ""
             )
             oz1_span = (
@@ -1765,9 +1768,9 @@ with section("map"):
                 f"""
                 <div class="oz-key">
                   <span><i style="background:rgba(100,116,139,0.10);border:1px solid #64748B"></i>Other tracts</span>
-                  <span><i style="background:rgba(34,197,94,0.45);border:1px solid #15803D"></i>Nominated</span>
-                  <span><i style="background:rgba(11,18,32,0.22);border:2px solid #0B1220"></i>Selected</span>
+                  <span><i style="background:rgba(34,197,94,0.45);border:1px solid #15803D"></i>{nominated_label}</span>
                   {rural_span}
+                  <span><i style="background:rgba(11,18,32,0.22);border:2px solid #0B1220"></i>Selected</span>
                   {oz1_span}
                 </div>
                 """
@@ -1810,7 +1813,7 @@ with section("map"):
         if gid in oz1_ids:
             chips += "<span class='oz-chip'><i style='background:#4F46E5'></i>OZ 1.0 zone · benefits sunset Dec 31, 2028</span>"
         if rural_status.get(gid) == "Rural":
-            chips += "<span class='oz-chip'><i style='background:#0E7490'></i>Rural tract</span>"
+            chips += f"<span class='oz-chip'><i style='background:{RURAL_DOT}'></i>Rural tract</span>"
         elif rural_status.get(gid) == "Non-rural":
             chips += "<span class='oz-chip'><i style='background:#94A3B8'></i>Non-rural tract</span>"
 
